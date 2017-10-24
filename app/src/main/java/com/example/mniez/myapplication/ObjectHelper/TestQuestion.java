@@ -1,10 +1,10 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.ObjectHelper;
 
 /**
  * Created by mniez on 15.10.2017.
  */
 
-public class ExamQuestion {
+public class TestQuestion {
 
     Integer id;
     Integer answerId;
@@ -13,11 +13,14 @@ public class ExamQuestion {
     String question;
     Integer questionTypeId;
     Integer testId;
+    Integer otherAnswerOneId;
+    Integer otherAnswerTwoId;
+    Integer otherAnswerThreeId;
 
-    public ExamQuestion() {
+    public TestQuestion() {
     }
 
-    public ExamQuestion(Integer id, Integer answerId, Integer answerTypeId, Integer points, String question, Integer questionTypeId, Integer testId) {
+    public TestQuestion(Integer id, Integer answerId, Integer answerTypeId, Integer points, String question, Integer questionTypeId, Integer testId, Integer otherAnswerOneId, Integer otherAnswerTwoId, Integer otherAnswerThreeId) {
         this.id = id;
         this.answerId = answerId;
         this.answerTypeId = answerTypeId;
@@ -25,6 +28,9 @@ public class ExamQuestion {
         this.question = question;
         this.questionTypeId = questionTypeId;
         this.testId = testId;
+        this.otherAnswerOneId = otherAnswerOneId;
+        this.otherAnswerTwoId = otherAnswerTwoId;
+        this.otherAnswerThreeId = otherAnswerThreeId;
     }
 
     public Integer getId() {
@@ -53,6 +59,30 @@ public class ExamQuestion {
 
     public Integer getPoints() {
         return points;
+    }
+
+    public Integer getOtherAnswerOneId() {
+        return otherAnswerOneId;
+    }
+
+    public void setOtherAnswerOneId(Integer otherAnswerOneId) {
+        this.otherAnswerOneId = otherAnswerOneId;
+    }
+
+    public Integer getOtherAnswerTwoId() {
+        return otherAnswerTwoId;
+    }
+
+    public void setOtherAnswerTwoId(Integer otherAnswerTwoId) {
+        this.otherAnswerTwoId = otherAnswerTwoId;
+    }
+
+    public Integer getOtherAnswerThreeId() {
+        return otherAnswerThreeId;
+    }
+
+    public void setOtherAnswerThreeId(Integer otherAnswerThreeId) {
+        this.otherAnswerThreeId = otherAnswerThreeId;
     }
 
     public void setPoints(Integer points) {

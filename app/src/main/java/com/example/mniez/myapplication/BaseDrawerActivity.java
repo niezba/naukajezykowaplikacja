@@ -14,8 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
-import static com.example.mniez.myapplication.MobileDatabaseReader.DATABASE_NAME;
-
 /**
  * Created by mniez on 18.10.2017.
  */
@@ -76,7 +74,7 @@ public class BaseDrawerActivity extends AppCompatActivity implements NavigationV
         } else if (id == R.id.nav_slideshow) {
             //startActivity(new Intent(getApplicationContext(), MarkActivity.class));
         } else if (id == R.id.nav_share) {
-            //startActivity(new Intent(getApplicationContext(), SettingActivity.class));
+            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
         } else if (id == R.id.nav_send) {
             sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();

@@ -1,35 +1,31 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.ObjectHelper;
 
 /**
  * Created by mniez on 15.10.2017.
  */
 
-public class Exam {
+public class Test {
 
     Integer id;
     String description;
     Integer lessonId;
     String name;
-    Integer pointsToPass;
     Integer isNew;
-    Integer isPassed;
+    Integer isCompleted;
     Integer score;
-    Integer grade;
     Integer isLocal;
 
-    public Exam() {
+    public Test() {
     }
 
-    public Exam(Integer id, String description, Integer lessonId, String name, Integer pointsToPass, Integer isNew, Integer isPassed, Integer score, Integer grade, Integer isLocal) {
+    public Test(Integer id, String description, Integer lessonId, String name, Integer pointsToPass, Integer isNew, Integer isCompleted, Integer score, Integer isLocal) {
         this.id = id;
         this.description = description;
         this.lessonId = lessonId;
         this.name = name;
-        this.pointsToPass = pointsToPass;
         this.isNew = isNew;
-        this.isPassed = isPassed;
+        this.isCompleted = isCompleted;
         this.score = score;
-        this.grade = grade;
         this.isLocal = isLocal;
     }
 
@@ -65,14 +61,6 @@ public class Exam {
         this.name = name;
     }
 
-    public Integer getPointsToPass() {
-        return pointsToPass;
-    }
-
-    public void setPointsToPass(Integer pointsToPass) {
-        this.pointsToPass = pointsToPass;
-    }
-
     public Integer getIsNew() {
         return isNew;
     }
@@ -81,12 +69,12 @@ public class Exam {
         this.isNew = isNew;
     }
 
-    public Integer getIsPassed() {
-        return isPassed;
+    public Integer getIsCompleted() {
+        return isCompleted;
     }
 
-    public void setIsPassed(Integer isPassed) {
-        this.isPassed = isPassed;
+    public void setIsCompleted(Integer isCompleted) {
+        this.isCompleted = isCompleted;
     }
 
     public Integer getScore() {
@@ -95,14 +83,6 @@ public class Exam {
 
     public void setScore(Integer score) {
         this.score = score;
-    }
-
-    public Integer getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Integer grade) {
-        this.grade = grade;
     }
 
     public Integer getIsLocal() {

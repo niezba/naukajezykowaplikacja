@@ -3,29 +3,22 @@ package com.example.mniez.myapplication;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
-import com.example.mniez.myapplication.MobileDatabaseReader;
+
+import com.example.mniez.myapplication.ActivityAdapter.CourseListAdapter;
+import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
+import com.example.mniez.myapplication.ObjectHelper.Course;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,10 +30,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Date;
 import java.util.ArrayList;
-
-import static com.example.mniez.myapplication.MobileDatabaseReader.DATABASE_NAME;
 
 public class MainActivity extends BaseDrawerActivity {
 

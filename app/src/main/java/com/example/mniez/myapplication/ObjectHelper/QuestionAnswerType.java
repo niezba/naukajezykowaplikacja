@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.ObjectHelper;
 
 /**
  * Created by mniez on 15.10.2017.

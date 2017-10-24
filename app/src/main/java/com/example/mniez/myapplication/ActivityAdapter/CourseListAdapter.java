@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.ActivityAdapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,12 +11,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.mniez.myapplication.CourseElementsActivity;
+import com.example.mniez.myapplication.ObjectHelper.Course;
+import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 /**

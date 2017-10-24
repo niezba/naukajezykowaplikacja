@@ -39,7 +39,15 @@
         <activity
             android:name=".CourseElementsActivity"
             android:label="@string/title_activity_course_elements"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
