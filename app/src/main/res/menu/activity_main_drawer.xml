@@ -9,7 +9,7 @@
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_search"
-            android:title="Wyszukaj" />
+            android:title="Przeglądaj/wyszukaj" />
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_my_grades"

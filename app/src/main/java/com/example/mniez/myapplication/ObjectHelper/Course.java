@@ -26,6 +26,24 @@ public class Course {
     String levelName;
     String nativeLanguageName;
     String learnedLanguageName;
+    Boolean isParticipant;
+    Boolean isSecured;
+
+    public Boolean getParticipant() {
+        return isParticipant;
+    }
+
+    public void setParticipant(Boolean participant) {
+        isParticipant = participant;
+    }
+
+    public Boolean getSecured() {
+        return isSecured;
+    }
+
+    public void setSecured(Boolean secured) {
+        isSecured = secured;
+    }
 
     //konstruktory - pusty i pełny - więcej nie trzeba
     public Course() {

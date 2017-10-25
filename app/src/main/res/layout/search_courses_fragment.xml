@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cardview_light_background">
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/colorPrimary"
+        android:columnCount="5"
+        android:elevation="6dp"
+        android:padding="3dp"
+        android:rowCount="3">
+
+        <EditText
+            android:id="@+id/phraseInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_columnSpan="5"
+            android:ems="10"
+            android:hint="Wpisz frazę..."
+            android:inputType="textPersonName"
+            android:singleLine="true"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Title" />
+
+        <EditText
+            android:id="@+id/langInput"
+            android:layout_width="141dp"
+            android:layout_columnSpan="2"
+            android:layout_gravity="fill_horizontal"
+            android:ems="10"
+            android:hint="Język..."
+            android:inputType="textPersonName"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small" />
+
+        <EditText
+            android:id="@+id/levelInput"
+            android:layout_width="137dp"
+            android:layout_columnSpan="2"
+            android:layout_gravity="fill_horizontal"
+            android:ems="10"
+            android:hint="Poziom..."
+            android:inputType="textPersonName"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Light.Widget.PopupMenu.Small" />
+
+        <Button
+            android:id="@+id/searchButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:elevation="3dp"
+            android:text="Szukaj"
+            android:textAlignment="center"
+            android:textColor="@color/cardview_light_background" />
+
+    </GridLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerViewSearchCourses"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>

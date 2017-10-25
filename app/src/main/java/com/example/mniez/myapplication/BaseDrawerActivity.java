@@ -70,7 +70,7 @@ public class BaseDrawerActivity extends AppCompatActivity implements NavigationV
             // Handle the camera action
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
         } else if (id == R.id.nav_gallery) {
-            startActivity(new Intent(getApplicationContext(), CourseActivity.class));
+            startActivity(new Intent(getApplicationContext(), CourseBrowseActivity.class));
         } else if (id == R.id.nav_slideshow) {
             //startActivity(new Intent(getApplicationContext(), MarkActivity.class));
         } else if (id == R.id.nav_share) {

@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.mniez.myapplication.CourseElementsActivity;
+import com.example.mniez.myapplication.LessonElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.R;
 
@@ -48,7 +49,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
 
             enterButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
+                    Intent intent = new Intent(v.getContext(), LessonElementsActivity.class);
                     v.getContext().startActivity(intent);
                 }
             });

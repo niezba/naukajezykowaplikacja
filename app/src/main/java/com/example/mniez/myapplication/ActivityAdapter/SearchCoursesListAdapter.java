@@ -19,11 +19,10 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 /**
- * Created by mniez on 23.10.2017.
+ * Created by mniez on 25.10.2017.
  */
 
-public class AllCoursesListAdapter extends RecyclerView.Adapter {
-
+public class SearchCoursesListAdapter extends RecyclerView.Adapter {
     private ArrayList<Course> mCourses;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
@@ -48,7 +47,7 @@ public class AllCoursesListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public AllCoursesListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView) {
+    public SearchCoursesListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView) {
         mCourses = pCourses;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
@@ -56,19 +55,19 @@ public class AllCoursesListAdapter extends RecyclerView.Adapter {
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.all_courses_item, viewGroup, false);
-        return new AllCoursesListAdapter.MyViewHolder(view);
+        return new SearchCoursesListAdapter.MyViewHolder(view);
     }
 
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int i) {
         final Course course = mCourses.get(i);
-        ((AllCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
-        ((AllCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
-        ((AllCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
+        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
+        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
+        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
         String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
         final int courseId = course.getId();
         final String courseName = course.getCourseName();
-        Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((AllCoursesListAdapter.MyViewHolder) viewHolder).avatarView);
-        ((AllCoursesListAdapter.MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {
+        Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((SearchCoursesListAdapter.MyViewHolder) viewHolder).avatarView);
+        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
                 intent.putExtra("titleBar", courseName);

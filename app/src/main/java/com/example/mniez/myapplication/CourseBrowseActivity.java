@@ -3,15 +3,22 @@ package com.example.mniez.myapplication;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
-public class CourseActivity extends BaseDrawerActivity {
+import com.example.mniez.myapplication.ActivityAdapter.CoursesSearchTabAdapter;
+
+import java.util.ArrayList;
+
+public class CourseBrowseActivity extends BaseDrawerActivity {
 
     SharedPreferences sharedpreferences;
     private static final String MY_PREFERENCES = "DummyLangPreferences";
@@ -25,10 +32,36 @@ public class CourseActivity extends BaseDrawerActivity {
     private static final String STUDENT_ROLE_NAME = "Uczeń";
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getLayoutInflater().inflate(R.layout.content_course, frameLayout);
+        setTitle("Przeglądaj kursy");
+        ArrayList<String> tabList = new ArrayList<>();
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.addTab(tabLayout.newTab().setText("Wszystkie"));
+        tabLayout.addTab(tabLayout.newTab().setText("Wyszukaj"));
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+        final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
+        final CoursesSearchTabAdapter adapter = new CoursesSearchTabAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+        viewPager.setAdapter(adapter);
+        tabLayout.setupWithViewPager(viewPager);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
         String currentUsername = sharedpreferences.getString(PREFERENCES_USERNAME, "");
         String currentPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
@@ -67,4 +100,9 @@ public class CourseActivity extends BaseDrawerActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        navigationView.getMenu().getItem(1).setChecked(true);
+    }
 }

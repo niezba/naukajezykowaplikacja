@@ -3,7 +3,11 @@ package com.example.mniez.myapplication;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class AllCoursesActivity extends AppCompatActivity {
+import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
+
+public class LessonElementsActivity extends AppCompatActivity {
+
+    MobileDatabaseReader dbReader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
