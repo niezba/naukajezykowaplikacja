@@ -1,13 +1,16 @@
 package com.example.mniez.myapplication.ActivityAdapter;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,12 +41,12 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
 
         public MyViewHolder(View pItem) {
             super(pItem);
-            cv = (CardView)pItem.findViewById(R.id.cardView3);
-            avatarView = (ImageView) pItem.findViewById(R.id.imageView3);
-            courseName = (TextView) pItem.findViewById(R.id.allCoursesName);
-            levelName = (TextView) pItem.findViewById(R.id.allCoursesDescript);
-            teacherData = (TextView) pItem.findViewById(R.id.allCoursesLead);
-            enterButton = (Button) pItem.findViewById(R.id.enterButton);
+            cv = (CardView)pItem.findViewById(R.id.cardView4);
+            avatarView = (ImageView) pItem.findViewById(R.id.imageView4);
+            courseName = (TextView) pItem.findViewById(R.id.searchCoursesName);
+            levelName = (TextView) pItem.findViewById(R.id.searchCoursesDescript);
+            teacherData = (TextView) pItem.findViewById(R.id.searchCoursesLead);
+            enterButton = (Button) pItem.findViewById(R.id.signButton);
         }
     }
 
@@ -54,7 +57,7 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.all_courses_item, viewGroup, false);
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.search_course_item, viewGroup, false);
         return new SearchCoursesListAdapter.MyViewHolder(view);
     }
 
@@ -62,18 +65,58 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
         final Course course = mCourses.get(i);
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
-        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
+        ((SearchCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName());
         String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
         final int courseId = course.getId();
         final String courseName = course.getCourseName();
+        final Boolean isParticipant = course.getParticipant();
+        final Boolean isSecured = course.getSecured();
+        System.out.print(isSecured);
+        if(isParticipant == true) {
+            ((SearchCoursesListAdapter.MyViewHolder) viewHolder).enterButton.setText("Przejdź");
+        }
+        else {
+            ((SearchCoursesListAdapter.MyViewHolder) viewHolder).enterButton.setText("Zapisz się");
+        }
         Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((SearchCoursesListAdapter.MyViewHolder) viewHolder).avatarView);
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
-                intent.putExtra("titleBar", courseName);
-                intent.putExtra("courseId", courseId);
-                System.out.println("CourseId: " + courseId);
-                v.getContext().startActivity(intent);
+                if(isParticipant == true) {
+                    Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
+                    intent.putExtra("titleBar", courseName);
+                    intent.putExtra("courseId", courseId);
+                    System.out.println("CourseId: " + courseId);
+                    v.getContext().startActivity(intent);
+                }
+                else {
+                    if (isSecured == true) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                        LayoutInflater li =(LayoutInflater) mKontekst.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        View dialogView = li.inflate(R.layout.access_code_input, null);
+                        builder.setView(dialogView);
+                        final EditText accessPasswd = (EditText) dialogView.findViewById(R.id.course_passwd_input);
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                String accessCode = accessPasswd.getText().toString();
+                            }
+                        });
+                        builder.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+
+                        builder.setMessage("Podaj hasło do kursu").setTitle("Ten kurs jest zabezpieczony");
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                    else {
+
+                    }
+                }
+
             }
         });
     }

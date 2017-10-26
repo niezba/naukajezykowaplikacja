@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by mniez on 25.10.2017.
@@ -119,40 +120,52 @@ public class SearchCoursesFragment extends Fragment {
 
                 String jsonString = sb.toString();
                 System.out.println("JSON: " + jsonString);
+                courseList.clear();
 
                 try {
                     JSONObject jsonObject = new JSONObject(jsonString);
                     String jsonObjectString = jsonObject.toString();
                     System.out.println(jsonObjectString);
                     myConnection.disconnect();
+                    Iterator<?> keys = jsonObject.keys();
+                    while(keys.hasNext()) {
+                        String key = (String) keys.next();
+                        if (jsonObject.get(key) instanceof JSONObject) {
+                            Course newCourse = new Course();
+                            Integer courseIdInteger = Integer.parseInt(key);
+                            newCourse.setId(courseIdInteger);
+                            String courseName = ((JSONObject) jsonObject.get(key)).get("coursename").toString();
+                            newCourse.setCourseName(courseName);
+                            String description = ((JSONObject) jsonObject.get(key)).get("description").toString();
+                            newCourse.setDescription(description);
+                            String createdAt = ((JSONObject) jsonObject.get(key)).get("createdAt").toString();
+                            newCourse.setCreatedAt(createdAt);
+                            String levelName = ((JSONObject) jsonObject.get(key)).get("level").toString();
+                            newCourse.setLevelName(levelName);
+                            String avatar = ((JSONObject) jsonObject.get(key)).get("avatar").toString();
+                            newCourse.setAvatar(avatar);
+                            String teacherFirstName = ((JSONObject) jsonObject.get(key)).get("teacher").toString();
+                            newCourse.setTeacherName(teacherFirstName);
+                            System.out.println(teacherFirstName);
+                            String learningLanguage = ((JSONObject) jsonObject.get(key)).get("language").toString();
+                            newCourse.setLearnedLanguageName(learningLanguage);
+                            Boolean isParticipant = ((JSONObject) jsonObject.get(key)).getBoolean("isParticipant");
+                            if (isParticipant == true) {
+                                newCourse.setParticipant(false);
+                            }
+                            else {
+                                newCourse.setParticipant(true);
+                            }
+                            Boolean secured = ((JSONObject) jsonObject.get(key)).getBoolean("secured");
+                            newCourse.setSecured(secured);
+                            courseList.add(newCourse);
+                            System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
+                                    + " " + teacherFirstName + " " + learningLanguage);
+                        }
+                    }
                     /*int coursesCount = jsonObject.length();
                     for (int i = 0; i < coursesCount; i++){
-                        Course newCourse = new Course();
-                        JSONObject singleCourse = jsonObject.getJSONObject(i);
-                        String courseId = singleCourse.get("id").toString();
-                        Integer courseIdInteger = Integer.parseInt(courseId);
-                        newCourse.setId(courseIdInteger);
-                        String courseName = singleCourse.get("coursename").toString();
-                        newCourse.setCourseName(courseName);
-                        String description = singleCourse.get("description").toString();
-                        newCourse.setDescription(description);
-                        String createdAt = singleCourse.get("createdAt").toString();
-                        newCourse.setCreatedAt(createdAt);
-                        String levelName = singleCourse.get("levelName").toString();
-                        newCourse.setLevelName(levelName);
-                        String avatar = singleCourse.get("avatar").toString();
-                        newCourse.setAvatar(avatar);
-                        String teacherFirstName = singleCourse.get("teacherFirstName").toString();
-                        newCourse.setTeacherName(teacherFirstName);
-                        String teacherLastName = singleCourse.get("teacherLastName").toString();
-                        newCourse.setTeacherSurname(teacherLastName);
-                        String nativeLanguage = singleCourse.get("nativeLanguage").toString();
-                        newCourse.setNativeLanguageName(nativeLanguage);
-                        String learningLanguage = singleCourse.get("learningLanguage").toString();
-                        newCourse.setLearnedLanguageName(learningLanguage);
-                        courseList.add(newCourse);
-                        System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
-                                + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
+
                     }*/
                     return true;
                 } catch (JSONException e) {
