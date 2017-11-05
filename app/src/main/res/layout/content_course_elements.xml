@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.mniez.myapplication.CourseElementsActivity"
-    tools:showIn="@layout/activity_course_elements">
+    tools:showIn="@layout/activity_course_elements"
+    android:animateLayoutChanges="true">
     <ProgressBar
         android:id="@+id/login_progress_course"
         style="?android:attr/progressBarStyleLarge"

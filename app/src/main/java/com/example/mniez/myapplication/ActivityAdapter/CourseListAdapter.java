@@ -1,7 +1,10 @@
 package com.example.mniez.myapplication.ActivityAdapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -52,6 +55,7 @@ public class CourseListAdapter extends RecyclerView.Adapter{
             avatarView = (ImageView) pItem.findViewById(R.id.imageView2);
             enterButton = (Button) pItem.findViewById(R.id.button);
             detailButton = (Button) pItem.findViewById(R.id.button2);
+
         }
     }
 
@@ -66,24 +70,28 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         return new MyViewHolder(view);
     }
 
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int i) {
         final Course course = mCourses.get(i);
         ((MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
         ((MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
         ((MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
         ((MyViewHolder) viewHolder).nativeLang.setText(course.getNativeLanguageName());
         ((MyViewHolder) viewHolder).learnedLang.setText(course.getLearnedLanguageName());
-        String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
-        final int courseId = course.getId();
-        final String courseName = course.getCourseName();
+        final String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
         Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+        final int courseId = course.getId();
+        final String courseNameString = course.getCourseName();
         ((MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
-                intent.putExtra("titleBar", courseName);
+                intent.putExtra("titleBar", courseNameString);
                 intent.putExtra("courseId", courseId);
+                intent.putExtra("courseImage", imageUrl);
+                intent.putExtra("imageTransition", ViewCompat.getTransitionName(((MyViewHolder) viewHolder).avatarView));
                 System.out.println("CourseId: " + courseId);
-                v.getContext().startActivity(intent);
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation((Activity) mKontekst, ((MyViewHolder) viewHolder).avatarView, "courseImage");
+                v.getContext().startActivity(intent, options.toBundle());
             }
         });
     }

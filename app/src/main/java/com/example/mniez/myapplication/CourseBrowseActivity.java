@@ -90,8 +90,6 @@ public class CourseBrowseActivity extends BaseDrawerActivity {
         }
         navUsername.setText(userRole);
         navFullname.setText(currentNameSurname);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setVisibility(View.INVISIBLE);
     }
 
     @Override

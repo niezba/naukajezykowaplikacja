@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
-
+    String errorText;
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
@@ -391,6 +391,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     editor.commit();
                     return true;
                 }
+                else {
+                    errorText = jsonObject.get("error_message").toString();
+                }
 
 
             } catch (MalformedURLException e) {
@@ -416,7 +419,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (success) {
                 executeDashboard(this);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mPasswordView.setError(errorText);
                 mPasswordView.requestFocus();
             }
         }

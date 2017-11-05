@@ -8,14 +8,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.mniez.myapplication.CourseElementsActivity;
+import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LessonElementsActivity;
+import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
+import com.example.mniez.myapplication.ObjectHelper.LessonElement;
+import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.R;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
+
+import static com.example.mniez.myapplication.R.id.enterButton;
 
 /**
  * Created by mniez on 16.10.2017.
@@ -24,6 +35,8 @@ import java.util.ArrayList;
 public class CourseElementListAdapter extends RecyclerView.Adapter {
 
     private ArrayList<Lesson> mLessons;
+    private ArrayList<Test> mTests;
+    private ArrayList<Lecture> mLectures;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
 
@@ -35,7 +48,8 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         public TextView lessonNumber;
         public TextView overallPoints;
         public TextView userPoints;
-        public Button enterButton;
+        public ImageView enterButton;
+        public ListView listView;
 
         public MyViewHolder(View pItem) {
             super(pItem);
@@ -45,19 +59,16 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
             lessonNumber = (TextView) pItem.findViewById(R.id.number);
             overallPoints = (TextView) pItem.findViewById(R.id.points);
             userPoints = (TextView) pItem.findViewById(R.id.userpoints);
-            enterButton = (Button) pItem.findViewById(R.id.button);
-
-            enterButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), LessonElementsActivity.class);
-                    v.getContext().startActivity(intent);
-                }
-            });
+            enterButton = (ImageView) pItem.findViewById(R.id.button);
+            listView = (ListView) pItem.findViewById(R.id.listView1);
+            listView.setVisibility(View.GONE);
         }
     }
 
-    public CourseElementListAdapter(ArrayList<Lesson> pLessons, Context context, RecyclerView pRecyclerView) {
+    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, Context context, RecyclerView pRecyclerView) {
         mLessons = pLessons;
+        mTests = pTests;
+        mLectures = pLectures;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
     }
@@ -67,13 +78,54 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         return new MyViewHolder(view);
     }
 
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int i) {
+        final int[] mExpanded = {0};
+        MobileDatabaseReader dbReader =  new MobileDatabaseReader(mKontekst);
         Lesson lesson = mLessons.get(i);
         ((MyViewHolder) viewHolder).courseElementName.setText(lesson.getName());
         ((MyViewHolder) viewHolder).elementDescription.setText(lesson.getDescription());
         ((MyViewHolder) viewHolder).lessonNumber.setText("Lekcja " + lesson.getLessonNumber());
         ((MyViewHolder) viewHolder).overallPoints.setText(" " + lesson.getOverallPoints());
         ((MyViewHolder) viewHolder).userPoints.setText("Zdobyte punkty: " + lesson.getUserPoints());
+        ArrayList<LessonElement> allLessonElements = new ArrayList<>();
+        for (Lecture l : mLectures) {
+            if(l.getLessonId() == lesson.getLessonId()) {
+                int elType = 1;
+                int elId = l.getId();
+                String elName = l.getName();
+                LessonElement newEl = new LessonElement(elType, elId, elName);
+                allLessonElements.add(newEl);
+            }
+        }
+        for (Test t : mTests) {
+            if(t.getLessonId() == lesson.getLessonId()) {
+                int elType = 0;
+                int elId = t.getId();
+                String elName = t.getDescription();
+                int scoredPoints = t.getScore();
+                int totalPoints = dbReader.calculateTotalPointsForTest(elId);
+                LessonElement newEl = new LessonElement(elType, elId, elName, totalPoints, scoredPoints);
+                allLessonElements.add(newEl);
+            }
+        }
+        LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements);
+        ((MyViewHolder) viewHolder).listView.setAdapter(lesAdapter);
+        System.out.println("Lekcja: " + lesson.getLessonId() + ", Ilość elementów: " + allLessonElements.size());
+
+        ((MyViewHolder) viewHolder).cv.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (mExpanded[0] == 0) {
+                    ((MyViewHolder) viewHolder).enterButton.animate().rotation((float) 90.0);
+                    ((MyViewHolder) viewHolder).listView.setVisibility(View.VISIBLE);
+                    mExpanded[0] = 1;
+                }
+                else if (mExpanded[0] == 1) {
+                    ((MyViewHolder) viewHolder).enterButton.animate().rotation((float) 0.0);
+                    ((MyViewHolder) viewHolder).listView.setVisibility(View.GONE);
+                    mExpanded[0] = 0;
+                }
+            }
+        });
     }
 
     public int getItemCount() {

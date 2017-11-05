@@ -151,10 +151,10 @@ public class SearchCoursesFragment extends Fragment {
                             newCourse.setLearnedLanguageName(learningLanguage);
                             Boolean isParticipant = ((JSONObject) jsonObject.get(key)).getBoolean("isParticipant");
                             if (isParticipant == true) {
-                                newCourse.setParticipant(false);
+                                newCourse.setParticipant(true);
                             }
                             else {
-                                newCourse.setParticipant(true);
+                                newCourse.setParticipant(false);
                             }
                             Boolean secured = ((JSONObject) jsonObject.get(key)).getBoolean("secured");
                             newCourse.setSecured(secured);
@@ -197,7 +197,6 @@ public class SearchCoursesFragment extends Fragment {
             System.out.println(mAdapter.getItemCount());
             System.out.println(courseList);
             mFetchTask = null;
-
             if (success) {
 
             } else {
@@ -209,7 +208,6 @@ public class SearchCoursesFragment extends Fragment {
         protected void onCancelled() {
             mFetchTask = null;
         }
-
 
     }
 }

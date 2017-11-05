@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.example.mniez.myapplication.ActivityAdapter.AllCoursesListAdapter;
 import com.example.mniez.myapplication.ActivityAdapter.CourseListAdapter;
+import com.example.mniez.myapplication.ActivityAdapter.SearchCoursesListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.MainActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
@@ -40,7 +41,7 @@ import java.util.Iterator;
 public class AllCoursesFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private AllCoursesListAdapter mAdapter;
+    private SearchCoursesListAdapter mAdapter;
 
     String currentId;
     String currentRole;
@@ -66,7 +67,7 @@ public class AllCoursesFragment extends Fragment {
         recyclerView = (RecyclerView) getView().findViewById(R.id.recyclerViewAllCourses);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAdapter = new AllCoursesListAdapter(courseList, this.getActivity(), recyclerView);
+        mAdapter = new SearchCoursesListAdapter(courseList, this.getActivity(), recyclerView);
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -86,7 +87,7 @@ public class AllCoursesFragment extends Fragment {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/all_courses");
+                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/search");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);
@@ -103,41 +104,53 @@ public class AllCoursesFragment extends Fragment {
 
                 String jsonString = sb.toString();
                 System.out.println("JSON: " + jsonString);
+                courseList.clear();
 
                 try {
-                    JSONArray jsonObject = new JSONArray(jsonString);
+                    JSONObject jsonObject = new JSONObject(jsonString);
                     String jsonObjectString = jsonObject.toString();
                     System.out.println(jsonObjectString);
                     myConnection.disconnect();
-                    int coursesCount = jsonObject.length();
-                    for (int i = 0; i < coursesCount; i++){
-                        Course newCourse = new Course();
-                        JSONObject singleCourse = jsonObject.getJSONObject(i);
-                        String courseId = singleCourse.get("id").toString();
-                        Integer courseIdInteger = Integer.parseInt(courseId);
-                        newCourse.setId(courseIdInteger);
-                        String courseName = singleCourse.get("coursename").toString();
-                        newCourse.setCourseName(courseName);
-                        String description = singleCourse.get("description").toString();
-                        newCourse.setDescription(description);
-                        String createdAt = singleCourse.get("createdAt").toString();
-                        newCourse.setCreatedAt(createdAt);
-                        String levelName = singleCourse.get("levelName").toString();
-                        newCourse.setLevelName(levelName);
-                        String avatar = singleCourse.get("avatar").toString();
-                        newCourse.setAvatar(avatar);
-                        String teacherFirstName = singleCourse.get("teacherFirstName").toString();
-                        newCourse.setTeacherName(teacherFirstName);
-                        String teacherLastName = singleCourse.get("teacherLastName").toString();
-                        newCourse.setTeacherSurname(teacherLastName);
-                        String nativeLanguage = singleCourse.get("nativeLanguage").toString();
-                        newCourse.setNativeLanguageName(nativeLanguage);
-                        String learningLanguage = singleCourse.get("learningLanguage").toString();
-                        newCourse.setLearnedLanguageName(learningLanguage);
-                        courseList.add(newCourse);
-                        System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
-                                + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
+                    Iterator<?> keys = jsonObject.keys();
+                    while(keys.hasNext()) {
+                        String key = (String) keys.next();
+                        if (jsonObject.get(key) instanceof JSONObject) {
+                            Course newCourse = new Course();
+                            Integer courseIdInteger = Integer.parseInt(key);
+                            newCourse.setId(courseIdInteger);
+                            String courseName = ((JSONObject) jsonObject.get(key)).get("coursename").toString();
+                            newCourse.setCourseName(courseName);
+                            String description = ((JSONObject) jsonObject.get(key)).get("description").toString();
+                            newCourse.setDescription(description);
+                            String createdAt = ((JSONObject) jsonObject.get(key)).get("createdAt").toString();
+                            newCourse.setCreatedAt(createdAt);
+                            String levelName = ((JSONObject) jsonObject.get(key)).get("level").toString();
+                            newCourse.setLevelName(levelName);
+                            String avatar = ((JSONObject) jsonObject.get(key)).get("avatar").toString();
+                            newCourse.setAvatar(avatar);
+                            String teacherFirstName = ((JSONObject) jsonObject.get(key)).get("teacher").toString();
+                            newCourse.setTeacherName(teacherFirstName);
+                            System.out.println(teacherFirstName);
+                            String learningLanguage = ((JSONObject) jsonObject.get(key)).get("language").toString();
+                            newCourse.setLearnedLanguageName(learningLanguage);
+                            Boolean isParticipant = ((JSONObject) jsonObject.get(key)).getBoolean("isParticipant");
+                            if (isParticipant == true) {
+                                newCourse.setParticipant(true);
+                            }
+                            else {
+                                newCourse.setParticipant(false);
+                            }
+                            Boolean secured = ((JSONObject) jsonObject.get(key)).getBoolean("secured");
+                            newCourse.setSecured(secured);
+                            courseList.add(newCourse);
+                            System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
+                                    + " " + teacherFirstName + " " + learningLanguage);
+                        }
                     }
+                    /*int coursesCount = jsonObject.length();
+                    for (int i = 0; i < coursesCount; i++){
+
+                    }*/
                     return true;
                 } catch (JSONException e) {
                     JSONObject jsonObject = new JSONObject(jsonString);

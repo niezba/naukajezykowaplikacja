@@ -160,12 +160,12 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     //utworzenie tabeli testquestions
     private static final String CREATE_TABLE_TESTQUESTIONS = "CREATE TABLE IF NOT EXISTS " + TABLE_TESTQUESTIONS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + ANSWER_ID + " INT, " + ANSWER_TYPE_ID + " INT, " + POINTS + " INT, " + QUESTION + " TEXT, "
-            + QUESTION_TYPE_ID + " INT, " + TEST_ID + " INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + "INT, " + OTHER_ANSWERTHREE + " INT" + ");";
+            + QUESTION_TYPE_ID + " INT, " + TEST_ID + " INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + " INT, " + OTHER_ANSWERTHREE + " INT" + ");";
 
     //utworzenie tabeli examquestions
     private static final String CREATE_TABLE_EXAMQUESTIONS = "CREATE TABLE IF NOT EXISTS " + TABLE_EXAMQUESTIONS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + ANSWER_ID + " INT, " + ANSWER_TYPE_ID + " INT, " + POINTS + " INT, " + QUESTION + " TEXT, "
-            + QUESTION_TYPE_ID + " INT, " + EXAM_ID + "INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + "INT, " + OTHER_ANSWERTHREE + " INT" + ");";
+            + QUESTION_TYPE_ID + " INT, " + EXAM_ID + "INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + " INT, " + OTHER_ANSWERTHREE + " INT" + ");";
 
     //utworzenie tabeli words
     private static final String CREATE_TABLE_WORDS = "CREATE TABLE IF NOT EXISTS " + TABLE_WORDS
@@ -305,6 +305,20 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         return lessons;
     }
 
+    public ArrayList<Integer> selectAllLessonsIdsForCourse(Integer courseId) {
+        ArrayList<Integer> lessonIds = new ArrayList<>();
+        String selectQuery = "SELECT " + LESSON_ID + " FROM " + TABLE_LESSONS + " WHERE " + COURSE_ID + " = " + courseId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                Integer lessonId = c.getInt(c.getColumnIndex(LESSON_ID));
+                lessonIds.add(lessonId);
+            } while (c.moveToNext());
+        }
+        return lessonIds;
+    }
+
     public long insertTest(Test test) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -340,6 +354,20 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
             } while (c.moveToNext());
         }
         return tests;
+    }
+
+    public int calculateTotalPointsForTest(int testId) {
+        int testTotal = 0;
+        String selectQuery = "SELECT SUM(" + POINTS +") AS pointssum FROM " + TABLE_TESTQUESTIONS + " WHERE " + TEST_ID + "=" + testId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                testTotal = testTotal + c.getInt(c.getColumnIndex("pointssum"));
+
+            } while (c.moveToNext());
+        }
+        return testTotal;
     }
 
     public long insertExam(Exam exam) {

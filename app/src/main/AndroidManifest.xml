@@ -30,9 +30,6 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".LessonElementsActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".CourseBrowseActivity"
             android:label="@string/title_activity_course"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -47,6 +44,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.mniez.myapplication.MainActivity" />
+        </activity>
+        <activity
+            android:name=".LessonElementsActivity"
+            android:label="@string/title_activity_lesson_elements"
+            android:parentActivityName=".CourseElementsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.CourseElementsActivity" />
         </activity>
     </application>
 
