@@ -1,13 +1,11 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
-import com.example.mniez.myapplication.Fragments.AllCoursesFragment;
-import com.example.mniez.myapplication.Fragments.SearchCoursesFragment;
-
-import java.util.ArrayList;
+import com.example.mniez.myapplication.StudentModule.Fragments.AllCoursesFragment;
+import com.example.mniez.myapplication.StudentModule.Fragments.SearchCoursesFragment;
 
 /**
  * Created by mniez on 25.10.2017.

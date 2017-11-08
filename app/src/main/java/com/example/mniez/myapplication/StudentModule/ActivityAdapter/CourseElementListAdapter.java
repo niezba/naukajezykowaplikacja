@@ -1,32 +1,23 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
-import com.example.mniez.myapplication.LessonElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.R;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-
-import static com.example.mniez.myapplication.R.id.enterButton;
 
 /**
  * Created by mniez on 16.10.2017.
@@ -39,6 +30,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
     private ArrayList<Lecture> mLectures;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
+    private final int courseId;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -65,12 +57,13 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, Context context, RecyclerView pRecyclerView) {
+    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, Context context, RecyclerView pRecyclerView, int courseId) {
         mLessons = pLessons;
         mTests = pTests;
         mLectures = pLectures;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
+        this.courseId = courseId;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -108,7 +101,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
                 allLessonElements.add(newEl);
             }
         }
-        LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements);
+        LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements, courseId);
         ((MyViewHolder) viewHolder).listView.setAdapter(lesAdapter);
         System.out.println("Lekcja: " + lesson.getLessonId() + ", Ilość elementów: " + allLessonElements.size());
 

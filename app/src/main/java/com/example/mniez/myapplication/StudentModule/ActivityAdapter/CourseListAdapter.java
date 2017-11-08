@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,7 +14,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.mniez.myapplication.CourseElementsActivity;
+import com.example.mniez.myapplication.StudentModule.CourseDetailsActivity;
+import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
@@ -84,6 +85,19 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent intent = new Intent(v.getContext(), CourseElementsActivity.class);
+                intent.putExtra("titleBar", courseNameString);
+                intent.putExtra("courseId", courseId);
+                intent.putExtra("courseImage", imageUrl);
+                intent.putExtra("imageTransition", ViewCompat.getTransitionName(((MyViewHolder) viewHolder).avatarView));
+                System.out.println("CourseId: " + courseId);
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation((Activity) mKontekst, ((MyViewHolder) viewHolder).avatarView, "courseImage");
+                v.getContext().startActivity(intent, options.toBundle());
+            }
+        });
+        ((MyViewHolder) viewHolder).detailButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), CourseDetailsActivity.class);
                 intent.putExtra("titleBar", courseNameString);
                 intent.putExtra("courseId", courseId);
                 intent.putExtra("courseImage", imageUrl);

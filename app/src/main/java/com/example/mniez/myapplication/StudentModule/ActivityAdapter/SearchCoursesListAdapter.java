@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
@@ -21,27 +19,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.mniez.myapplication.CourseBrowseActivity;
-import com.example.mniez.myapplication.CourseElementsActivity;
-import com.example.mniez.myapplication.Fragments.AllCoursesFragment;
-import com.example.mniez.myapplication.Fragments.SearchCoursesFragment;
+import com.example.mniez.myapplication.StudentModule.CourseBrowseActivity;
+import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.RunnableFuture;
 
 /**
  * Created by mniez on 25.10.2017.

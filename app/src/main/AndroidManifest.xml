@@ -18,7 +18,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,33 +27,46 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".StudentModule.MainActivity"
             android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".CourseBrowseActivity"
+            android:name=".StudentModule.CourseBrowseActivity"
             android:label="@string/title_activity_course"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".CourseElementsActivity"
+            android:name=".StudentModule.CourseElementsActivity"
             android:label="@string/title_activity_course_elements"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".StudentModule.MainActivity"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.mniez.myapplication.MainActivity" />
+                android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
         <activity
-            android:name=".LessonElementsActivity"
-            android:label="@string/title_activity_lesson_elements"
-            android:parentActivityName=".CourseElementsActivity"
+            android:name=".StudentModule.TestExamActivity"
+            android:label="@string/title_activity_test_exam"
+            android:parentActivityName=".StudentModule.CourseElementsActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.StudentModule.CourseElementsActivity" />
+        </activity>
+        <activity
+            android:name=".StudentModule.CourseDetailsActivity"
+            android:label="@string/title_activity_details"
+            android:parentActivityName=".StudentModule.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.mniez.myapplication.CourseElementsActivity" />
+                android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
     </application>
 

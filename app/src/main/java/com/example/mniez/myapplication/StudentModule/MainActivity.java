@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.StudentModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,9 +16,10 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.TextView;
 
-import com.example.mniez.myapplication.ActivityAdapter.CourseListAdapter;
+import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Course;
+import com.example.mniez.myapplication.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;

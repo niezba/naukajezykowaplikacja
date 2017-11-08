@@ -619,4 +619,17 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         }
         return qat;
     }
+
+    public String selectTestName(int testId) {
+        String testName =  new String();
+        String selectQuery = "SELECT " + DESCRIPTION + " FROM " + TABLE_TESTS + " WHERE " + KEY_ID + " = " + testId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                testName = c.getString(c.getColumnIndex(DESCRIPTION));
+            } while (c.moveToNext());
+        }
+        return testName;
+    }
 }

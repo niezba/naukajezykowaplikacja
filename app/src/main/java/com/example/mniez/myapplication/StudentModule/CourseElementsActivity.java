@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.StudentModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,7 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.example.mniez.myapplication.ActivityAdapter.CourseElementListAdapter;
+import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseElementListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Language;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
@@ -26,6 +24,7 @@ import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Word;
+import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -54,6 +53,7 @@ public class CourseElementsActivity extends AppCompatActivity {
     private static final String TEACHER_ROLE_NAME = "Nauczyciel";
     private static final String STUDENT_ROLE_NAME = "Uczeń";
 
+    public int courseId;
     private RecyclerView recyclerView;
     private CourseElementListAdapter mAdapter;
 
@@ -75,7 +75,7 @@ public class CourseElementsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         Bundle extras = getIntent().getExtras();
-        int courseId = 0;
+        courseId = 0;
         courseId = extras.getInt("courseId", 0);
         setContentView(R.layout.activity_course_elements);
         supportPostponeEnterTransition();
@@ -112,7 +112,7 @@ public class CourseElementsActivity extends AppCompatActivity {
         mFetchTask = new CourseElementsActivity.LessonFetchTask(courseId);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCourseElementList);
         recyclerView.setHasFixedSize(true);
-        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, this, recyclerView);
+        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, this, recyclerView, courseId);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());

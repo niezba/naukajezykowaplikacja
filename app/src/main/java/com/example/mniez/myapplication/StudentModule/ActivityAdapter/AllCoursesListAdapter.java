@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.mniez.myapplication.CourseElementsActivity;
+import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;

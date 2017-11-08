@@ -106,7 +106,7 @@
                 android:elevation="0dp"
                 app:srcCompat="@drawable/ic_menu_send" />
 
-            <com.example.mniez.myapplication.ActivityAdapter.LessonElementsListView
+            <com.example.mniez.myapplication.StudentModule.ActivityAdapter.LessonElementsListView
                 android:id="@+id/listView1"
                 android:layout_marginTop="10dp"
                 android:layout_below="@id/number"

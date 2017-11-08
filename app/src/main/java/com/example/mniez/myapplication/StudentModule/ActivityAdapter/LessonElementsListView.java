@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.ActivityAdapter;
+package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
 import android.content.Context;
 import android.util.AttributeSet;

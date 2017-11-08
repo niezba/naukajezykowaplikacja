@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.Fragments;
+package com.example.mniez.myapplication.StudentModule.Fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,16 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import com.example.mniez.myapplication.ActivityAdapter.AllCoursesListAdapter;
-import com.example.mniez.myapplication.ActivityAdapter.SearchCoursesListAdapter;
+import com.example.mniez.myapplication.StudentModule.ActivityAdapter.SearchCoursesListAdapter;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,47 +30,33 @@ import java.util.Iterator;
  * Created by mniez on 25.10.2017.
  */
 
-public class SearchCoursesFragment extends Fragment {
+public class AllCoursesFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SearchCoursesListAdapter mAdapter;
 
     String currentId;
     String currentRole;
-    String phrase;
-    String language;
-    String level;
 
     ArrayList<Course> courseList = new ArrayList<Course>();
-    private SearchCoursesFragment.CourseFetchTask mFetchTask = null;
+    private AllCoursesFragment.CourseFetchTask mFetchTask = null;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mFetchTask = new AllCoursesFragment.CourseFetchTask(currentId);
+        mFetchTask.execute((Void) null);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.search_courses_fragment, container, false);
-        final EditText phraseInput = (EditText) rootView.findViewById(R.id.phraseInput);
-        final EditText langInput = (EditText) rootView.findViewById(R.id.langInput);
-        final EditText levInput = (EditText) rootView.findViewById(R.id.levelInput);
-        Button searchButton = (Button) rootView.findViewById(R.id.searchButton);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                phrase = phraseInput.getText().toString();
-                language = langInput.getText().toString();
-                level = levInput.getText().toString();
-                mFetchTask = new SearchCoursesFragment.CourseFetchTask(currentId, phrase, language, level);
-                mFetchTask.execute((Void) null);
-            }
-        });
+        View rootView = inflater.inflate(R.layout.all_courses_fragment, container, false);
+
         return rootView;
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        recyclerView = (RecyclerView) getView().findViewById(R.id.recyclerViewSearchCourses);
+        recyclerView = (RecyclerView) getView().findViewById(R.id.recyclerViewAllCourses);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mAdapter = new SearchCoursesListAdapter(courseList, this.getActivity(), recyclerView);
@@ -84,18 +65,13 @@ public class SearchCoursesFragment extends Fragment {
 
     }
 
+
     public class CourseFetchTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String userId;
-        private final String searchPhrase;
-        private final String searchLang;
-        private final String searchLevel;
 
-        CourseFetchTask(String currentId, String phrase, String language, String level) {
+        CourseFetchTask(String currentId) {
             userId = currentId;
-            searchPhrase = phrase;
-            searchLang = language;
-            searchLevel = level;
         }
 
         @Override
@@ -103,7 +79,7 @@ public class SearchCoursesFragment extends Fragment {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/search?phrase="+searchPhrase+"&language="+searchLang+"&level="+searchLevel);
+                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/search");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);
@@ -197,6 +173,7 @@ public class SearchCoursesFragment extends Fragment {
             System.out.println(mAdapter.getItemCount());
             System.out.println(courseList);
             mFetchTask = null;
+
             if (success) {
 
             } else {
@@ -209,5 +186,7 @@ public class SearchCoursesFragment extends Fragment {
             mFetchTask = null;
         }
 
+
     }
+
 }

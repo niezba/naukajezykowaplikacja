@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication;
+package com.example.mniez.myapplication.StudentModule;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,10 @@ import android.support.design.widget.NavigationView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
+
+import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.SettingsActivity;
 
 /**
  * Created by mniez on 18.10.2017.
