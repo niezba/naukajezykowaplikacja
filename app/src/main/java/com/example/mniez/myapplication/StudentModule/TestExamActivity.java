@@ -23,6 +23,7 @@ import com.example.mniez.myapplication.StudentModule.Fragments.ProgressFragment;
 import com.example.mniez.myapplication.StudentModule.Fragments.QuestionFragment;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class TestExamActivity extends AppCompatActivity implements AnswersFragment.OnAnswerSelectedListener {
 
@@ -31,20 +32,23 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
     private static final String QUESTION_TAG = "question";
     private static final String PROGRESS_TAG = "progress";
     private int testId;
-    private int courseId;
     ArrayList<TestQuestion> testQuestions;
     ArrayList<Word> questionWords;
     protected int questionCounter = 0;
     protected int currentQuestionTypeId;
     protected int currentQuestionWordId;
     int[] answerIds;
-    private TextView mTextMessage;
     MobileDatabaseReader dbReader;
     AnswersFragment mAnswersFragment;
     NumberFragment mNumberFragment;
     ProgressFragment mProgressFragment;
     QuestionFragment mQuestionFragment;
     public int isCompleted = 0;
+    protected int[] currentAnswerIds = new int[4];
+    protected String[] answersString = new String[4];
+    int[][] answersOrderArray = {{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},{2,1,3,4},{2,1,4,3},{2,3,1,4},{2,3,4,1},
+            {2,4,3,1},{2,4,1,3},{3,1,2,4},{3,1,4,2},{3,2,4,1},{3,2,1,4},{3,4,2,1},{3,4,1,2},{4,1,3,2},{4,1,2,3},{4,2,3,1},{4,2,1,3},{4,3,1,2},{4,3,2,1}};
+    int[] answersOrder;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -56,6 +60,21 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                     setQuestion(-1);
                     return true;
                 case R.id.navigation_dashboard:
+                    AlertDialog.Builder builder = new AlertDialog.Builder(TestExamActivity.this);
+                    builder.setMessage("Czy chcesz zakończyć rozwiązywanie kursu?")
+                            .setTitle("Zakończenie testu");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            isCompleted = 1;
+                        }
+                    });
+                    builder.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
                     return true;
                 case R.id.navigation_notifications:
                     setQuestion(1);
@@ -72,7 +91,6 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
         Intent intent = getIntent();
         Bundle extras = getIntent().getExtras();
         testId = extras.getInt("test_id", 0);
-        courseId = extras.getInt("course_id", 0);
         setContentView(R.layout.activity_test_exam);
         dbReader = new MobileDatabaseReader(getApplicationContext());
         String testName = dbReader.selectTestName(testId);
@@ -81,7 +99,8 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
         System.out.println(testQuestions.size());
         questionWords = populateCurrentListOfWords(testQuestions.get(0));
         dbReader.close();
-
+        answerIds = new int[testQuestions.size()];
+        answersOrder = new int[testQuestions.size()];
         Bundle args = new Bundle();
         args.putInt("question_num", questionCounter + 1);
         args.putInt("question_sum", testQuestions.size());
@@ -102,6 +121,17 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
             mQuestionFragment = new QuestionFragment();
             mQuestionFragment.setArguments(args2);
             fragmentManager.beginTransaction().add(R.id.question_fragment_container, mQuestionFragment, QUESTION_TAG).commit();
+        }
+        Bundle args3 = new Bundle();
+        args3.putInt("answerType", testQuestions.get(questionCounter).getAnswerTypeId());
+        populateAnswersForQuestion(testQuestions.get(questionCounter));
+        args3.putStringArray("answerString", answersString);
+        args3.putIntArray("answerIds", currentAnswerIds);
+        mAnswersFragment = (AnswersFragment) fragmentManager.findFragmentByTag(ANSWERS_TAG);
+        if (mAnswersFragment == null) {
+            mAnswersFragment = new AnswersFragment();
+            mAnswersFragment.setArguments(args3);
+            fragmentManager.beginTransaction().add(R.id.answer_fragment_container, mAnswersFragment, ANSWERS_TAG).commit();
         }
         Bundle args4 = new Bundle();
         args4.putDouble("progress", ((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
@@ -131,9 +161,42 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
         return newList;
     }
 
+    protected void populateAnswersForQuestion(TestQuestion testQuestion) {
+        Random generator = new Random();
+        String[] tAnswerString = new String[4];
+        switch (testQuestion.getAnswerTypeId()) {
+            case 7:
+                for (int i = 0; i<4; i++) {
+                    tAnswerString[i] = questionWords.get(i).getTranslatedWord();
+                }
+                int tAnswersOrder;
+                if(answersOrder[questionCounter] == 0) {
+                    tAnswersOrder = generator.nextInt(23);
+                }
+                else {
+                    tAnswersOrder = answersOrder[questionCounter];
+                }
+                for (int i = 0; i<4; i++) {
+                    answersString[i] = tAnswerString[answersOrderArray[tAnswersOrder][i]-1];
+                    currentAnswerIds[i] = questionWords.get(answersOrderArray[tAnswersOrder][i]-1).getId();
+                }
+                answersOrder[questionCounter] = tAnswersOrder;
+                break;
+            default:
+                for (int i = 0; i<4; i++) {
+                    tAnswerString[i] = "Odpowiedź " + i;
+                }
+                for (int i = 0; i<4; i++) {
+                    answersString[i] = tAnswerString[i];
+                }
+                break;
+        }
+    }
+
     @Override
     public void onAnswerSelected(int answerId) {
         answerIds[questionCounter] = answerId;
+        System.out.println("Zaznaczona odpowiedź dla pytania " + (questionCounter+1) + ": " + answerId);
     }
 
     public void setQuestion(int prevOrNext) {
@@ -146,6 +209,9 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 mNumberFragment.setNumberOfQuestion(questionCounter + 1);
                 mQuestionFragment.setQuestionBasedOnType(currentQuestionTypeId, currentQuestionWordId, newQuestionToAsk);
                 mProgressFragment.setProgress(((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
+                questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
+                populateAnswersForQuestion(testQuestions.get(questionCounter));
+                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
             }
             else {
                 Toast.makeText(this, "To jest ostatnie pytanie w teście", Toast.LENGTH_SHORT).show();
@@ -160,13 +226,15 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 mNumberFragment.setNumberOfQuestion(questionCounter + 1);
                 mQuestionFragment.setQuestionBasedOnType(currentQuestionTypeId, currentQuestionWordId, newQuestionToAsk);
                 mProgressFragment.setProgress(((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
+                questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
+                populateAnswersForQuestion(testQuestions.get(questionCounter));
+                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
             }
             else {
                 Toast.makeText(this, "To jest pierwsze pytanie w teście", Toast.LENGTH_SHORT).show();
             }
         }
         else {
-
         }
     }
 
@@ -174,8 +242,6 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // this takes the user 'back', as if they pressed the left-facing triangle icon on the main android toolbar.
-                // if this doesn't work as desired, another possibility is to call `finish()` here.
                 if (isCompleted == 0) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage("Czy chcesz wrócić do kursu? Twoje odpowiedzi z tego testu zostaną utracone.")
@@ -196,7 +262,6 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 else {
                     onBackPressed();
                 }
-
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
