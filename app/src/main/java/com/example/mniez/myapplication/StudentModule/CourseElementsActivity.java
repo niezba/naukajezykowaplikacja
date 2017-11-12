@@ -7,6 +7,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,6 +63,7 @@ public class CourseElementsActivity extends AppCompatActivity {
     private View mProgressView;
     String currentId;
     String currentRole;
+    String courseImage;
 
     ArrayList<Lesson> lessonList = new ArrayList<Lesson>();
     ArrayList<Integer> lessonIdList = new ArrayList<>();
@@ -79,8 +83,8 @@ public class CourseElementsActivity extends AppCompatActivity {
         courseId = extras.getInt("courseId", 0);
         setContentView(R.layout.activity_course_elements);
         supportPostponeEnterTransition();
-        String courseImage = extras.getString("courseImage");
-        ImageView imageView = (ImageView) findViewById(R.id.imageView2);
+        courseImage = extras.getString("courseImage");
+        final ImageView imageView = (ImageView) findViewById(R.id.imageView2);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             String imageTransitionName = extras.getString("imageTransition");
             imageView.setTransitionName(imageTransitionName);
@@ -104,8 +108,22 @@ public class CourseElementsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        String courseName = intent.getStringExtra("titleBar");
+        final String courseName = intent.getStringExtra("titleBar");
         setTitle(courseName);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab2);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), CourseDetailsActivity.class);
+                intent.putExtra("courseId", courseId);
+                intent.putExtra("courseImage", courseImage);
+                intent.putExtra("imageTransition", ViewCompat.getTransitionName(imageView));
+                intent.putExtra("titleBar", courseName);
+                ActivityOptionsCompat options = ActivityOptionsCompat.
+                        makeSceneTransitionAnimation(CourseElementsActivity.this, imageView, "courseImage");
+                view.getContext().startActivity(intent, options.toBundle());
+            }
+        });
         dbReader = new MobileDatabaseReader(getApplicationContext());
         dbReader.getWritableDatabase();
         showProgress(true);
@@ -349,6 +367,22 @@ public class CourseElementsActivity extends AppCompatActivity {
                                         wrongAnswer.setNativeDefinition(nativeDefinition);
                                         String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
                                         wrongAnswer.setTranslatedDefinition(translatedDefinition);
+                                        if (singleOtherAnswer.has("nativeSound")) {
+                                            String nativeSound = singleOtherAnswer.get("nativeSound").toString();
+                                            wrongAnswer.setNativeSound(nativeSound);
+                                        }
+                                        if (singleOtherAnswer.has("translatedSound")) {
+                                            String translatedSound = singleOtherAnswer.get("translatedSound").toString();
+                                            wrongAnswer.setTranslatedSound(translatedSound);
+                                        }
+                                        if (singleOtherAnswer.has("picture")) {
+                                            String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                            wrongAnswer.setPicture(pictureUrl);
+                                        }
+                                        if (singleOtherAnswer.has("tags")) {
+                                            String wordTags = singleOtherAnswer.get("tags").toString();
+                                            wrongAnswer.setTags(wordTags);
+                                        }
                                         wrongAnswerIds[l] = wordIdInteger;
                                         dbReader.insertWord(wrongAnswer);
                                     }

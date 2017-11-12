@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,19 +20,23 @@ import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.Fragments.AnswersFragment;
+import com.example.mniez.myapplication.StudentModule.Fragments.ImageAnswersFragment;
 import com.example.mniez.myapplication.StudentModule.Fragments.NumberFragment;
 import com.example.mniez.myapplication.StudentModule.Fragments.ProgressFragment;
 import com.example.mniez.myapplication.StudentModule.Fragments.QuestionFragment;
+import com.example.mniez.myapplication.StudentModule.Fragments.SoundAnswersFragment;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class TestExamActivity extends AppCompatActivity implements AnswersFragment.OnAnswerSelectedListener {
+public class TestExamActivity extends AppCompatActivity implements AnswersFragment.OnAnswerSelectedListener, ImageAnswersFragment.OnAnswerSelectedListener, SoundAnswersFragment.OnAnswerSelectedListener {
 
     private static final String ANSWERS_TAG = "answers";
     private static final String NUMBER_TAG = "number";
     private static final String QUESTION_TAG = "question";
     private static final String PROGRESS_TAG = "progress";
+    private static final String IMG_ANSWERS_TAG = "imageAnswers";
+    private static final String SOUND_ANSWERS_TAG = "soundAnswers";
     private int testId;
     ArrayList<TestQuestion> testQuestions;
     ArrayList<Word> questionWords;
@@ -43,12 +49,15 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
     NumberFragment mNumberFragment;
     ProgressFragment mProgressFragment;
     QuestionFragment mQuestionFragment;
+    ImageAnswersFragment mImageAnswersFragment;
+    SoundAnswersFragment mSoundsAnswersFragment;
     public int isCompleted = 0;
     protected int[] currentAnswerIds = new int[4];
     protected String[] answersString = new String[4];
     int[][] answersOrderArray = {{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},{2,1,3,4},{2,1,4,3},{2,3,1,4},{2,3,4,1},
             {2,4,3,1},{2,4,1,3},{3,1,2,4},{3,1,4,2},{3,2,4,1},{3,2,1,4},{3,4,2,1},{3,4,1,2},{4,1,3,2},{4,1,2,3},{4,2,3,1},{4,2,1,3},{4,3,1,2},{4,3,2,1}};
     int[] answersOrder;
+    String currentAnswerType;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -142,6 +151,19 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
             mProgressFragment.setArguments(args4);
             fragmentManager.beginTransaction().add(R.id.progress_fragment_container, mProgressFragment, PROGRESS_TAG).commit();
         }
+        mImageAnswersFragment = (ImageAnswersFragment) fragmentManager.findFragmentByTag(IMG_ANSWERS_TAG);
+        if (mImageAnswersFragment == null) {
+            mImageAnswersFragment = new ImageAnswersFragment();
+            mImageAnswersFragment.setArguments(args3);
+            fragmentManager.beginTransaction().add(R.id.answer_fragment_container, mImageAnswersFragment, IMG_ANSWERS_TAG).commit();
+        }
+        mSoundsAnswersFragment = (SoundAnswersFragment) fragmentManager.findFragmentByTag(SOUND_ANSWERS_TAG);
+        if (mSoundsAnswersFragment == null) {
+            mSoundsAnswersFragment = new SoundAnswersFragment();
+            mSoundsAnswersFragment.setArguments(args3);
+            fragmentManager.beginTransaction().add(R.id.answer_fragment_container, mSoundsAnswersFragment, SOUND_ANSWERS_TAG).commit();
+        }
+        switchCurrentAnswerType(testQuestions.get(questionCounter));
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
@@ -182,13 +204,62 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 }
                 answersOrder[questionCounter] = tAnswersOrder;
                 break;
+            case 8:
+                for (int i = 0; i<4; i++) {
+                    tAnswerString[i] = questionWords.get(i).getTranslatedWord();
+                }
+                int tAnswersOrder2;
+                if(answersOrder[questionCounter] == 0) {
+                    tAnswersOrder2 = generator.nextInt(23);
+                }
+                else {
+                    tAnswersOrder2 = answersOrder[questionCounter];
+                }
+                for (int i = 0; i<4; i++) {
+                    answersString[i] = tAnswerString[answersOrderArray[tAnswersOrder2][i]-1];
+                    currentAnswerIds[i] = questionWords.get(answersOrderArray[tAnswersOrder2][i]-1).getId();
+                }
+                answersOrder[questionCounter] = tAnswersOrder2;
+                break;
             default:
                 for (int i = 0; i<4; i++) {
-                    tAnswerString[i] = "Odpowiedź " + i;
+                    tAnswerString[i] = questionWords.get(i).getTranslatedWord();
+                }
+                int tAnswersOrderX;
+                if(answersOrder[questionCounter] == 0) {
+                    tAnswersOrderX = generator.nextInt(23);
+                }
+                else {
+                    tAnswersOrderX = answersOrder[questionCounter];
                 }
                 for (int i = 0; i<4; i++) {
-                    answersString[i] = tAnswerString[i];
+                    answersString[i] = tAnswerString[answersOrderArray[tAnswersOrderX][i]-1];
+                    currentAnswerIds[i] = questionWords.get(answersOrderArray[tAnswersOrderX][i]-1).getId();
                 }
+                answersOrder[questionCounter] = tAnswersOrderX;
+                break;
+        }
+    }
+
+    public void switchCurrentAnswerType(TestQuestion testQuestion) {
+        switch (testQuestion.getAnswerTypeId()) {
+            case 7:
+                android.app.FragmentTransaction ft = getFragmentManager().beginTransaction().show(mAnswersFragment);
+                if(mImageAnswersFragment != null) ft.hide(mImageAnswersFragment);
+                if(mSoundsAnswersFragment != null) ft.hide(mSoundsAnswersFragment).commit();
+                break;
+            case 8:
+                android.app.FragmentTransaction fx = getFragmentManager().beginTransaction().show(mImageAnswersFragment);
+                if(mAnswersFragment != null) fx.hide(mAnswersFragment);
+                if(mSoundsAnswersFragment != null) fx.hide(mSoundsAnswersFragment).commit();
+                break;
+            case 9:
+                android.app.FragmentTransaction fz = getFragmentManager().beginTransaction().show(mSoundsAnswersFragment);
+                if(mAnswersFragment != null) fz.hide(mAnswersFragment);
+                if(mImageAnswersFragment != null) fz.hide(mImageAnswersFragment).commit();
+            default:
+                android.app.FragmentTransaction fy = getFragmentManager().beginTransaction().show(mAnswersFragment);
+                if(mImageAnswersFragment != null) fy.hide(mImageAnswersFragment).commit();
                 break;
         }
     }
@@ -210,8 +281,11 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 mQuestionFragment.setQuestionBasedOnType(currentQuestionTypeId, currentQuestionWordId, newQuestionToAsk);
                 mProgressFragment.setProgress(((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
                 questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
+                switchCurrentAnswerType(testQuestions.get(questionCounter));
                 populateAnswersForQuestion(testQuestions.get(questionCounter));
                 mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
             }
             else {
                 Toast.makeText(this, "To jest ostatnie pytanie w teście", Toast.LENGTH_SHORT).show();
@@ -227,8 +301,11 @@ public class TestExamActivity extends AppCompatActivity implements AnswersFragme
                 mQuestionFragment.setQuestionBasedOnType(currentQuestionTypeId, currentQuestionWordId, newQuestionToAsk);
                 mProgressFragment.setProgress(((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
                 questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
+                switchCurrentAnswerType(testQuestions.get(questionCounter));
                 populateAnswersForQuestion(testQuestions.get(questionCounter));
                 mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
             }
             else {
                 Toast.makeText(this, "To jest pierwsze pytanie w teście", Toast.LENGTH_SHORT).show();

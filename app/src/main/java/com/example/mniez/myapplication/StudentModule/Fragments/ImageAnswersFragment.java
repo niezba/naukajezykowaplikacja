@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -12,7 +13,8 @@ import android.support.annotation.IdRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -28,15 +30,16 @@ import java.util.ArrayList;
  * Created by mniez on 06.11.2017.
  */
 
-public class AnswersFragment extends Fragment {
+public class ImageAnswersFragment extends Fragment {
 
     OnAnswerSelectedListener mCallback;
-    private Button ans1, ans2, ans3, ans4;
+    private ImageButton ans1, ans2, ans3, ans4;
     protected int[] answerIds;
     protected int currentAnswerTypeId;
     protected String[] answerString;
     int setAnswerId;
     MobileDatabaseReader dbReader;
+    ArrayList<Word> wordList;
 
     public interface OnAnswerSelectedListener {
         public void onAnswerSelected(int answerId);
@@ -68,64 +71,48 @@ public class AnswersFragment extends Fragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.answers_fragment, container, false);
-        ans1 = (Button) rootView.findViewById(R.id.answerOne);
-        ans2 = (Button) rootView.findViewById(R.id.answerTwo);
-        ans3 = (Button) rootView.findViewById(R.id.answerThree);
-        ans4 = (Button) rootView.findViewById(R.id.answerFour);
+        View rootView = inflater.inflate(R.layout.image_answers_fragment, container, false);
+        ans1 = (ImageButton) rootView.findViewById(R.id.answerOneImg);
+        ans2 = (ImageButton) rootView.findViewById(R.id.answerTwoImg);
+        ans3 = (ImageButton) rootView.findViewById(R.id.answerThreeImg);
+        ans4 = (ImageButton) rootView.findViewById(R.id.answerFourImg);
         ans1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ans1.setChecked(true);
-                ans1.setTypeface(null, Typeface.BOLD);
-                //ans2.setChecked(false);
-                ans2.setTypeface(null, Typeface.NORMAL);
-                //ans3.setChecked(false);
-                ans3.setTypeface(null, Typeface.NORMAL);
-                //ans4.setChecked(false);
-                ans4.setTypeface(null, Typeface.NORMAL);
+              ans1.setColorFilter(Color.argb(150, 125, 125, 125));
+                ans2.setColorFilter(null);
+                ans3.setColorFilter(null);
+                ans4.setColorFilter(null);
                 mCallback.onAnswerSelected(answerIds[0]);
             }
         });
         ans2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ans1.setChecked(false);
-                ans1.setTypeface(null, Typeface.NORMAL);
-                //ans2.setChecked(true);
-                ans2.setTypeface(null, Typeface.BOLD);
-                //ans3.setChecked(false);
-                ans3.setTypeface(null, Typeface.NORMAL);
-                //ans4.setChecked(false);
-                ans4.setTypeface(null, Typeface.NORMAL);
+                ans1.setColorFilter(null);
+                ans2.setColorFilter(Color.argb(150, 125, 125, 125));
+                ans3.setColorFilter(null);
+                ans4.setColorFilter(null);
                 mCallback.onAnswerSelected(answerIds[1]);
             }
         });
         ans3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ans1.setChecked(false);
-                ans1.setTypeface(null, Typeface.NORMAL);
-                //ans2.setChecked(false);
-                ans2.setTypeface(null, Typeface.NORMAL);
-                //ans3.setChecked(true);
-                ans3.setTypeface(null, Typeface.BOLD);
-                //ans4.setChecked(false);
-                ans4.setTypeface(null, Typeface.NORMAL);
+                ans1.setColorFilter(null);
+                ans2.setColorFilter(null);
+                ans3.setColorFilter(Color.argb(150, 125, 125, 125));
+                ans4.setColorFilter(null);
                 mCallback.onAnswerSelected(answerIds[2]);
             }
         });
         ans4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //ans1.setChecked(false);
-                ans1.setTypeface(null, Typeface.NORMAL);
-                //ans2.setChecked(false);
-                ans2.setTypeface(null, Typeface.NORMAL);
-                //ans3.setChecked(false);
-                ans3.setTypeface(null, Typeface.NORMAL);
-                //ans4.setChecked(true);
-                ans4.setTypeface(null, Typeface.BOLD);
+                ans1.setColorFilter(null);
+                ans2.setColorFilter(null);
+                ans3.setColorFilter(null);
+                ans4.setColorFilter(Color.argb(150, 125, 125, 125));
                 mCallback.onAnswerSelected(answerIds[3]);
             }
         });
@@ -144,11 +131,20 @@ public class AnswersFragment extends Fragment {
         setAnswerId = newSetAnswerId;
         System.out.println("Typ pytania: " + newQuestionType);
         switch(currentAnswerTypeId) {
-            case 7:
-                ans1.setText(answerString[0]);
-                ans2.setText(answerString[1]);
-                ans3.setText(answerString[2]);
-                ans4.setText(answerString[3]);
+            case 8:
+                dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                wordList = new ArrayList<>();
+                for(int i = 0; i<4; i++) {
+                    wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                }
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                System.out.println(wordList.get(0).getPicture());
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                System.out.println(wordList.get(1).getPicture());
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                System.out.println(wordList.get(2).getPicture());
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                System.out.println(wordList.get(3).getPicture());
                 if (answerIds[0] == newSetAnswerId) {
                     ans1.performClick();
                 }
@@ -162,27 +158,26 @@ public class AnswersFragment extends Fragment {
                     ans4.performClick();
                 }
                 else {
-                    //ans1.setChecked(false);
-                    ans1.setTypeface(null, Typeface.NORMAL);
-                    //ans2.setChecked(false);
-                    ans2.setTypeface(null, Typeface.NORMAL);
-                    //ans3.setChecked(false);
-                    ans3.setTypeface(null, Typeface.NORMAL);
-                    //ans4.setChecked(false);
-                    ans4.setTypeface(null, Typeface.NORMAL);
+                    ans1.setColorFilter(null);
+                    ans2.setColorFilter(null);
+                    ans3.setColorFilter(null);
+                    ans4.setColorFilter(null);
                 }
                 break;
-            case 8:
-                break;
             default:
-                ans1.setText(answerString[0]);
-                ans2.setText(answerString[1]);
-                ans3.setText(answerString[2]);
-                ans4.setText(answerString[3]);
-                //ans1.setChecked(false);
-                //ans2.setChecked(false);
-                //ans3.setChecked(false);
-                //ans4.setChecked(false);
+                dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                wordList = new ArrayList<>();
+                for(int i = 0; i<4; i++) {
+                    wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                }
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                ans1.setColorFilter(null);
+                ans2.setColorFilter(null);
+                ans3.setColorFilter(null);
+                ans4.setColorFilter(null);
                 break;
         }
     }

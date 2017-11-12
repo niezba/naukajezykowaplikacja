@@ -104,7 +104,7 @@
                 android:layout_marginTop="10dp"
                 android:background="#00ffffff"
                 android:elevation="0dp"
-                app:srcCompat="@drawable/ic_menu_send" />
+                app:srcCompat="@drawable/ic_arrow_forward_black_24dp" />
 
             <com.example.mniez.myapplication.StudentModule.ActivityAdapter.LessonElementsListView
                 android:id="@+id/listView1"

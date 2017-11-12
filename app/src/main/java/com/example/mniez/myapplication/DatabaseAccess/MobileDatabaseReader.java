@@ -268,6 +268,35 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         return courses;
     }
 
+    public Course selectCourse(int courseId) {
+        Course cs = new Course();
+        String selectQuery = "SELECT * FROM " + TABLE_COURSES + " WHERE " + KEY_ID + " = " + courseId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                cs.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                cs.setAccessCode(c.getString(c.getColumnIndex(ACCESS_CODE)));
+                cs.setAvatar(c.getString(c.getColumnIndex(AVATAR)));
+                cs.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
+                cs.setCreatedAt(c.getString(c.getColumnIndex(CREATED_AT)));
+                cs.setDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
+                cs.setLearningLanguageId(c.getInt(c.getColumnIndex(LEARNED_LANGUAGE_ID)));
+                cs.setLevelId(c.getInt(c.getColumnIndex(LEVEL_ID)));
+                cs.setNativeLanguageId(c.getInt(c.getColumnIndex(NATIVE_LANGUAGE_ID)));
+                cs.setTags(c.getString(c.getColumnIndex(TAGS)));
+                cs.setTeacherId(c.getInt(c.getColumnIndex(TEACHER_ID)));
+                cs.setTeacherName(c.getString(c.getColumnIndex(TEACHER_NAME)));
+                cs.setTeacherSurname(c.getString(c.getColumnIndex(TEACHER_SURNAME)));
+                cs.setLevelName(c.getString(c.getColumnIndex(LEVEL_NAME)));
+                cs.setLearnedLanguageName(c.getString(c.getColumnIndex(LEARNED_LANGUAGE_NAME)));
+                cs.setNativeLanguageName(c.getString(c.getColumnIndex(NATIVE_LANGUAGE_NAME)));
+                System.out.println(cs.getLevelName());
+            } while (c.moveToNext());
+        }
+        return cs;
+    }
+
     public long insertLesson(Lesson lesson, int courseId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -631,5 +660,18 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
             } while (c.moveToNext());
         }
         return testName;
+    }
+
+    public String selectQuestionAnswerType(int answerTypeId) {
+        String answerTypeName = new String();
+        String selectQuery = "SELECT " + TYPE_NAME + " FROM " + TABLE_ANSWERTYPES + " WHERE " + KEY_ID + " = " + answerTypeId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                answerTypeName = c.getString(c.getColumnIndex(TYPE_NAME));
+            } while (c.moveToNext());
+        }
+        return answerTypeName;
     }
 }

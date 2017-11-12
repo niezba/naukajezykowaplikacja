@@ -16,19 +16,21 @@
             android:layout_height="match_parent">
 
             <Button
-                android:id="@+id/answerOne"
+                android:id="@+id/answerOneSnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Odpowiedź 1"
+                android:adjustViewBounds="true"
+                android:cropToPadding="true"
+                android:text="Dźwięk 1"
                 android:textAlignment="center" />
 
             <Button
-                android:id="@+id/answerTwo"
+                android:id="@+id/answerTwoSnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Odpowiedź 2"
+                android:text="Dźwięk 2"
                 android:textAlignment="center" />
 
         </TableRow>
@@ -38,19 +40,19 @@
             android:layout_height="match_parent">
 
             <Button
-                android:id="@+id/answerThree"
+                android:id="@+id/answerThreeSnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Odpowiedź 3"
+                android:text="Dźwięk 3"
                 android:textAlignment="center" />
 
             <Button
-                android:id="@+id/answerFour"
+                android:id="@+id/answerFourSnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Odpowiedź 4"
+                android:text="Dźwięk 4"
                 android:textAlignment="center" />
         </TableRow>
 

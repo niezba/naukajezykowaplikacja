@@ -4,15 +4,19 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -22,21 +26,24 @@ import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
  * Created by mniez on 06.11.2017.
  */
 
-public class AnswersFragment extends Fragment {
+public class SoundAnswersFragment extends Fragment {
 
     OnAnswerSelectedListener mCallback;
     private Button ans1, ans2, ans3, ans4;
+    MediaPlayer mediaPlayer = new MediaPlayer();
     protected int[] answerIds;
     protected int currentAnswerTypeId;
     protected String[] answerString;
     int setAnswerId;
     MobileDatabaseReader dbReader;
+    ArrayList<Word> wordList;
 
     public interface OnAnswerSelectedListener {
         public void onAnswerSelected(int answerId);
@@ -49,7 +56,18 @@ public class AnswersFragment extends Fragment {
         answerIds = b.getIntArray("answerIds");
         answerString = b.getStringArray("answerString");
         currentAnswerTypeId = b.getInt("answerType");
-
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mediaPlayer.start();
+            }
+        });
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                resetTexts();
+            }
+        });
     }
 
     public void onAttach(Context context) {
@@ -68,11 +86,11 @@ public class AnswersFragment extends Fragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.answers_fragment, container, false);
-        ans1 = (Button) rootView.findViewById(R.id.answerOne);
-        ans2 = (Button) rootView.findViewById(R.id.answerTwo);
-        ans3 = (Button) rootView.findViewById(R.id.answerThree);
-        ans4 = (Button) rootView.findViewById(R.id.answerFour);
+        View rootView = inflater.inflate(R.layout.sound_answers_fragment, container, false);
+        ans1 = (Button) rootView.findViewById(R.id.answerOneSnd);
+        ans2 = (Button) rootView.findViewById(R.id.answerTwoSnd);
+        ans3 = (Button) rootView.findViewById(R.id.answerThreeSnd);
+        ans4 = (Button) rootView.findViewById(R.id.answerFourSnd);
         ans1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,6 +103,15 @@ public class AnswersFragment extends Fragment {
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
                 mCallback.onAnswerSelected(answerIds[0]);
+                try {
+                    resetTexts();
+                    ans1.setText("Odtwarzam");
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(0).getTranslatedSound());
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         ans2.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +126,15 @@ public class AnswersFragment extends Fragment {
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
                 mCallback.onAnswerSelected(answerIds[1]);
+                try {
+                    resetTexts();
+                    ans2.setText("Odtwarzam");
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(1).getTranslatedSound());
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         ans3.setOnClickListener(new View.OnClickListener() {
@@ -113,6 +149,15 @@ public class AnswersFragment extends Fragment {
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
                 mCallback.onAnswerSelected(answerIds[2]);
+                try {
+                    resetTexts();
+                    ans3.setText("Odtwarzam");
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(2).getTranslatedSound());
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         ans4.setOnClickListener(new View.OnClickListener() {
@@ -127,6 +172,15 @@ public class AnswersFragment extends Fragment {
                 //ans4.setChecked(true);
                 ans4.setTypeface(null, Typeface.BOLD);
                 mCallback.onAnswerSelected(answerIds[3]);
+                try {
+                    resetTexts();
+                    ans4.setText("Odtwarzam");
+                    mediaPlayer.reset();
+                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(3).getTranslatedSound());
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         return rootView;
@@ -137,6 +191,13 @@ public class AnswersFragment extends Fragment {
         initiateAnswers(answerString, currentAnswerTypeId, 0, answerIds);
     }
 
+    public void resetTexts() {
+        ans1.setText("Dźwięk 1");
+        ans2.setText("Dźwięk 2");
+        ans3.setText("Dźwięk 3");
+        ans4.setText("Dźwięk 4");
+    }
+
     public void initiateAnswers(String[] newAnswerString, int newQuestionType, int newSetAnswerId, int[] newAnswerIds) {
         answerString = newAnswerString;
         currentAnswerTypeId = newQuestionType;
@@ -144,11 +205,12 @@ public class AnswersFragment extends Fragment {
         setAnswerId = newSetAnswerId;
         System.out.println("Typ pytania: " + newQuestionType);
         switch(currentAnswerTypeId) {
-            case 7:
-                ans1.setText(answerString[0]);
-                ans2.setText(answerString[1]);
-                ans3.setText(answerString[2]);
-                ans4.setText(answerString[3]);
+            case 9:
+                dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                wordList = new ArrayList<>();
+                for(int i = 0; i<4; i++) {
+                    wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                }
                 if (answerIds[0] == newSetAnswerId) {
                     ans1.performClick();
                 }
@@ -172,17 +234,20 @@ public class AnswersFragment extends Fragment {
                     ans4.setTypeface(null, Typeface.NORMAL);
                 }
                 break;
-            case 8:
-                break;
             default:
-                ans1.setText(answerString[0]);
-                ans2.setText(answerString[1]);
-                ans3.setText(answerString[2]);
-                ans4.setText(answerString[3]);
+                dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                wordList = new ArrayList<>();
+                for(int i = 0; i<4; i++) {
+                    wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                }
                 //ans1.setChecked(false);
+                ans1.setTypeface(null, Typeface.NORMAL);
                 //ans2.setChecked(false);
+                ans2.setTypeface(null, Typeface.NORMAL);
                 //ans3.setChecked(false);
+                ans3.setTypeface(null, Typeface.NORMAL);
                 //ans4.setChecked(false);
+                ans4.setTypeface(null, Typeface.NORMAL);
                 break;
         }
     }
