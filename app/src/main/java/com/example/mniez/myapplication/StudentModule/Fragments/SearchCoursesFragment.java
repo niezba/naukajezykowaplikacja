@@ -44,7 +44,7 @@ public class SearchCoursesFragment extends Fragment {
     String level;
 
     ArrayList<Course> courseList = new ArrayList<Course>();
-    private SearchCoursesFragment.CourseFetchTask mFetchTask = null;
+    public SearchCoursesFragment.CourseFetchTask mFetchTask = null;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

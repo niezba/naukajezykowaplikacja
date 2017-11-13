@@ -29,4 +29,10 @@
         android:layout_width="200dp"
         android:layout_height="140dp"
         app:srcCompat="@color/colorPrimaryDark" />
+
+    <Button
+        android:id="@+id/questionSound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Odtwórz" />
 </LinearLayout>

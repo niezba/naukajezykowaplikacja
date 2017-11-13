@@ -20,20 +20,20 @@
                 android:layout_width="120dp"
                 android:layout_height="100dp"
                 android:layout_weight="1"
-                android:text="Odpowiedź 1"
-                android:textAlignment="center"
                 android:adjustViewBounds="true"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:text="Odpowiedź 1"
+                android:textAlignment="center" />
 
             <ImageButton
                 android:id="@+id/answerTwoImg"
                 android:layout_width="120dp"
                 android:layout_height="100dp"
                 android:layout_weight="1"
-                android:text="Odpowiedź 2"
-                android:textAlignment="center"
                 android:adjustViewBounds="true"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:text="Odpowiedź 2"
+                android:textAlignment="center" />
 
         </TableRow>
 
@@ -46,22 +46,21 @@
                 android:layout_width="120dp"
                 android:layout_height="100dp"
                 android:layout_weight="1"
-                android:text="Odpowiedź 3"
-                android:textAlignment="center"
                 android:adjustViewBounds="true"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:text="Odpowiedź 3"
+                android:textAlignment="center" />
 
             <ImageButton
                 android:id="@+id/answerFourImg"
                 android:layout_width="120dp"
                 android:layout_height="100dp"
                 android:layout_weight="1"
-                android:text="Odpowiedź 4"
-                android:textAlignment="center"
                 android:adjustViewBounds="true"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:text="Odpowiedź 4"
+                android:textAlignment="center" />
         </TableRow>
 
     </TableLayout>
-
 </LinearLayout>

@@ -2,6 +2,8 @@ package com.example.mniez.myapplication.StudentModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,6 +21,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.ObjectHelper.Exam;
+import com.example.mniez.myapplication.ObjectHelper.ExamQuestion;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseElementListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Language;
@@ -65,12 +71,16 @@ public class CourseElementsActivity extends AppCompatActivity {
     String currentRole;
     String courseImage;
 
+    String currentUsername;
+    String currentPassword;
+
     ArrayList<Lesson> lessonList = new ArrayList<Lesson>();
     ArrayList<Integer> lessonIdList = new ArrayList<>();
     ArrayList<Test> courseTestsList = new ArrayList<>();
     ArrayList<Lecture> courseLecturesList = new ArrayList<>();
-
+    ArrayList<Exam> courseExamsList = new ArrayList<>();
     private CourseElementsActivity.LessonFetchTask mFetchTask = null;
+    private UserLoginTask mAuthTask = null;
 
     MobileDatabaseReader dbReader;
 
@@ -84,6 +94,9 @@ public class CourseElementsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_course_elements);
         supportPostponeEnterTransition();
         courseImage = extras.getString("courseImage");
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        currentUsername = sharedpreferences.getString(PREFERENCES_USERNAME, "");
+        currentPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
         final ImageView imageView = (ImageView) findViewById(R.id.imageView2);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             String imageTransitionName = extras.getString("imageTransition");
@@ -130,7 +143,7 @@ public class CourseElementsActivity extends AppCompatActivity {
         mFetchTask = new CourseElementsActivity.LessonFetchTask(courseId);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCourseElementList);
         recyclerView.setHasFixedSize(true);
-        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, this, recyclerView, courseId);
+        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, courseExamsList, this, recyclerView, courseId);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -280,10 +293,10 @@ public class CourseElementsActivity extends AppCompatActivity {
                                 newTest.setName(testName);
                                 String testDescription = singleTest.get("description").toString();
                                 newTest.setDescription(testDescription);
-                                newTest.setScore(0);
+                                //newTest.setScore(0);
                                 newTest.setIsNew(1);
                                 newTest.setIsLocal(1);
-                                newTest.setIsCompleted(0);
+                                //newTest.setIsCompleted(0);
                                 newTest.setLessonId(lessonIdInteger);
                                 JSONArray questionsArray = singleTest.getJSONArray("questions");
                                 int questionsCount = questionsArray.length();
@@ -413,8 +426,186 @@ public class CourseElementsActivity extends AppCompatActivity {
                                 System.out.println("Test inserted");
 
                             }
+                            JSONArray examsArray = elementsObject.getJSONArray("exams");
+                            int examsCount = examsArray.length();
+                            for (int j = 0; j<examsCount; j++) {
+                                String examId = examsArray.getJSONObject(0).get("id").toString();
+                                int examIdInteger = Integer.parseInt(examId);
+                                URL examEndpoint = new URL("http://10.0.2.2:8000/api/exam?id="+examIdInteger);
+                                HttpURLConnection examConnection = (HttpURLConnection) examEndpoint.openConnection();
+                                examConnection.setRequestMethod("GET");
+                                examConnection.setDoOutput(true);
+                                examConnection.connect();
+
+                                BufferedReader br3 = new BufferedReader(new InputStreamReader(examEndpoint.openStream()));
+                                StringBuilder sb3 = new StringBuilder();
+
+                                String line3;
+                                while ((line3 = br3.readLine()) != null) {
+                                    sb3.append(line3 + "\n");
+                                }
+                                br3.close();
+                                String examString = sb3.toString();
+                                JSONObject examObject = new JSONObject(examString);
+                                Exam newExam = new Exam();
+                                JSONObject singleExam = examObject.getJSONObject("0");
+                                String testId = singleExam.get("id").toString();
+                                Integer testIdInteger = Integer.parseInt(testId);
+                                newExam.setId(testIdInteger);
+                                String testName = singleExam.get("name").toString();
+                                newExam.setName(testName);
+                                String testDescription = singleExam.get("description").toString();
+                                newExam.setDescription(testDescription);
+                                String isNew = examObject.get("isNew").toString();
+                                Boolean isNewBoolean = Boolean.parseBoolean(isNew);
+                                int inb = 0;
+                                if (isNewBoolean == true) {
+                                    inb = 1;
+                                }
+                                else {
+                                    inb = 0;
+                                }
+                                newExam.setScore(0);
+                                newExam.setIsNew(inb);
+                                newExam.setIsLocal(1);
+                                newExam.setIsPassed(0);
+                                newExam.setLessonId(lessonIdInteger);
+                                if(isNewBoolean == true) {
+                                    JSONArray questionsArray = singleExam.getJSONArray("questions");
+                                    int questionsCount = questionsArray.length();
+                                    for (int k = 0; k < questionsCount; k++) {
+                                        ExamQuestion newQuestion = new ExamQuestion();
+                                        JSONObject singleQuestion = questionsArray.getJSONObject(k);
+                                        newQuestion.setExamId(testIdInteger);
+                                        String questionId = singleQuestion.get("id").toString();
+                                        Integer questionIdInteger = Integer.parseInt(questionId);
+                                        newQuestion.setId(questionIdInteger);
+                                        String questionToAsk = singleQuestion.get("question").toString();
+                                        newQuestion.setQuestion(questionToAsk);
+                                        String questionPoints = singleQuestion.get("points").toString();
+                                        Integer questionPointsInteger = Integer.parseInt(questionPoints);
+                                        newQuestion.setPoints(questionPointsInteger);
+                                        JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
+                                        {
+                                            Word answerWord = new Word();
+                                            String wordId = questionAnswer.get("id").toString();
+                                            Integer wordIdInteger = Integer.parseInt(wordId);
+                                            answerWord.setId(wordIdInteger);
+                                            String nativeWord = questionAnswer.get("nativeWord").toString();
+                                            answerWord.setNativeWord(nativeWord);
+                                            String translatedWord = questionAnswer.get("translatedWord").toString();
+                                            answerWord.setTranslatedWord(translatedWord);
+                                            if (questionAnswer.has("nativeSound")) {
+                                                String nativeSound = questionAnswer.get("nativeSound").toString();
+                                                answerWord.setNativeSound(nativeSound);
+                                            }
+                                            if (questionAnswer.has("translatedSound")) {
+                                                String translatedSound = questionAnswer.get("translatedSound").toString();
+                                                answerWord.setTranslatedSound(translatedSound);
+                                            }
+                                            if (questionAnswer.has("picture")) {
+                                                String pictureUrl = questionAnswer.get("picture").toString();
+                                                answerWord.setPicture(pictureUrl);
+                                            }
+                                            if (questionAnswer.has("tags")) {
+                                                String wordTags = questionAnswer.get("tags").toString();
+                                                answerWord.setTags(wordTags);
+                                            }
+                                            String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
+                                            answerWord.setNativeDefinition(nativeDefinition);
+                                            String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
+                                            answerWord.setTranslatedDefinition(translatedDefinition);
+                                            JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
+                                            String nativeLanguage = answerNativeLang.get("id").toString();
+                                            Integer nativeLanguageInteger = Integer.parseInt(nativeLanguage);
+                                            String nativeLanguageName = answerNativeLang.get("languageName").toString();
+                                            answerWord.setNativeLanguageId(nativeLanguageInteger);
+                                            JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
+                                            String translatedLanguage = answerTranslatLang.get("id").toString();
+                                            Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
+                                            String translatedLanguageName = answerTranslatLang.get("languageName").toString();
+                                            answerWord.setTranslatedLanguageId(translatedLanguageInteger);
+                                            newQuestion.setAnswerId(wordIdInteger);
+                                            Language nativeLang = new Language();
+                                            Language translatLang = new Language();
+                                            nativeLang.setId(nativeLanguageInteger);
+                                            nativeLang.setLanguageName(nativeLanguageName);
+                                            translatLang.setId(translatedLanguageInteger);
+                                            translatLang.setLanguageName(translatedLanguageName);
+                                            dbReader.insertWord(answerWord);
+                                            dbReader.insertLanguage(nativeLang);
+                                            dbReader.insertLanguage(translatLang);
+                                        }
+                                        JSONArray otherAnswers = singleQuestion.getJSONArray("others");
+                                        int othersCount = otherAnswers.length();
+                                        int wrongAnswerIds[] = new int[otherAnswers.length()];
+                                        for (int l = 0; l < othersCount; l++) {
+                                            Word wrongAnswer = new Word();
+                                            JSONObject singleOtherAnswer = otherAnswers.getJSONObject(l);
+                                            String wordId = singleOtherAnswer.get("id").toString();
+                                            Integer wordIdInteger = Integer.parseInt(wordId);
+                                            wrongAnswer.setId(wordIdInteger);
+                                            String nativeWord = singleOtherAnswer.get("nativeWord").toString();
+                                            wrongAnswer.setNativeWord(nativeWord);
+                                            String translatedWord = singleOtherAnswer.get("translatedWord").toString();
+                                            wrongAnswer.setTranslatedWord(translatedWord);
+                                            String nativeDefinition = singleOtherAnswer.get("nativeDefinition").toString();
+                                            wrongAnswer.setNativeDefinition(nativeDefinition);
+                                            String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
+                                            wrongAnswer.setTranslatedDefinition(translatedDefinition);
+                                            if (singleOtherAnswer.has("nativeSound")) {
+                                                String nativeSound = singleOtherAnswer.get("nativeSound").toString();
+                                                wrongAnswer.setNativeSound(nativeSound);
+                                            }
+                                            if (singleOtherAnswer.has("translatedSound")) {
+                                                String translatedSound = singleOtherAnswer.get("translatedSound").toString();
+                                                wrongAnswer.setTranslatedSound(translatedSound);
+                                            }
+                                            if (singleOtherAnswer.has("picture")) {
+                                                String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                                wrongAnswer.setPicture(pictureUrl);
+                                            }
+                                            if (singleOtherAnswer.has("tags")) {
+                                                String wordTags = singleOtherAnswer.get("tags").toString();
+                                                wrongAnswer.setTags(wordTags);
+                                            }
+                                            wrongAnswerIds[l] = wordIdInteger;
+                                            dbReader.insertWord(wrongAnswer);
+                                        }
+                                        newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
+                                        newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
+                                        newQuestion.setOtherAnswerThreeId(wrongAnswerIds[2]);
+                                        JSONObject questionType = singleQuestion.getJSONObject("questionType");
+                                        String questionTypeId = questionType.get("id").toString();
+                                        Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
+                                        String questionTypeName = questionType.get("typeName").toString();
+                                        JSONObject answerType = singleQuestion.getJSONObject("answerType");
+                                        String answerTypeId = answerType.get("id").toString();
+                                        Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
+                                        String answerTypeName = answerType.get("typeName").toString();
+                                        QuestionAnswerType questionTypeOne = new QuestionAnswerType();
+                                        questionTypeOne.setId(answerTypeIdInteger);
+                                        questionTypeOne.setTypeName(answerTypeName);
+                                        QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
+                                        questionTypeTwo.setId(questionTypeIdInteger);
+                                        questionTypeTwo.setTypeName(questionTypeName);
+                                        dbReader.insertAnswertypes(questionTypeOne);
+                                        dbReader.insertAnswertypes(questionTypeTwo);
+                                        newQuestion.setQuestionTypeId(questionTypeIdInteger);
+                                        newQuestion.setAnswerTypeId(answerTypeIdInteger);
+                                        dbReader.insertExamQuestion(newQuestion);
+                                    }
+                                }
+                                dbReader.insertExam(newExam);
+                                System.out.println("Exam inserted");
+                            }
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            JSONObject jsonObjectX = new JSONObject(jsonString);
+                            String errCode = jsonObjectX.get("error_code").toString();
+                            System.out.println("Error code: " + errCode);
+                            if(errCode.equals("1")) {
+                                return false;
+                            }
                         }
 
                     }
@@ -423,6 +614,9 @@ public class CourseElementsActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(jsonString);
                     String errCode = jsonObject.get("error_code").toString();
                     System.out.println("Error code: " + errCode);
+                    if(errCode.equals("1")) {
+                        return false;
+                    }
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -441,23 +635,25 @@ public class CourseElementsActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            lessonList.addAll(dbReader.selectAllLessonsForCourse(fetchedCourseId));
-            lessonIdList.addAll(dbReader.selectAllLessonsIdsForCourse(fetchedCourseId));
-            for (Integer element : lessonIdList) {
-                courseTestsList.addAll(dbReader.selectAllTestsForLesson(element));
-                courseLecturesList.addAll(dbReader.selectAllLecturesForLesson(element));
-            }
-            mAdapter.notifyDataSetChanged();
-            mAdapter.getItemCount();
-            System.out.println(lessonList);
-            mFetchTask = null;
-            showProgress(false);
+
 
 
             if (success) {
-
+                lessonList.addAll(dbReader.selectAllLessonsForCourse(fetchedCourseId));
+                lessonIdList.addAll(dbReader.selectAllLessonsIdsForCourse(fetchedCourseId));
+                for (Integer element : lessonIdList) {
+                    courseTestsList.addAll(dbReader.selectAllTestsForLesson(element));
+                    courseLecturesList.addAll(dbReader.selectAllLecturesForLesson(element));
+                    courseExamsList.addAll(dbReader.selectAllExamsForLesson(element));
+                }
+                mAdapter.notifyDataSetChanged();
+                mAdapter.getItemCount();
+                System.out.println(lessonList);
+                mFetchTask = null;
+                showProgress(false);
             } else {
-
+                mAuthTask = new UserLoginTask(currentUsername, currentPassword);
+                mAuthTask.execute();
             }
         }
 
@@ -474,6 +670,111 @@ public class CourseElementsActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
+    }
+
+    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mEmail;
+        private final String mPassword;
+
+        UserLoginTask(String email, String password) {
+            mEmail = email;
+            mPassword = password;
+        }
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+
+            try {
+                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/login?username="+mEmail+"&password="+mPassword);
+                HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                myConnection.setRequestMethod("GET");
+                myConnection.setDoOutput(true);
+                myConnection.connect();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
+                StringBuilder sb = new StringBuilder();
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                br.close();
+
+                String jsonString = sb.toString();
+                System.out.println("JSON: " + jsonString);
+
+                JSONObject jsonObject = new JSONObject(jsonString);
+                String errCode = jsonObject.get("error_code").toString();
+                myConnection.disconnect();
+                System.out.println("Error code: " + errCode);
+                if(errCode.equals("0")) {
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    String appUserName = jsonObject.get("username").toString();
+                    String appNameSurname = jsonObject.get("firstName").toString() + " " + jsonObject.get("lastName").toString();
+                    String appUserId = jsonObject.get("id").toString();
+                    JSONArray appRoles = jsonObject.getJSONArray("roles");
+                    String appRole = appRoles.getString(0);
+                    editor.putString(PREFERENCES_USERNAME, appUserName);
+                    editor.putString(PREFERENCES_NAMESURNAME, appNameSurname);
+                    editor.putString(PREFERENCES_PASSWORD, mPassword);
+                    editor.putString(PREFERENCES_ID, appUserId);
+                    editor.putString(PREFERENCES_ROLE, appRole);
+                    editor.commit();
+                    return true;
+                }
+                else {
+                    return false;
+                }
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } /*catch (JSONException e) {
+                e.printStackTrace();
+            }*/ catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+            // TODO: register the new account here.
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+            if (success) {
+                mFetchTask = new LessonFetchTask(courseId);
+                mFetchTask.execute();
+            } else {
+                showProgress(false);
+                AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);
+                builder.setMessage("Nastąpił problem z uwierzytelnieniem. Zaloguj się ponownie.")
+                        .setTitle("Ups...").setCancelable(false);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+                        sharedpreferences.edit().clear().commit();
+                        CourseElementsActivity.this.deleteDatabase("dummyDatabase");
+                        Intent intent = new Intent(CourseElementsActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+            //showProgress(false);
+        }
+
+
     }
 
 }

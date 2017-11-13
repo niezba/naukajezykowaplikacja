@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
+import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
@@ -28,6 +29,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
     private ArrayList<Lesson> mLessons;
     private ArrayList<Test> mTests;
     private ArrayList<Lecture> mLectures;
+    private ArrayList<Exam> mExams;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
     private final int courseId;
@@ -57,10 +59,11 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, Context context, RecyclerView pRecyclerView, int courseId) {
+    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, ArrayList<Exam> pExams, Context context, RecyclerView pRecyclerView, int courseId) {
         mLessons = pLessons;
         mTests = pTests;
         mLectures = pLectures;
+        mExams = pExams;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
         this.courseId = courseId;
@@ -98,6 +101,18 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
                 int scoredPoints = t.getScore();
                 int totalPoints = dbReader.calculateTotalPointsForTest(elId);
                 LessonElement newEl = new LessonElement(elType, elId, elName, totalPoints, scoredPoints);
+                allLessonElements.add(newEl);
+            }
+        }
+        for (Exam e : mExams) {
+            if(e.getLessonId() == lesson.getLessonId()) {
+                int elType = 2;
+                int elId = e.getId();
+                String elName = e.getDescription();
+                int scoredPoints = e.getScore();
+                int totalPoints = dbReader.calculateTotalPointsForExam(elId);
+                int grade = e.getGrade();
+                LessonElement newEl = new LessonElement(elType, elId, elName, totalPoints, scoredPoints, grade);
                 allLessonElements.add(newEl);
             }
         }

@@ -105,7 +105,7 @@ public class SoundAnswersFragment extends Fragment {
                 mCallback.onAnswerSelected(answerIds[0]);
                 try {
                     resetTexts();
-                    ans1.setText("Odtwarzam");
+                    ans1.setText("...");
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(0).getTranslatedSound());
                     mediaPlayer.prepareAsync();
@@ -128,7 +128,7 @@ public class SoundAnswersFragment extends Fragment {
                 mCallback.onAnswerSelected(answerIds[1]);
                 try {
                     resetTexts();
-                    ans2.setText("Odtwarzam");
+                    ans2.setText("...");
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(1).getTranslatedSound());
                     mediaPlayer.prepareAsync();
@@ -151,7 +151,7 @@ public class SoundAnswersFragment extends Fragment {
                 mCallback.onAnswerSelected(answerIds[2]);
                 try {
                     resetTexts();
-                    ans3.setText("Odtwarzam");
+                    ans3.setText("...");
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(2).getTranslatedSound());
                     mediaPlayer.prepareAsync();
@@ -174,7 +174,7 @@ public class SoundAnswersFragment extends Fragment {
                 mCallback.onAnswerSelected(answerIds[3]);
                 try {
                     resetTexts();
-                    ans4.setText("Odtwarzam");
+                    ans4.setText("...");
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(3).getTranslatedSound());
                     mediaPlayer.prepareAsync();

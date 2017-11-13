@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <ProgressBar
+        android:id="@+id/synchr_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteX="154dp"
+        tools:layout_editor_absoluteY="162dp"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/synchrinfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/synchr_progress"
+        android:text="Momencik, synchronizuję dane..."
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteY="265dp"
+        app:layout_constraintHorizontal_bias="0.502" />
+
+</LinearLayout>

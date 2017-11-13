@@ -52,7 +52,16 @@
                 android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
         <activity
-            android:name=".StudentModule.TestExamActivity"
+            android:name=".StudentModule.TestActivity"
+            android:label="@string/title_activity_test_exam"
+            android:parentActivityName=".StudentModule.CourseElementsActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.StudentModule.CourseElementsActivity" />
+        </activity>
+        <activity
+            android:name=".StudentModule.ExamActivity"
             android:label="@string/title_activity_test_exam"
             android:parentActivityName=".StudentModule.CourseElementsActivity"
             android:screenOrientation="portrait">
@@ -69,6 +78,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
+        <activity android:name=".StudentModule.FullSynchronizationActivity"></activity>
     </application>
 
 </manifest>

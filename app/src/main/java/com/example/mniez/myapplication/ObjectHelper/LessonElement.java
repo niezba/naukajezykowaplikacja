@@ -25,6 +25,15 @@ public class LessonElement {
         this.lessonElementScoredPoints = lessonElementScoredPoints;
     }
 
+    public LessonElement(Integer lessonElementType, Integer lessonElementId, String lessonElementName, Integer lessonElementTotalPoints, Integer lessonElementScoredPoints, Integer lessonElementGrade) {
+        this.lessonElementType = lessonElementType;
+        this.lessonElementId = lessonElementId;
+        this.lessonElementName = lessonElementName;
+        this.lessonElementTotalPoints = lessonElementTotalPoints;
+        this.lessonElementScoredPoints = lessonElementScoredPoints;
+        this.lessonElementGrade = lessonElementGrade;
+    }
+
     public void setLessonElementId(Integer lessonElementId) {
         this.lessonElementId = lessonElementId;
     }

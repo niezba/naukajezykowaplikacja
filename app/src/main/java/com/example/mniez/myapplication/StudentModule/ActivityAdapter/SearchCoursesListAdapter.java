@@ -25,7 +25,10 @@ import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -42,6 +45,8 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
     private SearchCoursesListAdapter.SignInTask mFetchTask = null;
     String responseMessage;
     private ArrayList<Course> mNewCourses;
+
+
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -176,19 +181,30 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
                 else {
                     request = "courseId=" + courseId + "&accessCode=" + accessCode;
                 }
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
                 PrintWriter out = new PrintWriter(myConnection.getOutputStream());
                 out.print(request);
                 out.close();
                 myConnection.connect();
-                System.out.print(out);
-                if (myConnection.getResponseCode() == 200) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                br.close();
+
+                String jsonString = sb.toString();
+                System.out.println("JSON: " + jsonString);
+                if (myConnection.getResponseCode() == 200 && jsonString.contains("joined")) {
                     responseMessage = "Zapisano do kursu";
                     System.out.println(courseI);
                     mNewCourses.get(courseI).setParticipant(true);
                     System.out.println("Participant: " + mNewCourses.get(courseI).getParticipant());
                 }
                 else {
-                    responseMessage = "Ups, coś poszło nie tak...";
+                    responseMessage = "Kurs nie został dodany. Sprawdź poprawność hasła";
                 }
 
                 myConnection.disconnect();

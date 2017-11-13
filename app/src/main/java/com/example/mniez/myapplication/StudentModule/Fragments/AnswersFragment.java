@@ -144,7 +144,7 @@ public class AnswersFragment extends Fragment {
         setAnswerId = newSetAnswerId;
         System.out.println("Typ pytania: " + newQuestionType);
         switch(currentAnswerTypeId) {
-            case 7:
+            case 10:
                 ans1.setText(answerString[0]);
                 ans2.setText(answerString[1]);
                 ans3.setText(answerString[2]);

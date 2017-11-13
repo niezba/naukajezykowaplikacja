@@ -137,7 +137,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
 
     //utworzenie tabeli exams
     private static final String CREATE_TABLE_EXAMS = "CREATE TABLE IF NOT EXISTS " + TABLE_EXAMS
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + DESCRIPTION + " TEXT, " + LESSON_ID + " INT, " + NAME + " TEXT, " + POINTS_TO_PASS + " INT"
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + DESCRIPTION + " TEXT, " + LESSON_ID + " INT, " + NAME + " TEXT, " + POINTS_TO_PASS + " INT, "
             + IS_NEW  + " INT, " + IS_PASSED + " INT, " + SCORE + " REAL, " + GRADE + " INT, " + IS_LOCAL + " INT" + ");";
 
     //utworzenie tabeli languages
@@ -165,7 +165,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     //utworzenie tabeli examquestions
     private static final String CREATE_TABLE_EXAMQUESTIONS = "CREATE TABLE IF NOT EXISTS " + TABLE_EXAMQUESTIONS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + ANSWER_ID + " INT, " + ANSWER_TYPE_ID + " INT, " + POINTS + " INT, " + QUESTION + " TEXT, "
-            + QUESTION_TYPE_ID + " INT, " + EXAM_ID + "INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + " INT, " + OTHER_ANSWERTHREE + " INT" + ");";
+            + QUESTION_TYPE_ID + " INT, " + EXAM_ID + " INT, " + OTHER_ANSWERONE + " INT, " + OTHER_ANSWERTWO + " INT, " + OTHER_ANSWERTHREE + " INT" + ");";
 
     //utworzenie tabeli words
     private static final String CREATE_TABLE_WORDS = "CREATE TABLE IF NOT EXISTS " + TABLE_WORDS
@@ -233,6 +233,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(NATIVE_LANGUAGE_NAME, course.getNativeLanguageName());
 
         long course_id = db.insertWithOnConflict(TABLE_COURSES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return course_id;
     }
 
@@ -265,6 +266,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 courses.add(cs);
             } while (c.moveToNext());
         }
+        db.close();
         return courses;
     }
 
@@ -294,6 +296,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 System.out.println(cs.getLevelName());
             } while (c.moveToNext());
         }
+        db.close();
         return cs;
     }
 
@@ -308,6 +311,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(OVERALL_POINTS, lesson.getOverallPoints());
         values.put(USER_POINTS, lesson.getUserPoints());
         long lesson_id = db.insertWithOnConflict(TABLE_LESSONS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return lesson_id;
     }
 
@@ -331,6 +335,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 lessons.add(ls);
             } while (c.moveToNext());
         }
+        db.close();
         return lessons;
     }
 
@@ -345,6 +350,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 lessonIds.add(lessonId);
             } while (c.moveToNext());
         }
+        db.close();
         return lessonIds;
     }
 
@@ -359,6 +365,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(SCORE, test.getScore());
         values.put(IS_LOCAL, test.getIsLocal());
         long test_id = db.insertWithOnConflict(TABLE_TESTS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return test_id;
     }
 
@@ -382,6 +389,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 tests.add(ts);
             } while (c.moveToNext());
         }
+        db.close();
         return tests;
     }
 
@@ -396,6 +404,22 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
 
             } while (c.moveToNext());
         }
+        db.close();
+        return testTotal;
+    }
+
+    public int calculateTotalPointsForExam(int examId) {
+        int testTotal = 0;
+        String selectQuery = "SELECT SUM(" + POINTS +") AS pointssum FROM " + TABLE_EXAMQUESTIONS + " WHERE " + EXAM_ID + "=" + examId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                testTotal = testTotal + c.getInt(c.getColumnIndex("pointssum"));
+
+            } while (c.moveToNext());
+        }
+        db.close();
         return testTotal;
     }
 
@@ -407,11 +431,11 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(LESSON_ID, exam.getLessonId());
         values.put(POINTS_TO_PASS, exam.getPointsToPass());
         values.put(IS_NEW, exam.getIsNew());
-        values.put(IS_COMPLETED, exam.getIsPassed());
         values.put(SCORE, exam.getScore());
         values.put(IS_LOCAL, exam.getIsLocal());
         values.put(IS_PASSED, exam.getIsPassed());
         long test_id = db.insertWithOnConflict(TABLE_EXAMS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return test_id;
     }
 
@@ -437,6 +461,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 exams.add(ex);
             } while (c.moveToNext());
         }
+        db.close();
         return exams;
     }
 
@@ -448,6 +473,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(NAME, lecture.getName());
         values.put(LECTURE_URL, lecture.getLectureUrl());
         long lecture_id = db.insertWithOnConflict(TABLE_LECTURES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return lecture_id;
     }
 
@@ -468,6 +494,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 lectures.add(lt);
             } while (c.moveToNext());
         }
+        db.close();
         return lectures;
     }
 
@@ -485,6 +512,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(OTHER_ANSWERTWO, testQuestion.getOtherAnswerTwoId());
         values.put(OTHER_ANSWERTHREE, testQuestion.getOtherAnswerThreeId());
         long testquestion_id = db.insertWithOnConflict(TABLE_TESTQUESTIONS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return  testquestion_id;
     }
 
@@ -511,6 +539,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 testQuestions.add(ts);
             } while (c.moveToNext());
         }
+        db.close();
         return testQuestions;
     }
 
@@ -528,6 +557,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(OTHER_ANSWERTWO, examQuestion.getOtherAnswerTwoId());
         values.put(OTHER_ANSWERTHREE, examQuestion.getOtherAnswerThreeId());
         long examquestion_id = db.insertWithOnConflict(TABLE_EXAMQUESTIONS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return  examquestion_id;
     }
 
@@ -554,6 +584,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 examQuestions.add(es);
             } while (c.moveToNext());
         }
+        db.close();
         return examQuestions;
     }
 
@@ -573,6 +604,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(TRANSLATED_WORD, word.getTranslatedWord());
         values.put(CREATOR_ID, word.getCreatorId());
         long word_id = db.insertWithOnConflict(TABLE_WORDS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return word_id;
     }
 
@@ -598,6 +630,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 wd.setCreatorId(c.getInt(c.getColumnIndex(CREATOR_ID)));
             } while (c.moveToNext());
         }
+        db.close();
         return wd;
     }
 
@@ -607,6 +640,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(KEY_ID, language.getId());
         values.put(LANGUAGE_NAME, language.getLanguageName());
         long language_id = db.insertWithOnConflict(TABLE_LANGUAGES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return language_id;
     }
 
@@ -622,6 +656,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 lg.setLanguageName(c.getString(c.getColumnIndex(LANGUAGE_NAME)));
             } while (c.moveToNext());
         }
+        db.close();
         return lg;
     }
 
@@ -631,6 +666,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(KEY_ID, qaType.getId());
         values.put(TYPE_NAME, qaType.getTypeName());
         long answertype_id = db.insertWithOnConflict(TABLE_ANSWERTYPES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
         return answertype_id;
     }
 
@@ -646,6 +682,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 qat.setTypeName(c.getString(c.getColumnIndex(TYPE_NAME)));
             } while (c.moveToNext());
         }
+        db.close();
         return qat;
     }
 
@@ -659,6 +696,21 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 testName = c.getString(c.getColumnIndex(DESCRIPTION));
             } while (c.moveToNext());
         }
+        db.close();
+        return testName;
+    }
+
+    public String selectExamName(int examId) {
+        String testName =  new String();
+        String selectQuery = "SELECT " + DESCRIPTION + " FROM " + TABLE_EXAMS + " WHERE " + KEY_ID + " = " + examId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                testName = c.getString(c.getColumnIndex(DESCRIPTION));
+            } while (c.moveToNext());
+        }
+        db.close();
         return testName;
     }
 
@@ -672,6 +724,15 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 answerTypeName = c.getString(c.getColumnIndex(TYPE_NAME));
             } while (c.moveToNext());
         }
+        db.close();
         return answerTypeName;
+    }
+
+    public long updateScoreForTest(int testId, int score) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+        args.put(SCORE, score);
+        db.update(TABLE_TESTS, args, KEY_ID + "=" + testId, null);
+        return score;
     }
 }
