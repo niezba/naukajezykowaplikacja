@@ -33,6 +33,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
     private Context mKontekst;
     private RecyclerView mRecyclerView;
     private final int courseId;
+    private final int isOffline;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -59,7 +60,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, ArrayList<Exam> pExams, Context context, RecyclerView pRecyclerView, int courseId) {
+    public CourseElementListAdapter(ArrayList<Lesson> pLessons, ArrayList<Test> pTests, ArrayList<Lecture> pLectures, ArrayList<Exam> pExams, Context context, RecyclerView pRecyclerView, int courseId, int isOffline) {
         mLessons = pLessons;
         mTests = pTests;
         mLectures = pLectures;
@@ -67,6 +68,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
         mKontekst = context;
         mRecyclerView = pRecyclerView;
         this.courseId = courseId;
+        this.isOffline = isOffline;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -118,7 +120,7 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
                 allLessonElements.add(newEl);
             }
         }
-        LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements, courseId);
+        LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements, courseId, isOffline);
         ((MyViewHolder) viewHolder).listView.setAdapter(lesAdapter);
         System.out.println("Lekcja: " + lesson.getLessonId() + ", Ilość elementów: " + allLessonElements.size());
 

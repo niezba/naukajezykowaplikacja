@@ -17,6 +17,8 @@ import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseListAdapter;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -34,6 +36,7 @@ public class QuestionFragment extends Fragment {
     ImageView questionImage;
     Button questionSoundButton;
     MediaPlayer mediaPlayer = new MediaPlayer();
+    Integer isOffline;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +44,7 @@ public class QuestionFragment extends Fragment {
         questionToAsk = b.getString("quesstionToAsk");
         questionType = b.getInt("questionType");
         answerId = b.getInt("questionWord");
+        isOffline = b.getInt("isOffline");
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
@@ -102,7 +106,16 @@ public class QuestionFragment extends Fragment {
                 else {
                     questionToAskView.setVisibility(View.GONE);
                 }
-                Picasso.with(QuestionFragment.this.getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + questionWord.getPicture()).fit().centerCrop().into(questionImage);
+                if(isOffline == 0) {
+                    Picasso.with(QuestionFragment.this.getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + questionWord.getPicture()).fit().centerCrop().into(questionImage);
+                }
+                else {
+                    if(questionWord.getIsPictureLocal() == 1) {
+                        File avatar = new File(QuestionFragment.this.getActivity().getFilesDir() + "/Pictures");
+                        File avatarLocal = new File(avatar, questionWord.getPictureLocal());
+                        Picasso.with(QuestionFragment.this.getActivity()).load(avatarLocal).fit().centerCrop().into(questionImage);
+                    }
+                }
                 questionImage.setVisibility(View.VISIBLE);
                 questionView.setVisibility(View.GONE);
                 questionSoundButton.setVisibility(View.GONE);
@@ -121,7 +134,19 @@ public class QuestionFragment extends Fragment {
                             resetText();
                             questionSoundButton.setText("...");
                             mediaPlayer.reset();
-                            mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + questionWord.getTranslatedSound());
+                            if(isOffline == 0) {
+                                mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + questionWord.getTranslatedSound());
+                            }
+                            else {
+                                if (questionWord.getIsTranslatedSoundLocal() == 1) {
+                                    System.out.println("Playing local 1");
+                                    File soundDir = new File(QuestionFragment.this.getActivity().getFilesDir() + "/Sounds");
+                                    File sound = new File(soundDir, questionWord.getTranslatedSoundLocal());
+                                    FileInputStream inputStream = new FileInputStream(sound);
+                                    mediaPlayer.setDataSource(inputStream.getFD());
+                                    inputStream.close();
+                                }
+                            }
                             mediaPlayer.prepareAsync();
                         } catch (IOException e) {
                             e.printStackTrace();

@@ -1,11 +1,14 @@
 package com.example.mniez.myapplication.StudentModule;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,9 +26,12 @@ public class CourseBrowseActivity extends BaseDrawerActivity {
     private static final String PREFERENCES_NAMESURNAME = "loggedUserNameSurname";
     private static final String PREFERENCES_ROLE = "loggedUserMainRole";
     private static final String PREFERENCES_ID = "loggedUserId";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
     private static final String ADMIN_ROLE_NAME = "Administrator";
     private static final String TEACHER_ROLE_NAME = "Nauczyciel";
     private static final String STUDENT_ROLE_NAME = "Uczeń";
+
+    Integer isOffline;
 
 
 
@@ -86,6 +92,19 @@ public class CourseBrowseActivity extends BaseDrawerActivity {
         }
         navUsername.setText(userRole);
         navFullname.setText(currentNameSurname);
+        isOffline = sharedpreferences.getInt("isOffline", 0);
+        if(isOffline == 1) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(CourseBrowseActivity.this);
+            builder.setMessage("Aby móc wyszukiwać i przeglądać wszystkie kursy musisz mieć połączenie z internetem.")
+                    .setTitle("Jesteś w trybie offline").setCancelable(false);
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    onBackPressed();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
     @Override

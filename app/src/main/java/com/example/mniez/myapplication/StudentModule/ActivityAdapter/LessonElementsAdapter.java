@@ -1,8 +1,12 @@
 package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,11 +15,23 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
+import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ExamActivity;
+import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
+import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.StudentModule.TestActivity;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
 /**
@@ -27,12 +43,16 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
     private final ArrayList<LessonElement> mLessonElements;
     private final Context mKontekst;
     private final int courseId;
+    private final int isOffline;
+    private FetchLectureForLessonId mFetchTask = null;
+    MobileDatabaseReader dbReader;
 
-    public LessonElementsAdapter(Context mKontekst, ArrayList<LessonElement> mLessonElements, int courseId) {
+    public LessonElementsAdapter(Context mKontekst, ArrayList<LessonElement> mLessonElements, int courseId, int isOffline) {
         super(mKontekst, -1, mLessonElements);
         this.mKontekst = mKontekst;
         this.mLessonElements = mLessonElements;
         this.courseId = courseId;
+        this.isOffline = isOffline;
     }
 
     @Override
@@ -73,7 +93,6 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                                 .setTitle("Rozpoczęcie testu");
                         builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                Toast.makeText(mKontekst, "Wybrano test id: " + elId, Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(view.getContext(), TestActivity.class);
                                 intent.putExtra("test_id", singleLessonEl.getLessonElementId());
                                 intent.putExtra("course_id", courseId);
@@ -90,7 +109,28 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
 
                         break;
                     case 1:
-                        Toast.makeText(mKontekst, "Wybrano materiał id: " + elId, Toast.LENGTH_SHORT).show();
+                        dbReader = new MobileDatabaseReader(mKontekst);
+                        Lecture lecture = dbReader.selectSingleLecture(elId);
+                        String lectureLocalString = lecture.getLectureLocal();
+                        if (isOffline == 1 && lecture.getIsLectureLocal() == 1) {
+                            File lectureDir = new File(mKontekst.getApplicationContext().getFilesDir() +  "/Documents");
+                            File lectureFile = new File(lectureDir, lectureLocalString);
+                            System.out.println("Czy plik istnieje: " + lectureFile.getAbsolutePath());
+                            Intent target = new Intent(Intent.ACTION_VIEW);
+                            Uri uri = FileProvider.getUriForFile(mKontekst.getApplicationContext(), "com.example.mniez.myapplication.fileprovider", lectureFile);
+                            target.setDataAndType(uri,"application/pdf");
+                            target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            Intent intent = Intent.createChooser(target, "Open File");
+                            try {
+                                mKontekst.startActivity(intent);
+                            } catch (ActivityNotFoundException e) {
+                                // Instruct the user to install a PDF reader here, or something
+                            }
+                        }
+                        else {
+                            Toast.makeText(mKontekst, "Brak materiału offline dla wykładu " + elId, Toast.LENGTH_SHORT).show();
+                        }
                         break;
                     case 2:
                         if (singleLessonEl.getLessonElementIsNew() == 0) {
@@ -99,7 +139,6 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                                     .setTitle("Rozpoczęcie sprawdzianu");
                             builder2.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    Toast.makeText(mKontekst, "Wybrano sprawdzian id: " + elId, Toast.LENGTH_SHORT).show();
                                     Intent intent2 = new Intent(view.getContext(), ExamActivity.class);
                                     intent2.putExtra("test_id", singleLessonEl.getLessonElementId());
                                     intent2.putExtra("course_id", courseId);
@@ -138,5 +177,77 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
     public int getCount()
     {
         return (mLessonElements == null) ? 0 : mLessonElements.size();
+    }
+
+    public class FetchLectureForLessonId extends AsyncTask<Void, Void, Boolean> {
+
+        Integer lectureId;
+        File myFile;
+
+        public FetchLectureForLessonId(Integer lectureId) {
+            this.lectureId = lectureId;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            Lecture onlineLecture = dbReader.selectSingleLecture(lectureId);
+            String onlineLectureLocalString = onlineLecture.getLectureLocal();
+            String tempFileName = "lecture_" + lectureId + "_temp" + ".pdf";
+            URL lectureEndpoint = null;
+            try {
+                lectureEndpoint = new URL("http://pzmmd.cba.pl/media/documents/" + onlineLecture.getLectureUrl());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            try {
+                URLConnection lectureConnection = lectureEndpoint.openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                InputStream inputStream = new BufferedInputStream(lectureEndpoint.openStream(), 10240);
+                File myDir = new File(mKontekst.getCacheDir() + "/Documents");
+                if (!myDir.exists()) {
+                    myDir.mkdirs();
+                }
+                myFile = new File(myDir, tempFileName);
+                FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                byte buffer[] = new byte[1024];
+                int dataSize;
+                int loadedSize = 0;
+                while ((dataSize = inputStream.read(buffer)) != -1) {
+                    loadedSize += dataSize;
+                    outputStream.write(buffer, 0, dataSize);
+                }
+                outputStream.close();
+                System.out.println("Lecture " + tempFileName + " downloaded");
+                return true;
+            } catch (IOException e) {
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mFetchTask = null;
+
+            if (success) {
+                Intent target = new Intent(Intent.ACTION_VIEW);
+                Uri uri = FileProvider.getUriForFile(mKontekst, "com.example.mniez.myapplication.fileprovider", myFile);
+                target.setDataAndType(uri, "application/pdf");
+                target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                Intent intent = Intent.createChooser(target, "Open File");
+                try {
+                    mKontekst.startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    // Instruct the user to install a PDF reader here, or something
+                }
+            } else {
+
+            }
+        }
     }
 }

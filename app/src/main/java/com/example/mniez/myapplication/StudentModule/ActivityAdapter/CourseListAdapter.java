@@ -3,6 +3,7 @@ package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
@@ -20,6 +21,7 @@ import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -31,6 +33,7 @@ public class CourseListAdapter extends RecyclerView.Adapter{
     private ArrayList<Course> mCourses;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
+    private Integer mIsOffline;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -60,10 +63,11 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         }
     }
 
-    public CourseListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView) {
+    public CourseListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView, Integer isOffline) {
         mCourses = pCourses;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
+        mIsOffline = isOffline;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -78,9 +82,26 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
         ((MyViewHolder) viewHolder).nativeLang.setText(course.getNativeLanguageName());
         ((MyViewHolder) viewHolder).learnedLang.setText(course.getLearnedLanguageName());
-        final String imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
-        System.out.println(imageUrl);
-        Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+        final String imageUrl;
+        if(mIsOffline == 0) {
+            imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
+            System.out.println(imageUrl);
+            Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+        }
+        else {
+            if (course.getIsAvatarLocal() == 1) {
+                imageUrl = course.getAvatarLocal();
+                System.out.println(imageUrl);
+                File avatar = new File(mKontekst.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, course.getAvatarLocal());
+                Picasso.with(mKontekst).load(avatarLocal).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+            }
+            else {
+                //dorobić obrazek z placeholderem
+                imageUrl = "";
+                Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+            }
+        }
         final int courseId = course.getId();
         final String courseNameString = course.getCourseName();
         ((MyViewHolder) viewHolder).enterButton.setOnClickListener(new View.OnClickListener() {

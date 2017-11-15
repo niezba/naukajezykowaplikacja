@@ -53,11 +53,13 @@ public class MainActivity extends BaseDrawerActivity {
     private static final String ADMIN_ROLE_NAME = "Administrator";
     private static final String TEACHER_ROLE_NAME = "Nauczyciel";
     private static final String STUDENT_ROLE_NAME = "Uczeń";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
 
     private RecyclerView recyclerView;
     private CourseListAdapter mAdapter;
     String currentUsername;
     String currentPassword;
+    Integer isOffline;
 
     private View mProgressView;
     String currentId;
@@ -80,6 +82,7 @@ public class MainActivity extends BaseDrawerActivity {
         String currentNameSurname = sharedpreferences.getString(PREFERENCES_NAMESURNAME, "");
         currentId = sharedpreferences.getString(PREFERENCES_ID, "");
         currentRole = sharedpreferences.getString(PREFERENCES_ROLE, "");
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View navHeaderView= navigationView.getHeaderView(0);
@@ -109,7 +112,7 @@ public class MainActivity extends BaseDrawerActivity {
         mFetchTask = new CourseFetchTask(currentId);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCourse);
         recyclerView.setHasFixedSize(true);
-        mAdapter = new CourseListAdapter(courseList, this, recyclerView);
+        mAdapter = new CourseListAdapter(courseList, this, recyclerView, isOffline);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -166,83 +169,85 @@ public class MainActivity extends BaseDrawerActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
-                HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
-                myConnection.setRequestMethod("GET");
-                myConnection.setDoOutput(true);
-                myConnection.connect();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
-                StringBuilder sb = new StringBuilder();
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-
-                String jsonString = sb.toString();
-                System.out.println("JSON: " + jsonString);
-
+            if(isOffline == 0) {
                 try {
-                    JSONArray jsonObject = new JSONArray(jsonString);
-                    String jsonObjectString = jsonObject.toString();
-                    System.out.println(jsonObjectString);
-                    myConnection.disconnect();
-                    int coursesCount = jsonObject.length();
-                    for (int i = 0; i < coursesCount; i++){
-                        Course newCourse = new Course();
-                        JSONObject singleCourse = jsonObject.getJSONObject(i);
-                        String courseId = singleCourse.get("id").toString();
-                        Integer courseIdInteger = Integer.parseInt(courseId);
-                        newCourse.setId(courseIdInteger);
-                        String courseName = singleCourse.get("coursename").toString();
-                        newCourse.setCourseName(courseName);
-                        String description = singleCourse.get("description").toString();
-                        newCourse.setDescription(description);
-                        String createdAt = singleCourse.get("createdAt").toString();
-                        newCourse.setCreatedAt(createdAt);
-                        String levelName = singleCourse.get("levelName").toString();
-                        newCourse.setLevelName(levelName);
-                        String avatar = singleCourse.get("avatar").toString();
-                        newCourse.setAvatar(avatar);
-                        String teacherFirstName = singleCourse.get("teacherFirstName").toString();
-                        newCourse.setTeacherName(teacherFirstName);
-                        String teacherLastName = singleCourse.get("teacherLastName").toString();
-                        newCourse.setTeacherSurname(teacherLastName);
-                        String nativeLanguage = singleCourse.get("nativeLanguage").toString();
-                        newCourse.setNativeLanguageName(nativeLanguage);
-                        String learningLanguage = singleCourse.get("learningLanguage").toString();
-                        newCourse.setLearnedLanguageName(learningLanguage);
-                        dbReader.insertCourse(newCourse);
-                        System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
-                                + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
+                    HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setDoOutput(true);
+                    myConnection.connect();
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
+                    StringBuilder sb = new StringBuilder();
+
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
                     }
-                    return true;
-                } catch (JSONException e) {
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    String errCode = jsonObject.get("error_code").toString();
-                    System.out.println("Error code: " + errCode);
-                    if(errCode.equals("1")) {
-                        return false;
+                    br.close();
+
+                    String jsonString = sb.toString();
+                    System.out.println("JSON: " + jsonString);
+
+                    try {
+                        JSONArray jsonObject = new JSONArray(jsonString);
+                        String jsonObjectString = jsonObject.toString();
+                        System.out.println(jsonObjectString);
+                        myConnection.disconnect();
+                        int coursesCount = jsonObject.length();
+                        for (int i = 0; i < coursesCount; i++) {
+                            Course newCourse = new Course();
+                            JSONObject singleCourse = jsonObject.getJSONObject(i);
+                            String courseId = singleCourse.get("id").toString();
+                            Integer courseIdInteger = Integer.parseInt(courseId);
+                            newCourse.setId(courseIdInteger);
+                            String courseName = singleCourse.get("coursename").toString();
+                            newCourse.setCourseName(courseName);
+                            String description = singleCourse.get("description").toString();
+                            newCourse.setDescription(description);
+                            String createdAt = singleCourse.get("createdAt").toString();
+                            newCourse.setCreatedAt(createdAt);
+                            String levelName = singleCourse.get("levelName").toString();
+                            newCourse.setLevelName(levelName);
+                            String avatar = singleCourse.get("avatar").toString();
+                            newCourse.setAvatar(avatar);
+                            String teacherFirstName = singleCourse.get("teacherFirstName").toString();
+                            newCourse.setTeacherName(teacherFirstName);
+                            String teacherLastName = singleCourse.get("teacherLastName").toString();
+                            newCourse.setTeacherSurname(teacherLastName);
+                            String nativeLanguage = singleCourse.get("nativeLanguage").toString();
+                            newCourse.setNativeLanguageName(nativeLanguage);
+                            String learningLanguage = singleCourse.get("learningLanguage").toString();
+                            newCourse.setLearnedLanguageName(learningLanguage);
+                            dbReader.insertCourse(newCourse);
+                            System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
+                                    + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
+                        }
+                        return true;
+                    } catch (JSONException e) {
+                        JSONObject jsonObject = new JSONObject(jsonString);
+                        String errCode = jsonObject.get("error_code").toString();
+                        System.out.println("Error code: " + errCode);
+                        if (errCode.equals("1")) {
+                            return false;
+                        }
                     }
-                }
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } /*catch (JSONException e) {
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } /*catch (JSONException e) {
                 e.printStackTrace();
             }*/ catch (JSONException e) {
-                e.printStackTrace();
+                    e.printStackTrace();
+                }
+                return false;
             }
-
-
-            // TODO: register the new account here.
-            return false;
+            else {
+                return true;
+            }
         }
 
         @Override

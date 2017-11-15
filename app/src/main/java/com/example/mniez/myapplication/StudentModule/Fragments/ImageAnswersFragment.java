@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -40,6 +42,7 @@ public class ImageAnswersFragment extends Fragment {
     int setAnswerId;
     MobileDatabaseReader dbReader;
     ArrayList<Word> wordList;
+    Integer isOffline;
 
     public interface OnAnswerSelectedListener {
         public void onAnswerSelected(int answerId);
@@ -52,6 +55,7 @@ public class ImageAnswersFragment extends Fragment {
         answerIds = b.getIntArray("answerIds");
         answerString = b.getStringArray("answerString");
         currentAnswerTypeId = b.getInt("answerType");
+        isOffline = b.getInt("isOffline", 0);
 
     }
 
@@ -137,14 +141,35 @@ public class ImageAnswersFragment extends Fragment {
                 for(int i = 0; i<4; i++) {
                     wordList.add(dbReader.getParticularWordData(answerIds[i]));
                 }
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
-                System.out.println(wordList.get(0).getPicture());
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
-                System.out.println(wordList.get(1).getPicture());
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
-                System.out.println(wordList.get(2).getPicture());
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
-                System.out.println(wordList.get(3).getPicture());
+                if(isOffline == 0) {
+                    Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                    System.out.println(wordList.get(0).getPicture());
+                    Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                    System.out.println(wordList.get(1).getPicture());
+                    Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                    System.out.println(wordList.get(2).getPicture());
+                    Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                    System.out.println(wordList.get(3).getPicture());
+                }
+                else {
+                    File avatar = new File(ImageAnswersFragment.this.getActivity().getFilesDir() + "/Pictures");
+                    if(wordList.get(0).getIsPictureLocal() == 1) {
+                        File avatar1Local = new File(avatar, wordList.get(0).getPictureLocal());
+                        Picasso.with(ImageAnswersFragment.this.getActivity()).load(avatar1Local).fit().centerCrop().into(ans1);
+                    }
+                    if(wordList.get(1).getIsPictureLocal() == 1) {
+                        File avatar2Local = new File(avatar, wordList.get(1).getPictureLocal());
+                        Picasso.with(ImageAnswersFragment.this.getActivity()).load(avatar2Local).fit().centerCrop().into(ans2);
+                    }
+                    if(wordList.get(2).getIsPictureLocal() == 1) {
+                        File avatar3Local = new File(avatar, wordList.get(2).getPictureLocal());
+                        Picasso.with(ImageAnswersFragment.this.getActivity()).load(avatar3Local).fit().centerCrop().into(ans3);
+                    }
+                    if(wordList.get(3).getIsPictureLocal() == 1) {
+                        File avatar4Local = new File(avatar, wordList.get(3).getPictureLocal());
+                        Picasso.with(ImageAnswersFragment.this.getActivity()).load(avatar4Local).fit().centerCrop().into(ans4);
+                    }
+                }
                 if (answerIds[0] == newSetAnswerId) {
                     ans1.performClick();
                 }
@@ -170,10 +195,10 @@ public class ImageAnswersFragment extends Fragment {
                 for(int i = 0; i<4; i++) {
                     wordList.add(dbReader.getParticularWordData(answerIds[i]));
                 }
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
-                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                //Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                //Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                //Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                //Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
                 ans1.setColorFilter(null);
                 ans2.setColorFilter(null);
                 ans3.setColorFilter(null);

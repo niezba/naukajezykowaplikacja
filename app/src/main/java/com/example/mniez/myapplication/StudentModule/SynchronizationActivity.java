@@ -36,6 +36,8 @@ import java.net.URL;
 
 public class SynchronizationActivity extends AppCompatActivity {
 
+    /*Aktywność wywołująca pierwszą, częściową synchronizację. Wykonał: Marcin Niezbecki*/
+
     ProgressBar mProgressView;
     MobileDatabaseReader dbReader;
     private SynchronizationActivity.CourseFetchTask mFetchTask = null;

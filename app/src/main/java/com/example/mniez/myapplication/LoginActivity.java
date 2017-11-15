@@ -72,6 +72,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final String PREFERENCES_NAMESURNAME = "loggedUserNameSurname";
     private static final String PREFERENCES_ID = "loggedUserId";
     private static final String PREFERENCES_ROLE = "loggedUserMainRole";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -177,7 +178,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
     private void goToRegistration() {
-        Uri uri = Uri.parse("http://10.0.2.2:8000/login");
+        Uri uri = Uri.parse("http://pzmmd.cba.pl/register");
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
@@ -424,12 +425,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putInt(PREFERENCES_OFFLINE, 1);
+                            editor.commit();
                             Intent intent = new Intent(LoginActivity.this, FullSynchronizationActivity.class);
                             startActivity(intent);
                         }
                     });
                     builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putInt(PREFERENCES_OFFLINE, 0);
+                            editor.commit();
                             Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
                             startActivity(intent);
                         }

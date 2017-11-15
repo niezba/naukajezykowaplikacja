@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.ExamQuestion;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseElementListAdapter;
@@ -42,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -61,6 +63,7 @@ public class CourseElementsActivity extends AppCompatActivity {
     private static final String ADMIN_ROLE_NAME = "Administrator";
     private static final String TEACHER_ROLE_NAME = "Nauczyciel";
     private static final String STUDENT_ROLE_NAME = "Uczeń";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
 
     public int courseId;
     private RecyclerView recyclerView;
@@ -73,6 +76,7 @@ public class CourseElementsActivity extends AppCompatActivity {
 
     String currentUsername;
     String currentPassword;
+    Integer isOffline;
 
     ArrayList<Lesson> lessonList = new ArrayList<Lesson>();
     ArrayList<Integer> lessonIdList = new ArrayList<>();
@@ -92,30 +96,58 @@ public class CourseElementsActivity extends AppCompatActivity {
         courseId = 0;
         courseId = extras.getInt("courseId", 0);
         setContentView(R.layout.activity_course_elements);
+        dbReader = new MobileDatabaseReader(getApplicationContext());
+        dbReader.getWritableDatabase();
         supportPostponeEnterTransition();
         courseImage = extras.getString("courseImage");
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
         currentUsername = sharedpreferences.getString(PREFERENCES_USERNAME, "");
         currentPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         final ImageView imageView = (ImageView) findViewById(R.id.imageView2);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             String imageTransitionName = extras.getString("imageTransition");
             imageView.setTransitionName(imageTransitionName);
         }
-        Picasso.with(this)
-                .load(courseImage)
-                .noFade()
-                .into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        supportStartPostponedEnterTransition();
-                    }
+        if (isOffline == 0) {
 
-                    @Override
-                    public void onError() {
-                        supportStartPostponedEnterTransition();
-                    }
-                });
+            Picasso.with(this)
+                    .load(courseImage)
+                    .noFade()
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            supportStartPostponedEnterTransition();
+                        }
+
+                        @Override
+                        public void onError() {
+                            supportStartPostponedEnterTransition();
+                        }
+                    });
+        }
+        else {
+            Course cs = dbReader.selectCourse(courseId);
+            String avatarLocalFile = cs.getAvatarLocal();
+            courseImage = avatarLocalFile;
+            File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
+            File avatarLocal = new File(avatar, avatarLocalFile);
+
+            Picasso.with(this)
+                    .load(avatarLocal)
+                    .noFade()
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            supportStartPostponedEnterTransition();
+                        }
+
+                        @Override
+                        public void onError() {
+                            supportStartPostponedEnterTransition();
+                        }
+                    });
+        }
         mProgressView = findViewById(R.id.login_progress_course);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -137,13 +169,11 @@ public class CourseElementsActivity extends AppCompatActivity {
                 view.getContext().startActivity(intent, options.toBundle());
             }
         });
-        dbReader = new MobileDatabaseReader(getApplicationContext());
-        dbReader.getWritableDatabase();
         showProgress(true);
         mFetchTask = new CourseElementsActivity.LessonFetchTask(courseId);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCourseElementList);
         recyclerView.setHasFixedSize(true);
-        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, courseExamsList, this, recyclerView, courseId);
+        mAdapter = new CourseElementListAdapter(lessonList, courseTestsList, courseLecturesList, courseExamsList, this, recyclerView, courseId, isOffline);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -202,473 +232,477 @@ public class CourseElementsActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/lessonsForCourse/"+fetchedCourseId);
-                HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
-                myConnection.setRequestMethod("GET");
-                myConnection.setDoOutput(true);
-                myConnection.connect();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
-                StringBuilder sb = new StringBuilder();
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-
-                String jsonString = sb.toString();
-                System.out.println("JSON Lessons data downloaded");
-
+            if(isOffline == 0) {
                 try {
-                    JSONArray jsonObject = new JSONArray(jsonString);
-                    String jsonObjectString = jsonObject.toString();
-                    System.out.println(jsonObjectString);
-                    myConnection.disconnect();
-                    int lessonsCount = jsonObject.length();
-                    for (int i = 0; i < lessonsCount; i++) {
-                        Lesson newLesson = new Lesson();
-                        JSONObject singleLesson = jsonObject.getJSONObject(i);
-                        String lessonId = singleLesson.get("id").toString();
-                        Integer lessonIdInteger = Integer.parseInt(lessonId);
-                        newLesson.setLessonId(lessonIdInteger);
-                        String lessonName = singleLesson.get("name").toString();
-                        newLesson.setName(lessonName);
-                        String lessonDescription = singleLesson.get("description").toString();
-                        newLesson.setDescription(lessonDescription);
-                        String lessonNumber = singleLesson.get("lessonNumber").toString();
-                        newLesson.setLessonNumber(Integer.parseInt(lessonNumber));
-                        String lessonPoints = singleLesson.get("points").toString();
-                        newLesson.setOverallPoints(Integer.parseInt(lessonPoints));
-                        String lessonUserPoints = singleLesson.get("userPoints").toString();
-                        newLesson.setUserPoints(Integer.parseInt(lessonUserPoints));
-                        JSONArray lessonLectures = singleLesson.getJSONArray("lectures");
-                        int lessonlectLength = lessonLectures.length();
-                        for (int e = 0; e < lessonlectLength; e++) {
-                            JSONObject singleLecture = lessonLectures.getJSONObject(e);
-                            String singleLectureId = singleLecture.get("id").toString();
-                            Integer singleLectureIdInteger = Integer.parseInt(singleLectureId);
-                            String singleLectureName = singleLecture.get("name").toString();
-                            String singleLectureUrl = singleLecture.get("url").toString();
-                            Lecture lecture = new Lecture();
-                            lecture.setLessonId(lessonIdInteger);
-                            lecture.setId(singleLectureIdInteger);
-                            lecture.setName(singleLectureName);
-                            lecture.setLectureUrl(singleLectureUrl);
-                            dbReader.insertLecture(lecture);
-                        }
-                        dbReader.insertLesson(newLesson, fetchedCourseId);
-                        System.out.println("Lesson inserted");
-                        URL lessonElementsEndpoint = new URL("http://pzmmd.cba.pl/api/lesson/" + lessonIdInteger);
-                        HttpURLConnection lessonConnection = (HttpURLConnection) lessonElementsEndpoint.openConnection();
-                        lessonConnection.setRequestMethod("GET");
-                        lessonConnection.setDoOutput(true);
-                        lessonConnection.connect();
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/lessonsForCourse/" + fetchedCourseId);
+                    HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setDoOutput(true);
+                    myConnection.connect();
 
-                        BufferedReader br2 = new BufferedReader(new InputStreamReader(lessonElementsEndpoint.openStream()));
-                        StringBuilder sb2 = new StringBuilder();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
+                    StringBuilder sb = new StringBuilder();
 
-                        String line2;
-                        while ((line2 = br2.readLine()) != null) {
-                            sb2.append(line2 + "\n");
-                        }
-                        br2.close();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    br.close();
 
-                        String lessonString = sb2.toString();
-                        if (!lessonString.contains("no tests for this lesson")) {
-                            try {
-                                JSONArray lessonObject = new JSONArray(lessonString);
-                                String lessonObjectString = lessonObject.toString();
-                                System.out.println(lessonObjectString);
-                                JSONObject elementsObject = lessonObject.getJSONObject(0);
-                                JSONArray testsArray = elementsObject.getJSONArray("tests");
-                                int testsCount = testsArray.length();
-                                for (int j = 0; j < testsCount; j++) {
-                                    Test newTest = new Test();
-                                    JSONObject singleTest = testsArray.getJSONObject(j);
-                                    String testId = singleTest.get("id").toString();
-                                    Integer testIdInteger = Integer.parseInt(testId);
-                                    newTest.setId(testIdInteger);
-                                    String testName = singleTest.get("name").toString();
-                                    newTest.setName(testName);
-                                    String testDescription = singleTest.get("description").toString();
-                                    newTest.setDescription(testDescription);
-                                    //newTest.setScore(0);
-                                    newTest.setIsNew(1);
-                                    newTest.setIsLocal(1);
-                                    //newTest.setIsCompleted(0);
-                                    newTest.setLessonId(lessonIdInteger);
-                                    JSONArray questionsArray = singleTest.getJSONArray("questions");
-                                    int questionsCount = questionsArray.length();
-                                    for (int k = 0; k < questionsCount; k++) {
-                                        TestQuestion newQuestion = new TestQuestion();
-                                        JSONObject singleQuestion = questionsArray.getJSONObject(k);
-                                        newQuestion.setTestId(testIdInteger);
-                                        String questionId = singleQuestion.get("id").toString();
-                                        Integer questionIdInteger = Integer.parseInt(questionId);
-                                        newQuestion.setId(questionIdInteger);
-                                        String questionToAsk = singleQuestion.get("question").toString();
-                                        newQuestion.setQuestion(questionToAsk);
-                                        String questionPoints = singleQuestion.get("points").toString();
-                                        Integer questionPointsInteger = Integer.parseInt(questionPoints);
-                                        newQuestion.setPoints(questionPointsInteger);
-                                        JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
-                                        {
-                                            Word answerWord = new Word();
-                                            String wordId = questionAnswer.get("id").toString();
-                                            Integer wordIdInteger = Integer.parseInt(wordId);
-                                            answerWord.setId(wordIdInteger);
-                                            String nativeWord = questionAnswer.get("nativeWord").toString();
-                                            answerWord.setNativeWord(nativeWord);
-                                            String translatedWord = questionAnswer.get("translatedWord").toString();
-                                            answerWord.setTranslatedWord(translatedWord);
-                                            if (questionAnswer.has("nativeSound")) {
-                                                String nativeSound = questionAnswer.get("nativeSound").toString();
-                                                answerWord.setNativeSound(nativeSound);
-                                            }
-                                            if (questionAnswer.has("translatedSound")) {
-                                                String translatedSound = questionAnswer.get("translatedSound").toString();
-                                                answerWord.setTranslatedSound(translatedSound);
-                                            }
-                                            if (questionAnswer.has("picture")) {
-                                                String pictureUrl = questionAnswer.get("picture").toString();
-                                                answerWord.setPicture(pictureUrl);
-                                            }
-                                            if (questionAnswer.has("tags")) {
-                                                String wordTags = questionAnswer.get("tags").toString();
-                                                answerWord.setTags(wordTags);
-                                            }
-                                            String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
-                                            answerWord.setNativeDefinition(nativeDefinition);
-                                            String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
-                                            answerWord.setTranslatedDefinition(translatedDefinition);
-                                            JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
-                                            String nativeLanguage = answerNativeLang.get("id").toString();
-                                            Integer nativeLanguageInteger = Integer.parseInt(nativeLanguage);
-                                            String nativeLanguageName = answerNativeLang.get("languageName").toString();
-                                            answerWord.setNativeLanguageId(nativeLanguageInteger);
-                                            JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
-                                            String translatedLanguage = answerTranslatLang.get("id").toString();
-                                            Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
-                                            String translatedLanguageName = answerTranslatLang.get("languageName").toString();
-                                            answerWord.setTranslatedLanguageId(translatedLanguageInteger);
-                                            newQuestion.setAnswerId(wordIdInteger);
-                                            Language nativeLang = new Language();
-                                            Language translatLang = new Language();
-                                            nativeLang.setId(nativeLanguageInteger);
-                                            nativeLang.setLanguageName(nativeLanguageName);
-                                            translatLang.setId(translatedLanguageInteger);
-                                            translatLang.setLanguageName(translatedLanguageName);
-                                            dbReader.insertWord(answerWord);
-                                            dbReader.insertLanguage(nativeLang);
-                                            dbReader.insertLanguage(translatLang);
-                                        }
-                                        JSONArray otherAnswers = singleQuestion.getJSONArray("others");
-                                        int othersCount = otherAnswers.length();
-                                        int wrongAnswerIds[] = new int[otherAnswers.length()];
-                                        for (int l = 0; l < othersCount; l++) {
-                                            Word wrongAnswer = new Word();
-                                            JSONObject singleOtherAnswer = otherAnswers.getJSONObject(l);
-                                            String wordId = singleOtherAnswer.get("id").toString();
-                                            Integer wordIdInteger = Integer.parseInt(wordId);
-                                            wrongAnswer.setId(wordIdInteger);
-                                            String nativeWord = singleOtherAnswer.get("nativeWord").toString();
-                                            wrongAnswer.setNativeWord(nativeWord);
-                                            String translatedWord = singleOtherAnswer.get("translatedWord").toString();
-                                            wrongAnswer.setTranslatedWord(translatedWord);
-                                            String nativeDefinition = singleOtherAnswer.get("nativeDefinition").toString();
-                                            wrongAnswer.setNativeDefinition(nativeDefinition);
-                                            String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
-                                            wrongAnswer.setTranslatedDefinition(translatedDefinition);
-                                            if (singleOtherAnswer.has("nativeSound")) {
-                                                String nativeSound = singleOtherAnswer.get("nativeSound").toString();
-                                                wrongAnswer.setNativeSound(nativeSound);
-                                            }
-                                            if (singleOtherAnswer.has("translatedSound")) {
-                                                String translatedSound = singleOtherAnswer.get("translatedSound").toString();
-                                                wrongAnswer.setTranslatedSound(translatedSound);
-                                            }
-                                            if (singleOtherAnswer.has("picture")) {
-                                                String pictureUrl = singleOtherAnswer.get("picture").toString();
-                                                wrongAnswer.setPicture(pictureUrl);
-                                            }
-                                            if (singleOtherAnswer.has("tags")) {
-                                                String wordTags = singleOtherAnswer.get("tags").toString();
-                                                wrongAnswer.setTags(wordTags);
-                                            }
-                                            wrongAnswerIds[l] = wordIdInteger;
-                                            dbReader.insertWord(wrongAnswer);
-                                        }
-                                        newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
-                                        newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
-                                        newQuestion.setOtherAnswerThreeId(wrongAnswerIds[2]);
-                                        JSONObject questionType = singleQuestion.getJSONObject("questionType");
-                                        String questionTypeId = questionType.get("id").toString();
-                                        Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
-                                        String questionTypeName = questionType.get("typeName").toString();
-                                        JSONObject answerType = singleQuestion.getJSONObject("answerType");
-                                        String answerTypeId = answerType.get("id").toString();
-                                        Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
-                                        String answerTypeName = answerType.get("typeName").toString();
-                                        QuestionAnswerType questionTypeOne = new QuestionAnswerType();
-                                        questionTypeOne.setId(answerTypeIdInteger);
-                                        questionTypeOne.setTypeName(answerTypeName);
-                                        QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
-                                        questionTypeTwo.setId(questionTypeIdInteger);
-                                        questionTypeTwo.setTypeName(questionTypeName);
-                                        dbReader.insertAnswertypes(questionTypeOne);
-                                        dbReader.insertAnswertypes(questionTypeTwo);
-                                        newQuestion.setQuestionTypeId(questionTypeIdInteger);
-                                        newQuestion.setAnswerTypeId(answerTypeIdInteger);
-                                        dbReader.insertTestQuestion(newQuestion);
-                                    }
-                                    dbReader.insertTest(newTest);
-                                    System.out.println("Test inserted");
+                    String jsonString = sb.toString();
+                    System.out.println("JSON Lessons data downloaded");
 
-                                }
-                                JSONArray examsArray = elementsObject.getJSONArray("exams");
-                                int examsCount = examsArray.length();
-                                for (int j = 0; j < examsCount; j++) {
-                                    String examId = examsArray.getJSONObject(0).get("id").toString();
-                                    int examIdInteger = Integer.parseInt(examId);
-                                    URL examEndpoint = new URL("http://pzmmd.cba.pl/api/exam?id=" + examIdInteger);
-                                    HttpURLConnection examConnection = (HttpURLConnection) examEndpoint.openConnection();
-                                    examConnection.setRequestMethod("GET");
-                                    examConnection.setDoOutput(true);
-                                    examConnection.connect();
+                    try {
+                        JSONArray jsonObject = new JSONArray(jsonString);
+                        String jsonObjectString = jsonObject.toString();
+                        System.out.println(jsonObjectString);
+                        myConnection.disconnect();
+                        int lessonsCount = jsonObject.length();
+                        for (int i = 0; i < lessonsCount; i++) {
+                            Lesson newLesson = new Lesson();
+                            JSONObject singleLesson = jsonObject.getJSONObject(i);
+                            String lessonId = singleLesson.get("id").toString();
+                            Integer lessonIdInteger = Integer.parseInt(lessonId);
+                            newLesson.setLessonId(lessonIdInteger);
+                            String lessonName = singleLesson.get("name").toString();
+                            newLesson.setName(lessonName);
+                            String lessonDescription = singleLesson.get("description").toString();
+                            newLesson.setDescription(lessonDescription);
+                            String lessonNumber = singleLesson.get("lessonNumber").toString();
+                            newLesson.setLessonNumber(Integer.parseInt(lessonNumber));
+                            String lessonPoints = singleLesson.get("points").toString();
+                            newLesson.setOverallPoints(Integer.parseInt(lessonPoints));
+                            String lessonUserPoints = singleLesson.get("userPoints").toString();
+                            newLesson.setUserPoints(Integer.parseInt(lessonUserPoints));
+                            JSONArray lessonLectures = singleLesson.getJSONArray("lectures");
+                            int lessonlectLength = lessonLectures.length();
+                            for (int e = 0; e < lessonlectLength; e++) {
+                                JSONObject singleLecture = lessonLectures.getJSONObject(e);
+                                String singleLectureId = singleLecture.get("id").toString();
+                                Integer singleLectureIdInteger = Integer.parseInt(singleLectureId);
+                                String singleLectureName = singleLecture.get("name").toString();
+                                String singleLectureUrl = singleLecture.get("url").toString();
+                                Lecture lecture = new Lecture();
+                                lecture.setLessonId(lessonIdInteger);
+                                lecture.setId(singleLectureIdInteger);
+                                lecture.setName(singleLectureName);
+                                lecture.setLectureUrl(singleLectureUrl);
+                                dbReader.insertLecture(lecture);
+                            }
+                            dbReader.insertLesson(newLesson, fetchedCourseId);
+                            System.out.println("Lesson inserted");
+                            URL lessonElementsEndpoint = new URL("http://pzmmd.cba.pl/api/lesson/" + lessonIdInteger);
+                            HttpURLConnection lessonConnection = (HttpURLConnection) lessonElementsEndpoint.openConnection();
+                            lessonConnection.setRequestMethod("GET");
+                            lessonConnection.setDoOutput(true);
+                            lessonConnection.connect();
 
-                                    BufferedReader br3 = new BufferedReader(new InputStreamReader(examEndpoint.openStream()));
-                                    StringBuilder sb3 = new StringBuilder();
+                            BufferedReader br2 = new BufferedReader(new InputStreamReader(lessonElementsEndpoint.openStream()));
+                            StringBuilder sb2 = new StringBuilder();
 
-                                    String line3;
-                                    while ((line3 = br3.readLine()) != null) {
-                                        sb3.append(line3 + "\n");
-                                    }
-                                    br3.close();
-                                    String examString = sb3.toString();
-                                    JSONObject examObject = new JSONObject(examString);
-                                    Exam newExam = new Exam();
-                                    JSONObject singleExam = null;
-                                    try {
-                                        singleExam = examObject.getJSONObject("0");
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    String isNew = examObject.get("isNew").toString();
-                                    Boolean isNewBoolean = Boolean.parseBoolean(isNew);
-                                    if (isNewBoolean == false) {
-                                        Exam completedExam = new Exam();
-                                        completedExam.setId(examIdInteger);
-                                        completedExam.setLessonId(lessonIdInteger);
-                                        System.out.println("Id lekcji egzaminu: " + completedExam.getLessonId());
-                                        String examScore = singleExam.getString("score");
-                                        Integer examScoreInteger = Integer.parseInt(examScore);
-                                        completedExam.setScore(examScoreInteger);
-                                        String examGrade = singleExam.getString("grade");
-                                        Integer examGradeInteger = Integer.parseInt(examGrade);
-                                        System.out.println("Ocena z egzaminu: " + examGradeInteger);
-                                        completedExam.setGrade(examGradeInteger);
-                                        String isPassed = singleExam.getString("isPassed");
-                                        Boolean isPassedBoolean = Boolean.parseBoolean(isPassed);
-                                        if (isPassedBoolean == true) {
-                                            completedExam.setIsPassed(1);
-                                        } else {
-                                            completedExam.setIsPassed(0);
-                                        }
-                                        completedExam.setIsNew(0);
-                                        String totalPoints = singleExam.getString("totalPoints");
-                                        Integer totalPointsInteger = Integer.parseInt(totalPoints);
-                                        completedExam.setPointsToPass(totalPointsInteger);
-                                        dbReader.insertExam(completedExam);
-                                        System.out.println("Completed exam inserted");
-                                    } else {
-                                        String testId = singleExam.get("id").toString();
+                            String line2;
+                            while ((line2 = br2.readLine()) != null) {
+                                sb2.append(line2 + "\n");
+                            }
+                            br2.close();
+
+                            String lessonString = sb2.toString();
+                            if (!lessonString.contains("no tests for this lesson")) {
+                                try {
+                                    JSONArray lessonObject = new JSONArray(lessonString);
+                                    String lessonObjectString = lessonObject.toString();
+                                    System.out.println(lessonObjectString);
+                                    JSONObject elementsObject = lessonObject.getJSONObject(0);
+                                    JSONArray testsArray = elementsObject.getJSONArray("tests");
+                                    int testsCount = testsArray.length();
+                                    for (int j = 0; j < testsCount; j++) {
+                                        Test newTest = new Test();
+                                        JSONObject singleTest = testsArray.getJSONObject(j);
+                                        String testId = singleTest.get("id").toString();
                                         Integer testIdInteger = Integer.parseInt(testId);
-                                        newExam.setId(testIdInteger);
-                                        String testName = singleExam.get("name").toString();
-                                        newExam.setName(testName);
-                                        String testDescription = singleExam.get("description").toString();
-                                        newExam.setDescription(testDescription);
-                                        int inb = 0;
-                                        if (isNewBoolean == true) {
-                                            inb = 1;
-                                        } else {
-                                            inb = 0;
-                                        }
-                                        newExam.setScore(0);
-                                        newExam.setIsNew(inb);
-                                        newExam.setIsLocal(1);
-                                        newExam.setIsPassed(0);
-                                        newExam.setLessonId(lessonIdInteger);
-                                        if (isNewBoolean == true) {
-                                            JSONArray questionsArray = singleExam.getJSONArray("questions");
-                                            int questionsCount = questionsArray.length();
-                                            for (int k = 0; k < questionsCount; k++) {
-                                                ExamQuestion newQuestion = new ExamQuestion();
-                                                JSONObject singleQuestion = questionsArray.getJSONObject(k);
-                                                newQuestion.setExamId(testIdInteger);
-                                                String questionId = singleQuestion.get("id").toString();
-                                                Integer questionIdInteger = Integer.parseInt(questionId);
-                                                newQuestion.setId(questionIdInteger);
-                                                String questionToAsk = singleQuestion.get("question").toString();
-                                                newQuestion.setQuestion(questionToAsk);
-                                                String questionPoints = singleQuestion.get("points").toString();
-                                                Integer questionPointsInteger = Integer.parseInt(questionPoints);
-                                                newQuestion.setPoints(questionPointsInteger);
-                                                JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
-                                                {
-                                                    Word answerWord = new Word();
-                                                    String wordId = questionAnswer.get("id").toString();
-                                                    Integer wordIdInteger = Integer.parseInt(wordId);
-                                                    answerWord.setId(wordIdInteger);
-                                                    String nativeWord = questionAnswer.get("nativeWord").toString();
-                                                    answerWord.setNativeWord(nativeWord);
-                                                    String translatedWord = questionAnswer.get("translatedWord").toString();
-                                                    answerWord.setTranslatedWord(translatedWord);
-                                                    if (questionAnswer.has("nativeSound")) {
-                                                        String nativeSound = questionAnswer.get("nativeSound").toString();
-                                                        answerWord.setNativeSound(nativeSound);
-                                                    }
-                                                    if (questionAnswer.has("translatedSound")) {
-                                                        String translatedSound = questionAnswer.get("translatedSound").toString();
-                                                        answerWord.setTranslatedSound(translatedSound);
-                                                    }
-                                                    if (questionAnswer.has("picture")) {
-                                                        String pictureUrl = questionAnswer.get("picture").toString();
-                                                        answerWord.setPicture(pictureUrl);
-                                                    }
-                                                    if (questionAnswer.has("tags")) {
-                                                        String wordTags = questionAnswer.get("tags").toString();
-                                                        answerWord.setTags(wordTags);
-                                                    }
-                                                    String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
-                                                    answerWord.setNativeDefinition(nativeDefinition);
-                                                    String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
-                                                    answerWord.setTranslatedDefinition(translatedDefinition);
-                                                    JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
-                                                    String nativeLanguage = answerNativeLang.get("id").toString();
-                                                    Integer nativeLanguageInteger = Integer.parseInt(nativeLanguage);
-                                                    String nativeLanguageName = answerNativeLang.get("languageName").toString();
-                                                    answerWord.setNativeLanguageId(nativeLanguageInteger);
-                                                    JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
-                                                    String translatedLanguage = answerTranslatLang.get("id").toString();
-                                                    Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
-                                                    String translatedLanguageName = answerTranslatLang.get("languageName").toString();
-                                                    answerWord.setTranslatedLanguageId(translatedLanguageInteger);
-                                                    newQuestion.setAnswerId(wordIdInteger);
-                                                    Language nativeLang = new Language();
-                                                    Language translatLang = new Language();
-                                                    nativeLang.setId(nativeLanguageInteger);
-                                                    nativeLang.setLanguageName(nativeLanguageName);
-                                                    translatLang.setId(translatedLanguageInteger);
-                                                    translatLang.setLanguageName(translatedLanguageName);
-                                                    dbReader.insertWord(answerWord);
-                                                    dbReader.insertLanguage(nativeLang);
-                                                    dbReader.insertLanguage(translatLang);
+                                        newTest.setId(testIdInteger);
+                                        String testName = singleTest.get("name").toString();
+                                        newTest.setName(testName);
+                                        String testDescription = singleTest.get("description").toString();
+                                        newTest.setDescription(testDescription);
+                                        //newTest.setScore(0);
+                                        newTest.setIsNew(1);
+                                        newTest.setIsLocal(1);
+                                        //newTest.setIsCompleted(0);
+                                        newTest.setLessonId(lessonIdInteger);
+                                        JSONArray questionsArray = singleTest.getJSONArray("questions");
+                                        int questionsCount = questionsArray.length();
+                                        for (int k = 0; k < questionsCount; k++) {
+                                            TestQuestion newQuestion = new TestQuestion();
+                                            JSONObject singleQuestion = questionsArray.getJSONObject(k);
+                                            newQuestion.setTestId(testIdInteger);
+                                            String questionId = singleQuestion.get("id").toString();
+                                            Integer questionIdInteger = Integer.parseInt(questionId);
+                                            newQuestion.setId(questionIdInteger);
+                                            String questionToAsk = singleQuestion.get("question").toString();
+                                            newQuestion.setQuestion(questionToAsk);
+                                            String questionPoints = singleQuestion.get("points").toString();
+                                            Integer questionPointsInteger = Integer.parseInt(questionPoints);
+                                            newQuestion.setPoints(questionPointsInteger);
+                                            JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
+                                            {
+                                                Word answerWord = new Word();
+                                                String wordId = questionAnswer.get("id").toString();
+                                                Integer wordIdInteger = Integer.parseInt(wordId);
+                                                answerWord.setId(wordIdInteger);
+                                                String nativeWord = questionAnswer.get("nativeWord").toString();
+                                                answerWord.setNativeWord(nativeWord);
+                                                String translatedWord = questionAnswer.get("translatedWord").toString();
+                                                answerWord.setTranslatedWord(translatedWord);
+                                                if (questionAnswer.has("nativeSound")) {
+                                                    String nativeSound = questionAnswer.get("nativeSound").toString();
+                                                    answerWord.setNativeSound(nativeSound);
                                                 }
-                                                JSONArray otherAnswers = singleQuestion.getJSONArray("others");
-                                                int othersCount = otherAnswers.length();
-                                                int wrongAnswerIds[] = new int[otherAnswers.length()];
-                                                for (int l = 0; l < othersCount; l++) {
-                                                    Word wrongAnswer = new Word();
-                                                    JSONObject singleOtherAnswer = otherAnswers.getJSONObject(l);
-                                                    String wordId = singleOtherAnswer.get("id").toString();
-                                                    Integer wordIdInteger = Integer.parseInt(wordId);
-                                                    wrongAnswer.setId(wordIdInteger);
-                                                    String nativeWord = singleOtherAnswer.get("nativeWord").toString();
-                                                    wrongAnswer.setNativeWord(nativeWord);
-                                                    String translatedWord = singleOtherAnswer.get("translatedWord").toString();
-                                                    wrongAnswer.setTranslatedWord(translatedWord);
-                                                    String nativeDefinition = singleOtherAnswer.get("nativeDefinition").toString();
-                                                    wrongAnswer.setNativeDefinition(nativeDefinition);
-                                                    String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
-                                                    wrongAnswer.setTranslatedDefinition(translatedDefinition);
-                                                    if (singleOtherAnswer.has("nativeSound")) {
-                                                        String nativeSound = singleOtherAnswer.get("nativeSound").toString();
-                                                        wrongAnswer.setNativeSound(nativeSound);
-                                                    }
-                                                    if (singleOtherAnswer.has("translatedSound")) {
-                                                        String translatedSound = singleOtherAnswer.get("translatedSound").toString();
-                                                        wrongAnswer.setTranslatedSound(translatedSound);
-                                                    }
-                                                    if (singleOtherAnswer.has("picture")) {
-                                                        String pictureUrl = singleOtherAnswer.get("picture").toString();
-                                                        wrongAnswer.setPicture(pictureUrl);
-                                                    }
-                                                    if (singleOtherAnswer.has("tags")) {
-                                                        String wordTags = singleOtherAnswer.get("tags").toString();
-                                                        wrongAnswer.setTags(wordTags);
-                                                    }
-                                                    wrongAnswerIds[l] = wordIdInteger;
-                                                    dbReader.insertWord(wrongAnswer);
+                                                if (questionAnswer.has("translatedSound")) {
+                                                    String translatedSound = questionAnswer.get("translatedSound").toString();
+                                                    answerWord.setTranslatedSound(translatedSound);
                                                 }
-                                                newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
-                                                newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
-                                                newQuestion.setOtherAnswerThreeId(wrongAnswerIds[2]);
-                                                JSONObject questionType = singleQuestion.getJSONObject("questionType");
-                                                String questionTypeId = questionType.get("id").toString();
-                                                Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
-                                                String questionTypeName = questionType.get("typeName").toString();
-                                                JSONObject answerType = singleQuestion.getJSONObject("answerType");
-                                                String answerTypeId = answerType.get("id").toString();
-                                                Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
-                                                String answerTypeName = answerType.get("typeName").toString();
-                                                QuestionAnswerType questionTypeOne = new QuestionAnswerType();
-                                                questionTypeOne.setId(answerTypeIdInteger);
-                                                questionTypeOne.setTypeName(answerTypeName);
-                                                QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
-                                                questionTypeTwo.setId(questionTypeIdInteger);
-                                                questionTypeTwo.setTypeName(questionTypeName);
-                                                dbReader.insertAnswertypes(questionTypeOne);
-                                                dbReader.insertAnswertypes(questionTypeTwo);
-                                                newQuestion.setQuestionTypeId(questionTypeIdInteger);
-                                                newQuestion.setAnswerTypeId(answerTypeIdInteger);
-                                                dbReader.insertExamQuestion(newQuestion);
+                                                if (questionAnswer.has("picture")) {
+                                                    String pictureUrl = questionAnswer.get("picture").toString();
+                                                    answerWord.setPicture(pictureUrl);
+                                                }
+                                                if (questionAnswer.has("tags")) {
+                                                    String wordTags = questionAnswer.get("tags").toString();
+                                                    answerWord.setTags(wordTags);
+                                                }
+                                                String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
+                                                answerWord.setNativeDefinition(nativeDefinition);
+                                                String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
+                                                answerWord.setTranslatedDefinition(translatedDefinition);
+                                                JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
+                                                String nativeLanguage = answerNativeLang.get("id").toString();
+                                                Integer nativeLanguageInteger = Integer.parseInt(nativeLanguage);
+                                                String nativeLanguageName = answerNativeLang.get("languageName").toString();
+                                                answerWord.setNativeLanguageId(nativeLanguageInteger);
+                                                JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
+                                                String translatedLanguage = answerTranslatLang.get("id").toString();
+                                                Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
+                                                String translatedLanguageName = answerTranslatLang.get("languageName").toString();
+                                                answerWord.setTranslatedLanguageId(translatedLanguageInteger);
+                                                newQuestion.setAnswerId(wordIdInteger);
+                                                Language nativeLang = new Language();
+                                                Language translatLang = new Language();
+                                                nativeLang.setId(nativeLanguageInteger);
+                                                nativeLang.setLanguageName(nativeLanguageName);
+                                                translatLang.setId(translatedLanguageInteger);
+                                                translatLang.setLanguageName(translatedLanguageName);
+                                                dbReader.insertWord(answerWord);
+                                                dbReader.insertLanguage(nativeLang);
+                                                dbReader.insertLanguage(translatLang);
                                             }
-                                            dbReader.insertExam(newExam);
-                                            System.out.println("Exam inserted");
+                                            JSONArray otherAnswers = singleQuestion.getJSONArray("others");
+                                            int othersCount = otherAnswers.length();
+                                            int wrongAnswerIds[] = new int[otherAnswers.length()];
+                                            for (int l = 0; l < othersCount; l++) {
+                                                Word wrongAnswer = new Word();
+                                                JSONObject singleOtherAnswer = otherAnswers.getJSONObject(l);
+                                                String wordId = singleOtherAnswer.get("id").toString();
+                                                Integer wordIdInteger = Integer.parseInt(wordId);
+                                                wrongAnswer.setId(wordIdInteger);
+                                                String nativeWord = singleOtherAnswer.get("nativeWord").toString();
+                                                wrongAnswer.setNativeWord(nativeWord);
+                                                String translatedWord = singleOtherAnswer.get("translatedWord").toString();
+                                                wrongAnswer.setTranslatedWord(translatedWord);
+                                                String nativeDefinition = singleOtherAnswer.get("nativeDefinition").toString();
+                                                wrongAnswer.setNativeDefinition(nativeDefinition);
+                                                String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
+                                                wrongAnswer.setTranslatedDefinition(translatedDefinition);
+                                                if (singleOtherAnswer.has("nativeSound")) {
+                                                    String nativeSound = singleOtherAnswer.get("nativeSound").toString();
+                                                    wrongAnswer.setNativeSound(nativeSound);
+                                                }
+                                                if (singleOtherAnswer.has("translatedSound")) {
+                                                    String translatedSound = singleOtherAnswer.get("translatedSound").toString();
+                                                    wrongAnswer.setTranslatedSound(translatedSound);
+                                                }
+                                                if (singleOtherAnswer.has("picture")) {
+                                                    String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                                    wrongAnswer.setPicture(pictureUrl);
+                                                }
+                                                if (singleOtherAnswer.has("tags")) {
+                                                    String wordTags = singleOtherAnswer.get("tags").toString();
+                                                    wrongAnswer.setTags(wordTags);
+                                                }
+                                                wrongAnswerIds[l] = wordIdInteger;
+                                                dbReader.insertWord(wrongAnswer);
+                                            }
+                                            newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
+                                            newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
+                                            newQuestion.setOtherAnswerThreeId(wrongAnswerIds[2]);
+                                            JSONObject questionType = singleQuestion.getJSONObject("questionType");
+                                            String questionTypeId = questionType.get("id").toString();
+                                            Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
+                                            String questionTypeName = questionType.get("typeName").toString();
+                                            JSONObject answerType = singleQuestion.getJSONObject("answerType");
+                                            String answerTypeId = answerType.get("id").toString();
+                                            Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
+                                            String answerTypeName = answerType.get("typeName").toString();
+                                            QuestionAnswerType questionTypeOne = new QuestionAnswerType();
+                                            questionTypeOne.setId(answerTypeIdInteger);
+                                            questionTypeOne.setTypeName(answerTypeName);
+                                            QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
+                                            questionTypeTwo.setId(questionTypeIdInteger);
+                                            questionTypeTwo.setTypeName(questionTypeName);
+                                            dbReader.insertAnswertypes(questionTypeOne);
+                                            dbReader.insertAnswertypes(questionTypeTwo);
+                                            newQuestion.setQuestionTypeId(questionTypeIdInteger);
+                                            newQuestion.setAnswerTypeId(answerTypeIdInteger);
+                                            dbReader.insertTestQuestion(newQuestion);
                                         }
+                                        dbReader.insertTest(newTest);
+                                        System.out.println("Test inserted");
 
                                     }
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                                    JSONArray examsArray = elementsObject.getJSONArray("exams");
+                                    int examsCount = examsArray.length();
+                                    for (int j = 0; j < examsCount; j++) {
+                                        String examId = examsArray.getJSONObject(0).get("id").toString();
+                                        int examIdInteger = Integer.parseInt(examId);
+                                        URL examEndpoint = new URL("http://pzmmd.cba.pl/api/exam?id=" + examIdInteger);
+                                        HttpURLConnection examConnection = (HttpURLConnection) examEndpoint.openConnection();
+                                        examConnection.setRequestMethod("GET");
+                                        examConnection.setDoOutput(true);
+                                        examConnection.connect();
+
+                                        BufferedReader br3 = new BufferedReader(new InputStreamReader(examEndpoint.openStream()));
+                                        StringBuilder sb3 = new StringBuilder();
+
+                                        String line3;
+                                        while ((line3 = br3.readLine()) != null) {
+                                            sb3.append(line3 + "\n");
+                                        }
+                                        br3.close();
+                                        String examString = sb3.toString();
+                                        JSONObject examObject = new JSONObject(examString);
+                                        Exam newExam = new Exam();
+                                        JSONObject singleExam = null;
+                                        try {
+                                            singleExam = examObject.getJSONObject("0");
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                        String isNew = examObject.get("isNew").toString();
+                                        Boolean isNewBoolean = Boolean.parseBoolean(isNew);
+                                        if (isNewBoolean == false) {
+                                            Exam completedExam = new Exam();
+                                            completedExam.setId(examIdInteger);
+                                            completedExam.setLessonId(lessonIdInteger);
+                                            System.out.println("Id lekcji egzaminu: " + completedExam.getLessonId());
+                                            String examScore = singleExam.getString("score");
+                                            Integer examScoreInteger = Integer.parseInt(examScore);
+                                            completedExam.setScore(examScoreInteger);
+                                            String examGrade = singleExam.getString("grade");
+                                            Integer examGradeInteger = Integer.parseInt(examGrade);
+                                            System.out.println("Ocena z egzaminu: " + examGradeInteger);
+                                            completedExam.setGrade(examGradeInteger);
+                                            String isPassed = singleExam.getString("isPassed");
+                                            Boolean isPassedBoolean = Boolean.parseBoolean(isPassed);
+                                            if (isPassedBoolean == true) {
+                                                completedExam.setIsPassed(1);
+                                            } else {
+                                                completedExam.setIsPassed(0);
+                                            }
+                                            completedExam.setIsNew(0);
+                                            String totalPoints = singleExam.getString("totalPoints");
+                                            Integer totalPointsInteger = Integer.parseInt(totalPoints);
+                                            completedExam.setPointsToPass(totalPointsInteger);
+                                            dbReader.insertExam(completedExam);
+                                            System.out.println("Completed exam inserted");
+                                        } else {
+                                            String testId = singleExam.get("id").toString();
+                                            Integer testIdInteger = Integer.parseInt(testId);
+                                            newExam.setId(testIdInteger);
+                                            String testName = singleExam.get("name").toString();
+                                            newExam.setName(testName);
+                                            String testDescription = singleExam.get("description").toString();
+                                            newExam.setDescription(testDescription);
+                                            int inb = 0;
+                                            if (isNewBoolean == true) {
+                                                inb = 1;
+                                            } else {
+                                                inb = 0;
+                                            }
+                                            newExam.setScore(0);
+                                            newExam.setIsNew(inb);
+                                            newExam.setIsLocal(1);
+                                            newExam.setIsPassed(0);
+                                            newExam.setLessonId(lessonIdInteger);
+                                            if (isNewBoolean == true) {
+                                                JSONArray questionsArray = singleExam.getJSONArray("questions");
+                                                int questionsCount = questionsArray.length();
+                                                for (int k = 0; k < questionsCount; k++) {
+                                                    ExamQuestion newQuestion = new ExamQuestion();
+                                                    JSONObject singleQuestion = questionsArray.getJSONObject(k);
+                                                    newQuestion.setExamId(testIdInteger);
+                                                    String questionId = singleQuestion.get("id").toString();
+                                                    Integer questionIdInteger = Integer.parseInt(questionId);
+                                                    newQuestion.setId(questionIdInteger);
+                                                    String questionToAsk = singleQuestion.get("question").toString();
+                                                    newQuestion.setQuestion(questionToAsk);
+                                                    String questionPoints = singleQuestion.get("points").toString();
+                                                    Integer questionPointsInteger = Integer.parseInt(questionPoints);
+                                                    newQuestion.setPoints(questionPointsInteger);
+                                                    JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
+                                                    {
+                                                        Word answerWord = new Word();
+                                                        String wordId = questionAnswer.get("id").toString();
+                                                        Integer wordIdInteger = Integer.parseInt(wordId);
+                                                        answerWord.setId(wordIdInteger);
+                                                        String nativeWord = questionAnswer.get("nativeWord").toString();
+                                                        answerWord.setNativeWord(nativeWord);
+                                                        String translatedWord = questionAnswer.get("translatedWord").toString();
+                                                        answerWord.setTranslatedWord(translatedWord);
+                                                        if (questionAnswer.has("nativeSound")) {
+                                                            String nativeSound = questionAnswer.get("nativeSound").toString();
+                                                            answerWord.setNativeSound(nativeSound);
+                                                        }
+                                                        if (questionAnswer.has("translatedSound")) {
+                                                            String translatedSound = questionAnswer.get("translatedSound").toString();
+                                                            answerWord.setTranslatedSound(translatedSound);
+                                                        }
+                                                        if (questionAnswer.has("picture")) {
+                                                            String pictureUrl = questionAnswer.get("picture").toString();
+                                                            answerWord.setPicture(pictureUrl);
+                                                        }
+                                                        if (questionAnswer.has("tags")) {
+                                                            String wordTags = questionAnswer.get("tags").toString();
+                                                            answerWord.setTags(wordTags);
+                                                        }
+                                                        String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
+                                                        answerWord.setNativeDefinition(nativeDefinition);
+                                                        String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
+                                                        answerWord.setTranslatedDefinition(translatedDefinition);
+                                                        JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
+                                                        String nativeLanguage = answerNativeLang.get("id").toString();
+                                                        Integer nativeLanguageInteger = Integer.parseInt(nativeLanguage);
+                                                        String nativeLanguageName = answerNativeLang.get("languageName").toString();
+                                                        answerWord.setNativeLanguageId(nativeLanguageInteger);
+                                                        JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
+                                                        String translatedLanguage = answerTranslatLang.get("id").toString();
+                                                        Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
+                                                        String translatedLanguageName = answerTranslatLang.get("languageName").toString();
+                                                        answerWord.setTranslatedLanguageId(translatedLanguageInteger);
+                                                        newQuestion.setAnswerId(wordIdInteger);
+                                                        Language nativeLang = new Language();
+                                                        Language translatLang = new Language();
+                                                        nativeLang.setId(nativeLanguageInteger);
+                                                        nativeLang.setLanguageName(nativeLanguageName);
+                                                        translatLang.setId(translatedLanguageInteger);
+                                                        translatLang.setLanguageName(translatedLanguageName);
+                                                        dbReader.insertWord(answerWord);
+                                                        dbReader.insertLanguage(nativeLang);
+                                                        dbReader.insertLanguage(translatLang);
+                                                    }
+                                                    JSONArray otherAnswers = singleQuestion.getJSONArray("others");
+                                                    int othersCount = otherAnswers.length();
+                                                    int wrongAnswerIds[] = new int[otherAnswers.length()];
+                                                    for (int l = 0; l < othersCount; l++) {
+                                                        Word wrongAnswer = new Word();
+                                                        JSONObject singleOtherAnswer = otherAnswers.getJSONObject(l);
+                                                        String wordId = singleOtherAnswer.get("id").toString();
+                                                        Integer wordIdInteger = Integer.parseInt(wordId);
+                                                        wrongAnswer.setId(wordIdInteger);
+                                                        String nativeWord = singleOtherAnswer.get("nativeWord").toString();
+                                                        wrongAnswer.setNativeWord(nativeWord);
+                                                        String translatedWord = singleOtherAnswer.get("translatedWord").toString();
+                                                        wrongAnswer.setTranslatedWord(translatedWord);
+                                                        String nativeDefinition = singleOtherAnswer.get("nativeDefinition").toString();
+                                                        wrongAnswer.setNativeDefinition(nativeDefinition);
+                                                        String translatedDefinition = singleOtherAnswer.get("translatedDefinition").toString();
+                                                        wrongAnswer.setTranslatedDefinition(translatedDefinition);
+                                                        if (singleOtherAnswer.has("nativeSound")) {
+                                                            String nativeSound = singleOtherAnswer.get("nativeSound").toString();
+                                                            wrongAnswer.setNativeSound(nativeSound);
+                                                        }
+                                                        if (singleOtherAnswer.has("translatedSound")) {
+                                                            String translatedSound = singleOtherAnswer.get("translatedSound").toString();
+                                                            wrongAnswer.setTranslatedSound(translatedSound);
+                                                        }
+                                                        if (singleOtherAnswer.has("picture")) {
+                                                            String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                                            wrongAnswer.setPicture(pictureUrl);
+                                                        }
+                                                        if (singleOtherAnswer.has("tags")) {
+                                                            String wordTags = singleOtherAnswer.get("tags").toString();
+                                                            wrongAnswer.setTags(wordTags);
+                                                        }
+                                                        wrongAnswerIds[l] = wordIdInteger;
+                                                        dbReader.insertWord(wrongAnswer);
+                                                    }
+                                                    newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
+                                                    newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
+                                                    newQuestion.setOtherAnswerThreeId(wrongAnswerIds[2]);
+                                                    JSONObject questionType = singleQuestion.getJSONObject("questionType");
+                                                    String questionTypeId = questionType.get("id").toString();
+                                                    Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
+                                                    String questionTypeName = questionType.get("typeName").toString();
+                                                    JSONObject answerType = singleQuestion.getJSONObject("answerType");
+                                                    String answerTypeId = answerType.get("id").toString();
+                                                    Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
+                                                    String answerTypeName = answerType.get("typeName").toString();
+                                                    QuestionAnswerType questionTypeOne = new QuestionAnswerType();
+                                                    questionTypeOne.setId(answerTypeIdInteger);
+                                                    questionTypeOne.setTypeName(answerTypeName);
+                                                    QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
+                                                    questionTypeTwo.setId(questionTypeIdInteger);
+                                                    questionTypeTwo.setTypeName(questionTypeName);
+                                                    dbReader.insertAnswertypes(questionTypeOne);
+                                                    dbReader.insertAnswertypes(questionTypeTwo);
+                                                    newQuestion.setQuestionTypeId(questionTypeIdInteger);
+                                                    newQuestion.setAnswerTypeId(answerTypeIdInteger);
+                                                    dbReader.insertExamQuestion(newQuestion);
+                                                }
+                                                dbReader.insertExam(newExam);
+                                                System.out.println("Exam inserted");
+                                            }
+
+                                        }
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
                             /*JSONObject jsonObjectX = new JSONObject(jsonString);
                             String errCode = jsonObjectX.get("error_code").toString();
                             System.out.println("Error code: " + errCode);
                             if(errCode.equals("1")) {
                                 return false;
                             }*/
-                            }
+                                }
 
+                            }
+                            //return true;
                         }
                         //return true;
-                    }
-                    //return true;
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     /*JSONObject jsonObject = new JSONObject(jsonString);
                     String errCode = jsonObject.get("error_code").toString();
                     System.out.println("Error code: " + errCode);
                     if(errCode.equals("1")) {
                         return false;
                     }*/
-                }
-                return true;
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } /*catch (JSONException e) {
+                    }
+                    return true;
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } /*catch (JSONException e) {
                 e.printStackTrace();
             }*/ /*catch (JSONException e) {
                 e.printStackTrace();
             }*/
-
-
+                return false;
+            }
+            else {
+                return true;
+            }
             // TODO: register the new account here.
-            return false;
+
         }
 
         @Override

@@ -26,6 +26,9 @@ import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -44,6 +47,7 @@ public class SoundAnswersFragment extends Fragment {
     int setAnswerId;
     MobileDatabaseReader dbReader;
     ArrayList<Word> wordList;
+    int isOffline;
 
     public interface OnAnswerSelectedListener {
         public void onAnswerSelected(int answerId);
@@ -56,6 +60,7 @@ public class SoundAnswersFragment extends Fragment {
         answerIds = b.getIntArray("answerIds");
         answerString = b.getStringArray("answerString");
         currentAnswerTypeId = b.getInt("answerType");
+        isOffline = b.getInt("isOffline", 0);
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
@@ -107,7 +112,19 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans1.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(0).getTranslatedSound());
+                    if (isOffline == 0) {
+                        mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(0).getTranslatedSound());
+                    }
+                    else {
+                        if (wordList.get(0).getIsTranslatedSoundLocal() == 1) {
+                            System.out.println("Playing local 1");
+                            File soundDir = new File(SoundAnswersFragment.this.getActivity().getFilesDir() + "/Sounds");
+                            File sound = new File(soundDir, wordList.get(0).getTranslatedSoundLocal());
+                            FileInputStream inputStream = new FileInputStream(sound);
+                            mediaPlayer.setDataSource(inputStream.getFD());
+                            inputStream.close();
+                        }
+                    }
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -130,7 +147,19 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans2.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(1).getTranslatedSound());
+                    if(isOffline == 0) {
+                        mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(1).getTranslatedSound());
+                    }
+                    else {
+                        if (wordList.get(1).getIsTranslatedSoundLocal() == 1) {
+                            System.out.println("Playing local 1");
+                            File soundDir = new File(SoundAnswersFragment.this.getActivity().getFilesDir() + "/Sounds");
+                            File sound = new File(soundDir, wordList.get(1).getTranslatedSoundLocal());
+                            FileInputStream inputStream = new FileInputStream(sound);
+                            mediaPlayer.setDataSource(inputStream.getFD());
+                            inputStream.close();
+                        }
+                    }
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -153,7 +182,19 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans3.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(2).getTranslatedSound());
+                    if(isOffline == 0) {
+                        mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(2).getTranslatedSound());
+                    }
+                    else {
+                        if (wordList.get(2).getIsTranslatedSoundLocal() == 1) {
+                            System.out.println("Playing local 1");
+                            File soundDir = new File(SoundAnswersFragment.this.getActivity().getFilesDir() + "/Sounds");
+                            File sound = new File(soundDir, wordList.get(2).getTranslatedSoundLocal());
+                            FileInputStream inputStream = new FileInputStream(sound);
+                            mediaPlayer.setDataSource(inputStream.getFD());
+                            inputStream.close();
+                        }
+                    }
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -176,7 +217,19 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans4.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(3).getTranslatedSound());
+                    if(isOffline == 0) {
+                        mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(3).getTranslatedSound());
+                    }
+                    else {
+                        if (wordList.get(3).getIsTranslatedSoundLocal() == 1) {
+                            System.out.println("Playing local 1");
+                            File soundDir = new File(SoundAnswersFragment.this.getActivity().getFilesDir() + "/Sounds");
+                            File sound = new File(soundDir, wordList.get(3).getTranslatedSoundLocal());
+                            FileInputStream inputStream = new FileInputStream(sound);
+                            mediaPlayer.setDataSource(inputStream.getFD());
+                            inputStream.close();
+                        }
+                    }
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -1,6 +1,8 @@
 package com.example.mniez.myapplication.StudentModule;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,8 +21,13 @@ import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+
 public class CourseDetailsActivity extends AppCompatActivity {
 
+    SharedPreferences sharedpreferences;
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
     Integer courseId;
     TextView tex1, tex2, tex3, tex4, tex5, tex6;
     MobileDatabaseReader dbReader;
@@ -28,6 +35,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
     String titleBar;
     String courseImage;
     String imageTransition;
+    Integer isOffline;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,25 +48,50 @@ public class CourseDetailsActivity extends AppCompatActivity {
         dbReader = new MobileDatabaseReader(getApplicationContext());
         supportPostponeEnterTransition();
         courseImage = extras.getString("courseImage");
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         final ImageView imageView = (ImageView) findViewById(R.id.imageViewDetails);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             imageTransition = extras.getString("imageTransition");
             imageView.setTransitionName(imageTransition);
         }
-        Picasso.with(this)
-                .load(courseImage)
-                .noFade()
-                .into(imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        supportStartPostponedEnterTransition();
-                    }
+        if (isOffline == 0) {
+            Picasso.with(this)
+                    .load(courseImage)
+                    .noFade()
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            supportStartPostponedEnterTransition();
+                        }
 
-                    @Override
-                    public void onError() {
-                        supportStartPostponedEnterTransition();
-                    }
-                });
+                        @Override
+                        public void onError() {
+                            supportStartPostponedEnterTransition();
+                        }
+                    });
+        }
+        else {
+            String avatarLocalFile = dbReader.selectCourse(courseId).getAvatarLocal();
+            courseImage = avatarLocalFile;
+            File avatar = new File(CourseDetailsActivity.this.getFilesDir() + "/Pictures");
+            File avatarLocal = new File(avatar, avatarLocalFile);
+
+            Picasso.with(this)
+                    .load(avatarLocal)
+                    .noFade()
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            supportStartPostponedEnterTransition();
+                        }
+
+                        @Override
+                        public void onError() {
+                            supportStartPostponedEnterTransition();
+                        }
+                    });
+        }
         titleBar = intent.getStringExtra("titleBar");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

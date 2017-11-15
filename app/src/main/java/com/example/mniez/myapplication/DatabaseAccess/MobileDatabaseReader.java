@@ -327,6 +327,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 cs.setLevelName(c.getString(c.getColumnIndex(LEVEL_NAME)));
                 cs.setLearnedLanguageName(c.getString(c.getColumnIndex(LEARNED_LANGUAGE_NAME)));
                 cs.setNativeLanguageName(c.getString(c.getColumnIndex(NATIVE_LANGUAGE_NAME)));
+                cs.setIsAvatarLocal(c.getInt(c.getColumnIndex(IS_AVATAR_LOCAL)));
+                cs.setAvatarLocal(c.getString(c.getColumnIndex(AVATAR_LOCAL)));
                 System.out.println(cs.getLevelName());
                 courses.add(cs);
             } while (c.moveToNext());
@@ -358,6 +360,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 cs.setLevelName(c.getString(c.getColumnIndex(LEVEL_NAME)));
                 cs.setLearnedLanguageName(c.getString(c.getColumnIndex(LEARNED_LANGUAGE_NAME)));
                 cs.setNativeLanguageName(c.getString(c.getColumnIndex(NATIVE_LANGUAGE_NAME)));
+                cs.setIsAvatarLocal(c.getInt(c.getColumnIndex(IS_AVATAR_LOCAL)));
+                cs.setAvatarLocal(c.getString(c.getColumnIndex(AVATAR_LOCAL)));
                 System.out.println(cs.getLevelName());
             } while (c.moveToNext());
         }
@@ -656,12 +660,34 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 lt.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
                 lt.setName(c.getString(c.getColumnIndex(NAME)));
                 lt.setLectureUrl(c.getString(c.getColumnIndex(LECTURE_URL)));
+                lt.setIsLectureLocal(c.getInt(c.getColumnIndex(IS_LECTURE_LOCAL)));
+                lt.setLectureLocal(c.getString(c.getColumnIndex(LECTURE_LOCAL)));
                 System.out.println(lt.getName());
                 lectures.add(lt);
             } while (c.moveToNext());
         }
         db.close();
         return lectures;
+    }
+
+    public Lecture selectSingleLecture(Integer lectureId) {
+        Lecture lt = new Lecture();
+        String selectQuery = "SELECT * FROM " + TABLE_LECTURES + " WHERE " + KEY_ID + " = " + lectureId;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                lt.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                lt.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
+                lt.setName(c.getString(c.getColumnIndex(NAME)));
+                lt.setLectureUrl(c.getString(c.getColumnIndex(LECTURE_URL)));
+                lt.setIsLectureLocal(c.getInt(c.getColumnIndex(IS_LECTURE_LOCAL)));
+                lt.setLectureLocal(c.getString(c.getColumnIndex(LECTURE_LOCAL)));
+                System.out.println(lt.getName());
+            } while (c.moveToNext());
+        }
+        db.close();
+        return lt;
     }
 
     public long insertTestQuestion(TestQuestion testQuestion) {
@@ -846,6 +872,12 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 wd.setTranslatedSound(c.getString(c.getColumnIndex(TRANSLATED_SOUND)));
                 wd.setTranslatedWord(c.getString(c.getColumnIndex(TRANSLATED_WORD)));
                 wd.setCreatorId(c.getInt(c.getColumnIndex(CREATOR_ID)));
+                wd.setIsNativeSoundLocal(c.getInt(c.getColumnIndex(IS_NATIVE_SOUND_LOCAL)));
+                wd.setNativeSoundLocal(c.getString(c.getColumnIndex(NATIVE_SOUND_LOCAL)));
+                wd.setIsTranslatedSoundLocal(c.getInt(c.getColumnIndex(IS_TRANSLATED_SOUND_LOCAL)));
+                wd.setTranslatedSoundLocal(c.getString(c.getColumnIndex(TRANSLATED_SOUND_LOCAL)));
+                wd.setIsPictureLocal(c.getInt(c.getColumnIndex(IS_PICTURE_LOCAL)));
+                wd.setPictureLocal(c.getString(c.getColumnIndex(PICTURE_LOCAL)));
             } while (c.moveToNext());
         }
         db.close();
@@ -951,6 +983,36 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         ContentValues args = new ContentValues();
         args.put(SCORE, score);
         db.update(TABLE_TESTS, args, KEY_ID + "=" + testId, null);
+        return score;
+    }
+
+    public long updateScoreForTestLocal(int testId, int score, int isCompletedLocal, String answersConcat) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+        args.put(SCORE, score);
+        args.put(IS_COMPLETED_LOCAL, isCompletedLocal);
+        args.put(ANSWER_CONCATENATION, answersConcat);
+        db.update(TABLE_TESTS, args, KEY_ID + "=" + testId, null);
+        return score;
+    }
+
+    public long updateScoreForExam(int examId, int score, int grade) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+        args.put(SCORE, score);
+        args.put(GRADE, grade);
+        db.update(TABLE_EXAMS, args, KEY_ID + "=" + examId, null);
+        return score;
+    }
+
+    public long updateScoreForExamLocal(int examId, int score, int grade, int isCompletedLocal, String answersConcat) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues args = new ContentValues();
+        args.put(SCORE, score);
+        args.put(GRADE, grade);
+        args.put(IS_COMPLETED_LOCAL, isCompletedLocal);
+        args.put(ANSWER_CONCATENATION, answersConcat);
+        db.update(TABLE_EXAMS, args, KEY_ID + "=" + examId, null);
         return score;
     }
 }

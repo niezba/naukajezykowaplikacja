@@ -1,8 +1,10 @@
 package com.example.mniez.myapplication.StudentModule;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -41,6 +43,9 @@ import java.util.Random;
 
 public class TestActivity extends AppCompatActivity implements AnswersFragment.OnAnswerSelectedListener, ImageAnswersFragment.OnAnswerSelectedListener, SoundAnswersFragment.OnAnswerSelectedListener, InputAnswersFragment.OnAnswerSelectedListener {
 
+    SharedPreferences sharedpreferences;
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
     private static final String ANSWERS_TAG = "answers";
     private static final String NUMBER_TAG = "number";
     private static final String QUESTION_TAG = "question";
@@ -72,11 +77,11 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
     int[][] answersOrderArray = {{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},{2,1,3,4},{2,1,4,3},{2,3,1,4},{2,3,4,1},
             {2,4,3,1},{2,4,1,3},{3,1,2,4},{3,1,4,2},{3,2,4,1},{3,2,1,4},{3,4,2,1},{3,4,1,2},{4,1,3,2},{4,1,2,3},{4,2,3,1},{4,2,1,3},{4,3,1,2},{4,3,2,1}};
     int[] answersOrder;
-    String currentAnswerType;
     private SendTestResultsTask mSendTask = null;
     ProgressDialog progress;
     int score;
     int courseId;
+    int isOffline;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -94,10 +99,18 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             isCompleted = 1;
-                            progress = ProgressDialog.show(TestActivity.this, "Proszę czekać",
-                                    "Wysyłam wyniki", true);
-                            mSendTask = new SendTestResultsTask();
-                            mSendTask.execute();
+                            if(isOffline == 0)
+                            {
+                                progress = ProgressDialog.show(TestActivity.this, "Proszę czekać",
+                                        "Wysyłam wyniki", true);
+                                mSendTask = new SendTestResultsTask();
+                                mSendTask.execute();
+                            }
+                            else {
+                                progress = ProgressDialog.show(TestActivity.this, "Proszę czekać",
+                                        "Przeliczam wyniki", true);
+                                resolveOfflineTest();
+                            }
                         }
                     });
                     builder.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
@@ -128,6 +141,8 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
         dbReader = new MobileDatabaseReader(getApplicationContext());
         String testName = dbReader.selectTestName(testId);
         setTitle(testName);
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         testQuestions = dbReader.selectAllQuestionsForTest(testId);
         System.out.println(testQuestions.size());
         questionWords = populateCurrentListOfWords(testQuestions.get(0));
@@ -150,6 +165,7 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
         args2.putString("quesstionToAsk", testQuestions.get(questionCounter).getQuestion());
         args2.putInt("questionType", testQuestions.get(questionCounter).getQuestionTypeId());
         args2.putInt("questionWord", testQuestions.get(questionCounter).getAnswerId());
+        args2.putInt("isOffline", isOffline);
         mQuestionFragment = (QuestionFragment) fragmentManager.findFragmentByTag(QUESTION_TAG);
         if (mQuestionFragment == null) {
             mQuestionFragment = new QuestionFragment();
@@ -161,6 +177,7 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
         populateAnswersForQuestion(testQuestions.get(questionCounter));
         args3.putStringArray("answerString", answersString);
         args3.putIntArray("answerIds", currentAnswerIds);
+        args3.putInt("isOffline", isOffline);
         mAnswersFragment = (AnswersFragment) fragmentManager.findFragmentByTag(ANSWERS_TAG);
         if (mAnswersFragment == null) {
             mAnswersFragment = new AnswersFragment();
@@ -497,7 +514,7 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
                 progress.dismiss();
                 int totalPoints = dbReader.calculateTotalPointsForTest(testId);
                 AlertDialog.Builder builder = new AlertDialog.Builder(TestActivity.this);
-                builder.setMessage("Zdobyłeś w tym teście " + score + " na " +  totalPoints + " punktów!")
+                builder.setMessage("Zdobyłeś w tym teście " + score + " na " +  totalPoints + " punktów.")
                         .setTitle("Wyniki").setCancelable(false);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -517,6 +534,39 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
         protected void onCancelled() {
             mSendTask = null;
         }
+
+    }
+
+    protected void resolveOfflineTest() {
+
+        Double pointsSum = 0.0;
+        String answerArray = new String();
+        answerArray = answerArray.concat("[");
+        for(int i = 0; i < testQuestions.size(); i++) {
+            if(answerIds[i] == testQuestions.get(i).getAnswerId()) {
+                answerArray = answerArray.concat("{\"questionId\":" + testQuestions.get(i).getId() + ",\"wordId\":" + answerIds[i] + "},");
+                pointsSum = pointsSum + testQuestions.get(i).getPoints();
+            }
+        }
+        answerArray = answerArray.substring(0, answerArray.length() - 1);
+        answerArray = answerArray.concat("]");
+        int totalPoints = dbReader.calculateTotalPointsForTest(testId);
+        score = pointsSum.intValue();
+        progress.dismiss();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(TestActivity.this);
+        builder.setMessage("Zdobyłeś w tym teście " + score + " na " +  totalPoints + " punktów.")
+                .setTitle("Wyniki").setCancelable(false);
+        final String finalAnswerArray = answerArray;
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dbReader.updateScoreForTestLocal(testId, score, 1, finalAnswerArray);
+                Intent intent = new Intent(TestActivity.this,MainActivity.class);
+                startActivity(intent);
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
 
     }
 }
