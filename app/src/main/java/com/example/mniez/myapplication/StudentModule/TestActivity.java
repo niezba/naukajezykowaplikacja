@@ -440,7 +440,7 @@ public class TestActivity extends AppCompatActivity implements AnswersFragment.O
                 answerArray = answerArray.concat("]");
                 System.out.println(answerArray);
                 try {
-                    URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/updateUserTestScore");
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("POST");
                     myConnection.setDoOutput(true);

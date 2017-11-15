@@ -107,7 +107,7 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans1.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(0).getTranslatedSound());
+                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(0).getTranslatedSound());
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -130,7 +130,7 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans2.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(1).getTranslatedSound());
+                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(1).getTranslatedSound());
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -153,7 +153,7 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans3.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(2).getTranslatedSound());
+                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(2).getTranslatedSound());
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -176,7 +176,7 @@ public class SoundAnswersFragment extends Fragment {
                     resetTexts();
                     ans4.setText("...");
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + wordList.get(3).getTranslatedSound());
+                    mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + wordList.get(3).getTranslatedSound());
                     mediaPlayer.prepareAsync();
                 } catch (IOException e) {
                     e.printStackTrace();

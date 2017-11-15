@@ -36,6 +36,7 @@ import android.widget.TextView;
 
 import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
+import com.example.mniez.myapplication.StudentModule.SynchronizationActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,6 +82,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    String userRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -352,7 +354,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/login?username="+mEmail+"&password="+mPassword);
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username="+mEmail+"&password="+mPassword);
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);
@@ -386,6 +388,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     editor.putString(PREFERENCES_PASSWORD, mPassword);
                     editor.putString(PREFERENCES_ID, appUserId);
                     editor.putString(PREFERENCES_ROLE, appRole);
+                    userRole = appRole;
                     editor.commit();
                     return true;
                 }
@@ -415,23 +418,40 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                builder.setMessage("Może to trochę potrwać")
-                        .setTitle("Wykonać pełną synchronizację?");
-                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(LoginActivity.this, FullSynchronizationActivity.class);
-                        startActivity(intent);
-                    }
-                });
-                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                    }
-                });
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                if (userRole.equals("ROLE_STUDENT")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                    builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
+                            .setTitle("Chcesz pracować w trybie offline?");
+                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(LoginActivity.this, FullSynchronizationActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                else if (userRole.equals("ROLE_TEACHER")) {
+
+                }
+                else if (userRole.equals("ROLE_ADMIN")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                    builder.setMessage("Funkcjonalności administratora nie są dostępne z poziomu aplikacji. Aby zarządzać Dummy zaloguj się poprzez przeglądarkę.")
+                            .setTitle("Opcja niedostępna");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
             } else {
                 mPasswordView.setError(errorText);
                 mPasswordView.requestFocus();

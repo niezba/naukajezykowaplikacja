@@ -102,7 +102,7 @@ public class QuestionFragment extends Fragment {
                 else {
                     questionToAskView.setVisibility(View.GONE);
                 }
-                Picasso.with(QuestionFragment.this.getActivity()).load("http://10.0.2.2:8000/media/imgs/" + questionWord.getPicture()).fit().centerCrop().into(questionImage);
+                Picasso.with(QuestionFragment.this.getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + questionWord.getPicture()).fit().centerCrop().into(questionImage);
                 questionImage.setVisibility(View.VISIBLE);
                 questionView.setVisibility(View.GONE);
                 questionSoundButton.setVisibility(View.GONE);
@@ -121,7 +121,7 @@ public class QuestionFragment extends Fragment {
                             resetText();
                             questionSoundButton.setText("...");
                             mediaPlayer.reset();
-                            mediaPlayer.setDataSource("http://10.0.2.2:8000/media/sounds/" + questionWord.getTranslatedSound());
+                            mediaPlayer.setDataSource("http://pzmmd.cba.pl/media/sounds/" + questionWord.getTranslatedSound());
                             mediaPlayer.prepareAsync();
                         } catch (IOException e) {
                             e.printStackTrace();

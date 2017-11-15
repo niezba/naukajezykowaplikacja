@@ -9,14 +9,13 @@
     android:gravity="center">
 
     <ProgressBar
-        android:id="@+id/synchr_progress"
+        android:id="@+id/synchr_progress2"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminate="false"
         tools:layout_editor_absoluteX="154dp"
-        tools:layout_editor_absoluteY="162dp" />
+        tools:layout_editor_absoluteY="162dp"
+        android:layout_gravity="center"/>
 
     <TextView
         android:id="@+id/synchrinfo"

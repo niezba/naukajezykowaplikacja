@@ -3,13 +3,10 @@ package com.example.mniez.myapplication.StudentModule;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -25,44 +22,32 @@ import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
-public class FullSynchronizationActivity extends AppCompatActivity {
-
-    /*Aktywność wywołująca pierwszą, pełną synchronizację. Wykonał: Marcin Niezbecki*/
+public class SynchronizationActivity extends AppCompatActivity {
 
     ProgressBar mProgressView;
     MobileDatabaseReader dbReader;
-    private FullSynchronizationActivity.CourseFetchTask mFetchTask = null;
-    int imagesQueue;
-    int progress;
+    private SynchronizationActivity.CourseFetchTask mFetchTask = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_full_synchronization);
-        mProgressView = (ProgressBar) findViewById(R.id.synchr_progress);
+        setContentView(R.layout.activity_synchronization);
+        mProgressView = (ProgressBar) findViewById(R.id.synchr_progress2);
         showProgress(true);
-        progress = 0;
         dbReader = new MobileDatabaseReader(getApplicationContext());
-        mFetchTask = new FullSynchronizationActivity.CourseFetchTask("");
+        mFetchTask = new SynchronizationActivity.CourseFetchTask("");
         mFetchTask.execute();
     }
 
@@ -121,67 +106,23 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                     String jsonObjectString = jsonObject.toString();
                     System.out.println(jsonObjectString);
                     myConnection.disconnect();
-                    final int coursesCount = jsonObject.length();
+                    int coursesCount = jsonObject.length();
                     for (int i = 0; i < coursesCount; i++){
-                        final Course newCourse = new Course();
-                        final JSONObject singleCourse = jsonObject.getJSONObject(i);
+                        Course newCourse = new Course();
+                        JSONObject singleCourse = jsonObject.getJSONObject(i);
                         String courseId = singleCourse.get("id").toString();
-                        final Integer courseIdInteger = Integer.parseInt(courseId);
+                        Integer courseIdInteger = Integer.parseInt(courseId);
                         newCourse.setId(courseIdInteger);
-                        final String courseName = singleCourse.get("coursename").toString();
+                        String courseName = singleCourse.get("coursename").toString();
                         newCourse.setCourseName(courseName);
-                        final String description = singleCourse.get("description").toString();
+                        String description = singleCourse.get("description").toString();
                         newCourse.setDescription(description);
-                        final String createdAt = singleCourse.get("createdAt").toString();
+                        String createdAt = singleCourse.get("createdAt").toString();
                         newCourse.setCreatedAt(createdAt);
-                        final String levelName = singleCourse.get("levelName").toString();
+                        String levelName = singleCourse.get("levelName").toString();
                         newCourse.setLevelName(levelName);
-                        final String avatar = singleCourse.get("avatar").toString();
-                        imagesQueue++;
+                        String avatar = singleCourse.get("avatar").toString();
                         newCourse.setAvatar(avatar);
-                        final String fileName = "course_" + courseId + "_avatar" + ".jpg";
-                        newCourse.setIsAvatarLocal(1);
-                        newCourse.setAvatarLocal(fileName);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl" + avatar).into(new Target() {
-                                    @Override
-                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                        try {
-                                            String root = Environment.getExternalStorageDirectory().toString();
-                                            File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                            if (!myDir.exists()) {
-                                                myDir.mkdirs();
-                                            }
-
-                                            myDir = new File(myDir, fileName);
-                                            FileOutputStream out = new FileOutputStream(myDir);
-                                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                            out.flush();
-                                            out.close();
-                                            System.out.println("Avatar " + fileName + " loaded");
-                                            imagesQueue--;
-                                        } catch (Exception e) {
-                                            // some action
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onBitmapFailed(Drawable errorDrawable) {
-                                        imagesQueue--;
-                                    }
-
-                                    @Override
-                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                    }
-                                });
-                            }
-                        });
-
                         String teacherFirstName = singleCourse.get("teacherFirstName").toString();
                         newCourse.setTeacherName(teacherFirstName);
                         String teacherLastName = singleCourse.get("teacherLastName").toString();
@@ -191,7 +132,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         String learningLanguage = singleCourse.get("learningLanguage").toString();
                         newCourse.setLearnedLanguageName(learningLanguage);
                         dbReader.insertCourse(newCourse);
-                        dbReader.updateCourseFullSynch(newCourse);
+                        dbReader.updateCourse(newCourse);
                         try {
                             URL webpageEndpoint2 = new URL("http://pzmmd.cba.pl/api/lessonsForCourse/"+courseIdInteger);
                             HttpURLConnection myConnection2 = (HttpURLConnection) webpageEndpoint2.openConnection();
@@ -236,44 +177,18 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                     JSONArray lessonLectures = singleLesson.getJSONArray("lectures");
                                     int lessonlectLength = lessonLectures.length();
                                     for (int e = 0; e<lessonlectLength; e++) {
-                                        Lecture lecture = new Lecture();
                                         JSONObject singleLecture = lessonLectures.getJSONObject(e);
                                         String singleLectureId = singleLecture.get("id").toString();
                                         Integer singleLectureIdInteger = Integer.parseInt(singleLectureId);
                                         String singleLectureName = singleLecture.get("name").toString();
                                         String singleLectureUrl = singleLecture.get("url").toString();
-                                        final String lectureFileName = "lesson_" + lessonId + "_lecture_" + singleLectureId + ".pdf";
-                                        URL lectureEndpoint = new URL("http://pzmmd.cba.pl/media/documents/" + singleLectureUrl);
-                                        URLConnection lectureConnection = lectureEndpoint.openConnection();
-                                        try {
-                                            InputStream inputStream = new BufferedInputStream(lectureEndpoint.openStream(), 10240);
-                                            File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Documents");
-                                            if (!myDir.exists()) {
-                                                myDir.mkdirs();
-                                            }
-                                            File myFile = new File(myDir, lectureFileName);
-                                            FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                            byte buffer[] = new byte[1024];
-                                            int dataSize;
-                                            int loadedSize = 0;
-                                            while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                loadedSize += dataSize;
-                                                outputStream.write(buffer, 0, dataSize);
-                                            }
-                                            outputStream.close();
-                                            System.out.println("Lecture " + lectureFileName + " downloaded");
-                                            lecture.setIsLectureLocal(1);
-                                            lecture.setLectureLocal(lectureFileName);
-                                        } catch (IOException ioe) {
-
-                                        }
+                                        Lecture lecture = new Lecture();
                                         lecture.setLessonId(lessonIdInteger);
                                         lecture.setId(singleLectureIdInteger);
                                         lecture.setName(singleLectureName);
                                         lecture.setLectureUrl(singleLectureUrl);
                                         dbReader.insertLecture(lecture);
-                                        dbReader.updateLectureFullSynch(lecture);
+                                        dbReader.updateLecture(lecture);
                                     }
                                     dbReader.insertLesson(newLesson, courseIdInteger);
                                     System.out.println("Lesson inserted");
@@ -332,7 +247,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                     newQuestion.setPoints(questionPointsInteger);
                                                     JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
                                                     {
-                                                        final Word answerWord = new Word();
+                                                        Word answerWord = new Word();
                                                         String wordId = questionAnswer.get("id").toString();
                                                         Integer wordIdInteger = Integer.parseInt(wordId);
                                                         answerWord.setId(wordIdInteger);
@@ -343,109 +258,14 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                         if (questionAnswer.has("nativeSound")) {
                                                             String nativeSound = questionAnswer.get("nativeSound").toString();
                                                             answerWord.setNativeSound(nativeSound);
-                                                            final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                            URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
-                                                            URLConnection soundConnection = soundEndpoint.openConnection();
-                                                            try {
-                                                                InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                if (!myDir.exists()) {
-                                                                    myDir.mkdirs();
-                                                                }
-                                                                File myFile = new File(myDir, answerNativeSoundFileName);
-                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                byte buffer[] = new byte[1024];
-                                                                int dataSize;
-                                                                int loadedSize = 0;
-                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                    loadedSize += dataSize;
-                                                                    outputStream.write(buffer, 0, dataSize);
-                                                                }
-                                                                outputStream.close();
-                                                                System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                answerWord.setIsNativeSoundLocal(1);
-                                                                answerWord.setNativeSoundLocal(answerNativeSoundFileName);
-                                                            } catch (IOException e) {
-                                                                e.printStackTrace();
-                                                            }
                                                         }
                                                         if (questionAnswer.has("translatedSound")) {
                                                             String translatedSound = questionAnswer.get("translatedSound").toString();
                                                             answerWord.setTranslatedSound(translatedSound);
-                                                            final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
-                                                            URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
-                                                            URLConnection soundConnection = soundEndpoint.openConnection();
-                                                            try {
-                                                                InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                if (!myDir.exists()) {
-                                                                    myDir.mkdirs();
-                                                                }
-                                                                File myFile = new File(myDir, answerTranslatedSoundFileName);
-                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                byte buffer[] = new byte[1024];
-                                                                int dataSize;
-                                                                int loadedSize = 0;
-                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                    loadedSize += dataSize;
-                                                                    outputStream.write(buffer, 0, dataSize);
-                                                                }
-                                                                outputStream.close();
-                                                                System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
-                                                                answerWord.setIsTranslatedSoundLocal(1);
-                                                                answerWord.setTranslatedSoundLocal(answerTranslatedSoundFileName);
-                                                            } catch (IOException e) {
-                                                                e.printStackTrace();
-                                                            }
                                                         }
                                                         if (questionAnswer.has("picture")) {
-                                                            imagesQueue++;
-                                                            final String pictureUrl = questionAnswer.get("picture").toString();
+                                                            String pictureUrl = questionAnswer.get("picture").toString();
                                                             answerWord.setPicture(pictureUrl);
-                                                            final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                            answerWord.setIsPictureLocal(1);
-                                                            answerWord.setPictureLocal(answerPictureFileName);
-                                                            runOnUiThread(new Runnable() {
-                                                                @Override
-                                                                public void run() {
-                                                                    Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                        @Override
-                                                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                            try {
-                                                                                String root = Environment.getExternalStorageDirectory().toString();
-                                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                if (!myDir.exists()) {
-                                                                                    myDir.mkdirs();
-                                                                                }
-
-                                                                                myDir = new File(myDir, answerPictureFileName);
-                                                                                FileOutputStream out = new FileOutputStream(myDir);
-                                                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                out.flush();
-                                                                                out.close();
-                                                                                imagesQueue--;
-                                                                                System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                            } catch (Exception e) {
-                                                                                // some action
-                                                                            }
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onBitmapFailed(Drawable errorDrawable) {
-                                                                            imagesQueue--;
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                        }
-                                                                    });
-                                                                }
-                                                            });
                                                         }
                                                         if (questionAnswer.has("tags")) {
                                                             String wordTags = questionAnswer.get("tags").toString();
@@ -473,7 +293,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                         translatLang.setId(translatedLanguageInteger);
                                                         translatLang.setLanguageName(translatedLanguageName);
                                                         dbReader.insertWord(answerWord);
-                                                        dbReader.updateWordFullSynch(answerWord);
+                                                        dbReader.updateWord(answerWord);
                                                         dbReader.insertLanguage(nativeLang);
                                                         dbReader.insertLanguage(translatLang);
                                                     }
@@ -481,7 +301,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                     int othersCount = otherAnswers.length();
                                                     int wrongAnswerIds[] = new int[otherAnswers.length()];
                                                     for (int m = 0; m < othersCount; m++) {
-                                                        final Word wrongAnswer = new Word();
+                                                        Word wrongAnswer = new Word();
                                                         JSONObject singleOtherAnswer = otherAnswers.getJSONObject(m);
                                                         String wordId = singleOtherAnswer.get("id").toString();
                                                         Integer wordIdInteger = Integer.parseInt(wordId);
@@ -497,109 +317,14 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                         if (singleOtherAnswer.has("nativeSound")) {
                                                             String nativeSound = singleOtherAnswer.get("nativeSound").toString();
                                                             wrongAnswer.setNativeSound(nativeSound);
-                                                            final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                            URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
-                                                            URLConnection soundConnection = soundEndpoint.openConnection();
-                                                            try {
-                                                                InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                if (!myDir.exists()) {
-                                                                    myDir.mkdirs();
-                                                                }
-                                                                File myFile = new File(myDir, answerNativeSoundFileName);
-                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                byte buffer[] = new byte[1024];
-                                                                int dataSize;
-                                                                int loadedSize = 0;
-                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                    loadedSize += dataSize;
-                                                                    outputStream.write(buffer, 0, dataSize);
-                                                                }
-                                                                outputStream.close();
-                                                                System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                wrongAnswer.setIsNativeSoundLocal(1);
-                                                                wrongAnswer.setNativeSoundLocal(answerNativeSoundFileName);
-                                                            } catch (IOException e) {
-
-                                                            }
                                                         }
                                                         if (singleOtherAnswer.has("translatedSound")) {
                                                             String translatedSound = singleOtherAnswer.get("translatedSound").toString();
                                                             wrongAnswer.setTranslatedSound(translatedSound);
-                                                            final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
-                                                            URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
-                                                            URLConnection soundConnection = soundEndpoint.openConnection();
-                                                            try {
-                                                                InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                if (!myDir.exists()) {
-                                                                    myDir.mkdirs();
-                                                                }
-                                                                File myFile = new File(myDir, answerTranslatedSoundFileName);
-                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                byte buffer[] = new byte[1024];
-                                                                int dataSize;
-                                                                int loadedSize = 0;
-                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                    loadedSize += dataSize;
-                                                                    outputStream.write(buffer, 0, dataSize);
-                                                                }
-                                                                outputStream.close();
-                                                                System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
-                                                                wrongAnswer.setIsTranslatedSoundLocal(1);
-                                                                wrongAnswer.setTranslatedSoundLocal(answerTranslatedSoundFileName);
-                                                            } catch (IOException e) {
-
-                                                            }
                                                         }
                                                         if (singleOtherAnswer.has("picture")) {
-                                                            imagesQueue++;
-                                                            final String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                                            String pictureUrl = singleOtherAnswer.get("picture").toString();
                                                             wrongAnswer.setPicture(pictureUrl);
-                                                            final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                            wrongAnswer.setIsPictureLocal(1);
-                                                            wrongAnswer.setPictureLocal(answerPictureFileName);
-                                                            runOnUiThread(new Runnable() {
-                                                                @Override
-                                                                public void run() {
-                                                                    Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                        @Override
-                                                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                            try {
-                                                                                String root = Environment.getExternalStorageDirectory().toString();
-                                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                if (!myDir.exists()) {
-                                                                                    myDir.mkdirs();
-                                                                                }
-
-                                                                                myDir = new File(myDir, answerPictureFileName);
-                                                                                FileOutputStream out = new FileOutputStream(myDir);
-                                                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                out.flush();
-                                                                                out.close();
-                                                                                imagesQueue--;
-                                                                                System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                            } catch (Exception e) {
-                                                                                // some action
-                                                                            }
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onBitmapFailed(Drawable errorDrawable) {
-                                                                            imagesQueue--;
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                        }
-                                                                    });
-                                                                }
-                                                            });
                                                         }
                                                         if (singleOtherAnswer.has("tags")) {
                                                             String wordTags = singleOtherAnswer.get("tags").toString();
@@ -607,7 +332,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                         }
                                                         wrongAnswerIds[m] = wordIdInteger;
                                                         dbReader.insertWord(wrongAnswer);
-                                                        dbReader.updateWordFullSynch(wrongAnswer);
+                                                        dbReader.updateWord(wrongAnswer);
                                                     }
                                                     newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
                                                     newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
@@ -633,7 +358,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                     dbReader.insertTestQuestion(newQuestion);
                                                 }
                                                 dbReader.insertTest(newTest);
-                                                dbReader.updateTestFullSynch(newTest);
+                                                dbReader.updateTest(newTest);
                                                 System.out.println("Test inserted");
 
                                             }
@@ -688,7 +413,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                     Integer totalPointsInteger = Integer.parseInt(totalPoints);
                                                     completedExam.setPointsToPass(totalPointsInteger);
                                                     dbReader.insertExam(completedExam);
-                                                    dbReader.updateExamFullSynch(completedExam);
+                                                    dbReader.updateExam(completedExam);
                                                     System.out.println("Completed exam inserted");
                                                 }
                                                 else {
@@ -727,7 +452,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                             newQuestion.setPoints(questionPointsInteger);
                                                             JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
                                                             {
-                                                                final Word answerWord = new Word();
+                                                                Word answerWord = new Word();
                                                                 String wordId = questionAnswer.get("id").toString();
                                                                 Integer wordIdInteger = Integer.parseInt(wordId);
                                                                 answerWord.setId(wordIdInteger);
@@ -738,109 +463,14 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                 if (questionAnswer.has("nativeSound")) {
                                                                     String nativeSound = questionAnswer.get("nativeSound").toString();
                                                                     answerWord.setNativeSound(nativeSound);
-                                                                    final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
-                                                                    URLConnection soundConnection = soundEndpoint.openConnection();
-                                                                    try {
-                                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                        if (!myDir.exists()) {
-                                                                            myDir.mkdirs();
-                                                                        }
-                                                                        File myFile = new File(myDir, answerNativeSoundFileName);
-                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                        byte buffer[] = new byte[1024];
-                                                                        int dataSize;
-                                                                        int loadedSize = 0;
-                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                            loadedSize += dataSize;
-                                                                            outputStream.write(buffer, 0, dataSize);
-                                                                        }
-                                                                        outputStream.close();
-                                                                        System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                        answerWord.setIsNativeSoundLocal(1);
-                                                                        answerWord.setNativeSoundLocal(answerNativeSoundFileName);
-                                                                    } catch (IOException e) {
-
-                                                                    }
                                                                 }
                                                                 if (questionAnswer.has("translatedSound")) {
                                                                     String translatedSound = questionAnswer.get("translatedSound").toString();
                                                                     answerWord.setTranslatedSound(translatedSound);
-                                                                    final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
-                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
-                                                                    URLConnection soundConnection = soundEndpoint.openConnection();
-                                                                    try {
-                                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                        if (!myDir.exists()) {
-                                                                            myDir.mkdirs();
-                                                                        }
-                                                                        File myFile = new File(myDir, answerTranslatedSoundFileName);
-                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                        byte buffer[] = new byte[1024];
-                                                                        int dataSize;
-                                                                        int loadedSize = 0;
-                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                            loadedSize += dataSize;
-                                                                            outputStream.write(buffer, 0, dataSize);
-                                                                        }
-                                                                        outputStream.close();
-                                                                        System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
-                                                                        answerWord.setIsTranslatedSoundLocal(1);
-                                                                        answerWord.setTranslatedSoundLocal(answerTranslatedSoundFileName);
-                                                                    } catch (IOException e) {
-
-                                                                    }
                                                                 }
                                                                 if (questionAnswer.has("picture")) {
-                                                                    imagesQueue++;
-                                                                    final String pictureUrl = questionAnswer.get("picture").toString();
+                                                                    String pictureUrl = questionAnswer.get("picture").toString();
                                                                     answerWord.setPicture(pictureUrl);
-                                                                    final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                                    answerWord.setIsPictureLocal(1);
-                                                                    answerWord.setPictureLocal(answerPictureFileName);
-                                                                    runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                                @Override
-                                                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                                    try {
-                                                                                        String root = Environment.getExternalStorageDirectory().toString();
-                                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                        if (!myDir.exists()) {
-                                                                                            myDir.mkdirs();
-                                                                                        }
-
-                                                                                        myDir = new File(myDir, answerPictureFileName);
-                                                                                        FileOutputStream out = new FileOutputStream(myDir);
-                                                                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                        out.flush();
-                                                                                        out.close();
-                                                                                        imagesQueue--;
-                                                                                        System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                    } catch (Exception e) {
-                                                                                        // some action
-                                                                                    }
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onBitmapFailed(Drawable errorDrawable) {
-                                                                                    imagesQueue--;
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                                }
-                                                                            });
-                                                                        }
-                                                                    });
                                                                 }
                                                                 if (questionAnswer.has("tags")) {
                                                                     String wordTags = questionAnswer.get("tags").toString();
@@ -868,7 +498,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                 translatLang.setId(translatedLanguageInteger);
                                                                 translatLang.setLanguageName(translatedLanguageName);
                                                                 dbReader.insertWord(answerWord);
-                                                                dbReader.updateWordFullSynch(answerWord);
+                                                                dbReader.updateWord(answerWord);
                                                                 dbReader.insertLanguage(nativeLang);
                                                                 dbReader.insertLanguage(translatLang);
                                                             }
@@ -876,7 +506,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                             int othersCount = otherAnswers.length();
                                                             int wrongAnswerIds[] = new int[otherAnswers.length()];
                                                             for (int o = 0; o < othersCount; o++) {
-                                                                final Word wrongAnswer = new Word();
+                                                                Word wrongAnswer = new Word();
                                                                 JSONObject singleOtherAnswer = otherAnswers.getJSONObject(o);
                                                                 String wordId = singleOtherAnswer.get("id").toString();
                                                                 Integer wordIdInteger = Integer.parseInt(wordId);
@@ -892,111 +522,14 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                 if (singleOtherAnswer.has("nativeSound")) {
                                                                     String nativeSound = singleOtherAnswer.get("nativeSound").toString();
                                                                     wrongAnswer.setNativeSound(nativeSound);
-                                                                    final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
-                                                                    URLConnection soundConnection = soundEndpoint.openConnection();
-                                                                    try {
-                                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                        if (!myDir.exists()) {
-                                                                            myDir.mkdirs();
-                                                                        }
-                                                                        File myFile = new File(myDir, answerNativeSoundFileName);
-                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                        byte buffer[] = new byte[1024];
-                                                                        int dataSize;
-                                                                        int loadedSize = 0;
-                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                            loadedSize += dataSize;
-                                                                            outputStream.write(buffer, 0, dataSize);
-                                                                        }
-                                                                        outputStream.close();
-                                                                        System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                        wrongAnswer.setIsNativeSoundLocal(1);
-                                                                        wrongAnswer.setNativeSoundLocal(answerNativeSoundFileName);
-                                                                    } catch (IOException e) {
-
-                                                                    }
                                                                 }
                                                                 if (singleOtherAnswer.has("translatedSound")) {
                                                                     String translatedSound = singleOtherAnswer.get("translatedSound").toString();
                                                                     wrongAnswer.setTranslatedSound(translatedSound);
-                                                                    String nativeSound = singleOtherAnswer.get("nativeSound").toString();
-                                                                    wrongAnswer.setNativeSound(nativeSound);
-                                                                    final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
-                                                                    URLConnection soundConnection = soundEndpoint.openConnection();
-                                                                    try {
-                                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
-                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Sounds");
-                                                                        if (!myDir.exists()) {
-                                                                            myDir.mkdirs();
-                                                                        }
-                                                                        File myFile = new File(myDir, answerNativeSoundFileName);
-                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
-
-                                                                        byte buffer[] = new byte[1024];
-                                                                        int dataSize;
-                                                                        int loadedSize = 0;
-                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
-                                                                            loadedSize += dataSize;
-                                                                            outputStream.write(buffer, 0, dataSize);
-                                                                        }
-                                                                        outputStream.close();
-                                                                        System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                        wrongAnswer.setIsNativeSoundLocal(1);
-                                                                        wrongAnswer.setNativeSoundLocal(answerNativeSoundFileName);
-                                                                    } catch (IOException e) {
-
-                                                                    }
                                                                 }
                                                                 if (singleOtherAnswer.has("picture")) {
-                                                                    imagesQueue++;
-                                                                    final String pictureUrl = singleOtherAnswer.get("picture").toString();
+                                                                    String pictureUrl = singleOtherAnswer.get("picture").toString();
                                                                     wrongAnswer.setPicture(pictureUrl);
-                                                                    final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                                    wrongAnswer.setIsPictureLocal(1);
-                                                                    wrongAnswer.setPictureLocal(answerPictureFileName);
-                                                                    runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                                @Override
-                                                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                                    try {
-                                                                                        String root = Environment.getExternalStorageDirectory().toString();
-                                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                        if (!myDir.exists()) {
-                                                                                            myDir.mkdirs();
-                                                                                        }
-
-                                                                                        myDir = new File(myDir, answerPictureFileName);
-                                                                                        FileOutputStream out = new FileOutputStream(myDir);
-                                                                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                        out.flush();
-                                                                                        out.close();
-                                                                                        imagesQueue--;
-                                                                                        System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                    } catch (Exception e) {
-                                                                                        // some action
-                                                                                    }
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onBitmapFailed(Drawable errorDrawable) {
-                                                                                    imagesQueue--;
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                                }
-                                                                            });
-                                                                        }
-                                                                    });
                                                                 }
                                                                 if (singleOtherAnswer.has("tags")) {
                                                                     String wordTags = singleOtherAnswer.get("tags").toString();
@@ -1004,7 +537,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                 }
                                                                 wrongAnswerIds[o] = wordIdInteger;
                                                                 dbReader.insertWord(wrongAnswer);
-                                                                dbReader.updateWordFullSynch(wrongAnswer);
+                                                                dbReader.updateWord(wrongAnswer);
                                                             }
                                                             newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
                                                             newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
@@ -1030,11 +563,8 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                             dbReader.insertExamQuestion(newQuestion);
                                                         }
                                                         dbReader.insertExam(newExam);
-                                                        dbReader.updateExamFullSynch(newExam);
+                                                        dbReader.updateExam(newExam);
                                                         System.out.println("Exam inserted");
-
-                                                        while(imagesQueue > 0) {
-                                                        }
                                                     }
 
                                                 }
@@ -1054,13 +584,10 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                             e.printStackTrace();
                         } /*catch (JSONException e) {
                 e.printStackTrace();
-
             }*/
-
                         System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
                                 + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
                     }
-
                    // return true;
                 } catch (JSONException e) {
                     JSONObject jsonObject = new JSONObject(jsonString);
@@ -1070,8 +597,6 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         return false;
                     }
                 }
-
-
 
                 return true;
             } catch (MalformedURLException e) {
@@ -1092,7 +617,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(final Boolean success) {
             if (success) {
-                Intent intent = new Intent(FullSynchronizationActivity.this, MainActivity.class);
+                Intent intent = new Intent(SynchronizationActivity.this, MainActivity.class);
                 startActivity(intent);
             } else {
 

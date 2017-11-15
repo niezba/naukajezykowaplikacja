@@ -130,7 +130,7 @@ public class MainActivity extends BaseDrawerActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            finish();
         }
     }
 
@@ -167,7 +167,7 @@ public class MainActivity extends BaseDrawerActivity {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/courses");
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);

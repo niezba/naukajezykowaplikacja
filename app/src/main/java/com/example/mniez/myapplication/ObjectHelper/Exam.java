@@ -16,6 +16,8 @@ public class Exam {
     Integer score;
     Integer grade;
     Integer isLocal;
+    Integer isCompletedLocal;
+    String answersConcatenation;
 
     public Exam() {
     }
@@ -111,5 +113,21 @@ public class Exam {
 
     public void setIsLocal(Integer isLocal) {
         this.isLocal = isLocal;
+    }
+
+    public Integer getIsCompletedLocal() {
+        return isCompletedLocal;
+    }
+
+    public void setIsCompletedLocal(Integer isCompletedLocal) {
+        this.isCompletedLocal = isCompletedLocal;
+    }
+
+    public String getAnswersConcatenation() {
+        return answersConcatenation;
+    }
+
+    public void setAnswersConcatenation(String answersConcatenation) {
+        this.answersConcatenation = answersConcatenation;
     }
 }

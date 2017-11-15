@@ -85,7 +85,7 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName());
-        final String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
+        final String imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
         final int courseId = course.getId();
         final String courseName = course.getCourseName();
         final Boolean isParticipant = course.getParticipant();
@@ -169,7 +169,7 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/joinCourse");
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/joinCourse");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("POST");
                 myConnection.setDoOutput(true);

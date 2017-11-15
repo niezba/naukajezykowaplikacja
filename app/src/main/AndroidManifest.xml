@@ -20,12 +20,14 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/app_name"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".StudentModule.MainActivity"
@@ -78,7 +80,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
-        <activity android:name=".StudentModule.FullSynchronizationActivity"></activity>
+        <activity android:name=".StudentModule.FullSynchronizationActivity"
+            android:noHistory="true"></activity>
+        <activity android:name=".StudentModule.SynchronizationActivity"
+            android:noHistory="true"></activity>
     </application>
 
 </manifest>

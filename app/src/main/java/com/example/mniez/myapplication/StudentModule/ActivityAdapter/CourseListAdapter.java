@@ -78,7 +78,8 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
         ((MyViewHolder) viewHolder).nativeLang.setText(course.getNativeLanguageName());
         ((MyViewHolder) viewHolder).learnedLang.setText(course.getLearnedLanguageName());
-        final String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
+        final String imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
+        System.out.println(imageUrl);
         Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
         final int courseId = course.getId();
         final String courseNameString = course.getCourseName();

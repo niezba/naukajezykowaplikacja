@@ -18,6 +18,12 @@ public class Word {
     String translatedSound;
     String translatedWord;
     Integer creatorId;
+    Integer isNativeSoundLocal;
+    String nativeSoundLocal;
+    Integer isTranslatedSoundLocal;
+    String translatedSoundLocal;
+    Integer isPictureLocal;
+    String pictureLocal;
 
     public Word() {
     }
@@ -131,5 +137,53 @@ public class Word {
 
     public void setCreatorId(Integer creatorId) {
         this.creatorId = creatorId;
+    }
+
+    public Integer getIsNativeSoundLocal() {
+        return isNativeSoundLocal;
+    }
+
+    public void setIsNativeSoundLocal(Integer isNativeSoundLocal) {
+        this.isNativeSoundLocal = isNativeSoundLocal;
+    }
+
+    public String getNativeSoundLocal() {
+        return nativeSoundLocal;
+    }
+
+    public void setNativeSoundLocal(String nativeSoundLocal) {
+        this.nativeSoundLocal = nativeSoundLocal;
+    }
+
+    public Integer getIsTranslatedSoundLocal() {
+        return isTranslatedSoundLocal;
+    }
+
+    public void setIsTranslatedSoundLocal(Integer isTranslatedSoundLocal) {
+        this.isTranslatedSoundLocal = isTranslatedSoundLocal;
+    }
+
+    public String getTranslatedSoundLocal() {
+        return translatedSoundLocal;
+    }
+
+    public void setTranslatedSoundLocal(String translatedSoundLocal) {
+        this.translatedSoundLocal = translatedSoundLocal;
+    }
+
+    public Integer getIsPictureLocal() {
+        return isPictureLocal;
+    }
+
+    public void setIsPictureLocal(Integer isPictureLocal) {
+        this.isPictureLocal = isPictureLocal;
+    }
+
+    public String getPictureLocal() {
+        return pictureLocal;
+    }
+
+    public void setPictureLocal(String pictureLocal) {
+        this.pictureLocal = pictureLocal;
     }
 }

@@ -12,6 +12,7 @@ public class LessonElement {
     Integer lessonElementTotalPoints;
     Integer lessonElementScoredPoints;
     Integer lessonElementGrade;
+    Integer lessonElementIsNew;
 
     public Integer getLessonElementId() {
         return lessonElementId;
@@ -25,13 +26,14 @@ public class LessonElement {
         this.lessonElementScoredPoints = lessonElementScoredPoints;
     }
 
-    public LessonElement(Integer lessonElementType, Integer lessonElementId, String lessonElementName, Integer lessonElementTotalPoints, Integer lessonElementScoredPoints, Integer lessonElementGrade) {
+    public LessonElement(Integer lessonElementType, Integer lessonElementId, String lessonElementName, Integer lessonElementTotalPoints, Integer lessonElementScoredPoints, Integer lessonElementGrade, Integer lessonElementIsNew) {
         this.lessonElementType = lessonElementType;
         this.lessonElementId = lessonElementId;
         this.lessonElementName = lessonElementName;
         this.lessonElementTotalPoints = lessonElementTotalPoints;
         this.lessonElementScoredPoints = lessonElementScoredPoints;
         this.lessonElementGrade = lessonElementGrade;
+        this.lessonElementIsNew = lessonElementIsNew;
     }
 
     public void setLessonElementId(Integer lessonElementId) {
@@ -83,5 +85,13 @@ public class LessonElement {
 
     public void setLessonElementGrade(Integer lessonElementGrade) {
         this.lessonElementGrade = lessonElementGrade;
+    }
+
+    public Integer getLessonElementIsNew() {
+        return lessonElementIsNew;
+    }
+
+    public void setLessonElementIsNew(Integer lessonElementIsNew) {
+        this.lessonElementIsNew = lessonElementIsNew;
     }
 }

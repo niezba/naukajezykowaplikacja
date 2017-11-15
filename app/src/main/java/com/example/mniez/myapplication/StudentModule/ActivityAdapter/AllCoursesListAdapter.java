@@ -64,7 +64,7 @@ public class AllCoursesListAdapter extends RecyclerView.Adapter {
         ((AllCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
         ((AllCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
         ((AllCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName() + " " + course.getTeacherSurname());
-        String imageUrl = "http://10.0.2.2:8000" + course.getAvatar();
+        String imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
         final int courseId = course.getId();
         final String courseName = course.getCourseName();
         Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((AllCoursesListAdapter.MyViewHolder) viewHolder).avatarView);

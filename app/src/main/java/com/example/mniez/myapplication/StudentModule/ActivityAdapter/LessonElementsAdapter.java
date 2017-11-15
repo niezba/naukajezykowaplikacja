@@ -93,26 +93,38 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                         Toast.makeText(mKontekst, "Wybrano materiał id: " + elId, Toast.LENGTH_SHORT).show();
                         break;
                     case 2:
-                        AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
-                        builder2.setMessage("Czy chcesz rozpocząć rozwiązywanie sprawdzianu? Pamiętaj że sprawdzian jest oceniany i że można go rozwiązać tylko raz.")
-                                .setTitle("Rozpoczęcie sprawdzianu");
-                        builder2.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Toast.makeText(mKontekst, "Wybrano sprawdzian id: " + elId, Toast.LENGTH_SHORT).show();
-                                Intent intent2 = new Intent(view.getContext(), ExamActivity.class);
-                                intent2.putExtra("test_id", singleLessonEl.getLessonElementId());
-                                intent2.putExtra("course_id", courseId);
-                                view.getContext().startActivity(intent2);
-                            }
-                        });
-                        builder2.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                            }
-                        });
-                        AlertDialog dialog2 = builder2.create();
-                        dialog2.show();
-
+                        if (singleLessonEl.getLessonElementIsNew() == 0) {
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
+                            builder2.setMessage("Czy chcesz rozpocząć rozwiązywanie sprawdzianu? Pamiętaj że sprawdzian jest oceniany i że można go rozwiązać tylko raz.")
+                                    .setTitle("Rozpoczęcie sprawdzianu");
+                            builder2.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Toast.makeText(mKontekst, "Wybrano sprawdzian id: " + elId, Toast.LENGTH_SHORT).show();
+                                    Intent intent2 = new Intent(view.getContext(), ExamActivity.class);
+                                    intent2.putExtra("test_id", singleLessonEl.getLessonElementId());
+                                    intent2.putExtra("course_id", courseId);
+                                    view.getContext().startActivity(intent2);
+                                }
+                            });
+                            builder2.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                }
+                            });
+                            AlertDialog dialog2 = builder2.create();
+                            dialog2.show();
+                        }
+                        else {
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
+                            builder2.setMessage("Ten sprawdzian został już przez Ciebie rozwiązany, Twoja ocena to " + singleLessonEl.getLessonElementGrade())
+                                    .setTitle("Wynik sprawdzianu");
+                            builder2.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                }
+                            });
+                            AlertDialog dialog2 = builder2.create();
+                            dialog2.show();
+                        }
                         break;
                     default:
                         break;

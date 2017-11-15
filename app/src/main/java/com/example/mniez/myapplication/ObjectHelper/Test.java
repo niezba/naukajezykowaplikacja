@@ -14,6 +14,24 @@ public class Test {
     Integer isCompleted;
     Integer score;
     Integer isLocal;
+    Integer isCompletedLocal;
+    String answersConcatenation;
+
+    public Integer getIsCompletedLocal() {
+        return isCompletedLocal;
+    }
+
+    public void setIsCompletedLocal(Integer isCompletedLocal) {
+        this.isCompletedLocal = isCompletedLocal;
+    }
+
+    public String getAnswersConcatenation() {
+        return answersConcatenation;
+    }
+
+    public void setAnswersConcatenation(String answersConcatenation) {
+        this.answersConcatenation = answersConcatenation;
+    }
 
     public Test() {
     }

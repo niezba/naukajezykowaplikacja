@@ -100,7 +100,7 @@ public class SearchCoursesFragment extends Fragment {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/search?phrase="+searchPhrase+"&language="+searchLang+"&level="+searchLevel);
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/search?phrase="+searchPhrase+"&language="+searchLang+"&level="+searchLevel);
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);

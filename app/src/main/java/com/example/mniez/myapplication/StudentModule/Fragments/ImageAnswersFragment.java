@@ -137,13 +137,13 @@ public class ImageAnswersFragment extends Fragment {
                 for(int i = 0; i<4; i++) {
                     wordList.add(dbReader.getParticularWordData(answerIds[i]));
                 }
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
                 System.out.println(wordList.get(0).getPicture());
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
                 System.out.println(wordList.get(1).getPicture());
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
                 System.out.println(wordList.get(2).getPicture());
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
                 System.out.println(wordList.get(3).getPicture());
                 if (answerIds[0] == newSetAnswerId) {
                     ans1.performClick();
@@ -170,10 +170,10 @@ public class ImageAnswersFragment extends Fragment {
                 for(int i = 0; i<4; i++) {
                     wordList.add(dbReader.getParticularWordData(answerIds[i]));
                 }
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
-                Picasso.with(getActivity()).load("http://10.0.2.2:8000/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(1).getPicture()).fit().into(ans2);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(2).getPicture()).fit().into(ans3);
+                Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(3).getPicture()).fit().into(ans4);
                 ans1.setColorFilter(null);
                 ans2.setColorFilter(null);
                 ans3.setColorFilter(null);

@@ -112,7 +112,9 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
                 int scoredPoints = e.getScore();
                 int totalPoints = dbReader.calculateTotalPointsForExam(elId);
                 int grade = e.getGrade();
-                LessonElement newEl = new LessonElement(elType, elId, elName, totalPoints, scoredPoints, grade);
+                int isPassed = e.getIsPassed();
+                System.out.println("Exam lesson element: " + e.getGrade());
+                LessonElement newEl = new LessonElement(elType, elId, elName, totalPoints, scoredPoints, grade, isPassed);
                 allLessonElements.add(newEl);
             }
         }

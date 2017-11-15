@@ -66,6 +66,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String TEACHER_SURNAME = "teacher_surname";
     private static final String LEARNED_LANGUAGE_NAME = "learned_language_name";
     private static final String NATIVE_LANGUAGE_NAME = "native_language_name";
+    private static final String IS_AVATAR_LOCAL = "is_avatar_local";
+    private static final String AVATAR_LOCAL = "avatar_local_src";
 
     //tabela difficultyLevel
     private static final String LEVEL_NAME = "level_name";
@@ -83,6 +85,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String SCORE = "score";
     private static final String GRADE = "grade";
     private static final String IS_LOCAL = "is_local";
+    private static final String IS_COMPLETED_LOCAL = "is_completed_local";
+    private static final String ANSWER_CONCATENATION = "answer_concatenation";
 
     //tabela tests
     private static final String IS_COMPLETED = "is_completed";
@@ -95,6 +99,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
 
     //tabela lectures
     private static final String LECTURE_URL = "url";
+    private static final String IS_LECTURE_LOCAL = "is_lecture_local";
+    private static final String LECTURE_LOCAL = "lecture_local_src";
 
     //tabela questionsForTests
     private static final String ANSWER_ID = "answer_id";
@@ -118,13 +124,19 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String TRANSLATED_SOUND = "translated_sound";
     private static final String TRANSLATED_WORD = "translated_word";
     private static final String CREATOR_ID = "user_id";
+    private static final String IS_NATIVE_SOUND_LOCAL = "is_native_sound_local";
+    private static final String NATIVE_SOUND_LOCAL = "native_sound_local";
+    private static final String IS_TRANSLATED_SOUND_LOCAL = "is_translated_sound_local";
+    private static final String TRANSLATED_SOUND_LOCAL = "translated_sound_local";
+    private static final String IS_PICTURE_LOCAL = "is_picture_local";
+    private static final String PICTURE_LOCAL = "picture_local";
 
     //utworzenie tabeli courses
     private static final String CREATE_TABLE_COURSES = "CREATE TABLE IF NOT EXISTS " + TABLE_COURSES
             + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + ACCESS_CODE + " TEXT, " + AVATAR + " TEXT," + COURSENAME + " TEXT, "
             + CREATED_AT + " DATETIME, " + DESCRIPTION + " TEXT, " + LEARNED_LANGUAGE_ID + " INT," + LEVEL_ID + " INT, " + NATIVE_LANGUAGE_ID + " INT, "
             + TAGS + " TEXT," + TEACHER_ID + " INT, " + TEACHER_NAME  + " TEXT, " + TEACHER_SURNAME + " TEXT, " + LEVEL_NAME + " TEXT, " + LEARNED_LANGUAGE_NAME
-            + " TEXT, " + NATIVE_LANGUAGE_NAME + " TEXT" + ");";
+            + " TEXT, " + NATIVE_LANGUAGE_NAME + " TEXT, " + IS_AVATAR_LOCAL + " INT, " + AVATAR_LOCAL + " TEXT" + ");";
 
     //utworzenie tabeli difficulty
     private static final String CREATE_TABLE_DIFFICULTY = "CREATE TABLE  IF NOT EXISTS " + TABLE_DIFFICULTY
@@ -138,7 +150,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     //utworzenie tabeli exams
     private static final String CREATE_TABLE_EXAMS = "CREATE TABLE IF NOT EXISTS " + TABLE_EXAMS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + DESCRIPTION + " TEXT, " + LESSON_ID + " INT, " + NAME + " TEXT, " + POINTS_TO_PASS + " INT, "
-            + IS_NEW  + " INT, " + IS_PASSED + " INT, " + SCORE + " REAL, " + GRADE + " INT, " + IS_LOCAL + " INT" + ");";
+            + IS_NEW  + " INT, " + IS_PASSED + " INT, " + SCORE + " REAL, " + GRADE + " INT, " + IS_LOCAL + " INT, " + IS_COMPLETED_LOCAL + " INT, " + ANSWER_CONCATENATION + " TEXT" + ");";
 
     //utworzenie tabeli languages
     private static final String CREATE_TABLE_LANGUAGES = "CREATE TABLE IF NOT EXISTS " + TABLE_LANGUAGES
@@ -150,12 +162,12 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
 
     //utworzenie tabeli lectures
     private static final String CREATE_TABLE_LECTURES = "CREATE TABLE IF NOT EXISTS " + TABLE_LECTURES
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + LESSON_ID + " INT, " + NAME + " TEXT, " + LECTURE_URL + " TEXT" + ");";
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + LESSON_ID + " INT, " + NAME + " TEXT, " + LECTURE_URL + " TEXT, " + IS_LECTURE_LOCAL + " INT, " + LECTURE_LOCAL + " TEXT" + ");";
 
     //utworzenie tabeli tests
     private static final String CREATE_TABLE_TESTS = "CREATE TABLE IF NOT EXISTS " + TABLE_TESTS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + DESCRIPTION + " TEXT, "+ LESSON_ID + " INT, " + IS_NEW  + " INT, " + IS_COMPLETED + " INT, "
-            + SCORE + " REAL, " + IS_LOCAL + " INT" + ");";
+            + SCORE + " REAL, " + IS_LOCAL + " INT, " + IS_COMPLETED_LOCAL + " INT, " + ANSWER_CONCATENATION + " TEXT" + ");";
 
     //utworzenie tabeli testquestions
     private static final String CREATE_TABLE_TESTQUESTIONS = "CREATE TABLE IF NOT EXISTS " + TABLE_TESTQUESTIONS
@@ -171,7 +183,9 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_WORDS = "CREATE TABLE IF NOT EXISTS " + TABLE_WORDS
             + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + NATIVE_DEFINITION + " TEXT, " + NATIVE_LANGUAGE_ID + " INT, " + NATIVE_SOUND + " TEXT, "
             + NATIVE_WORD + " TEXT, " + PICTURE + " TEXT, " + TAGS + " TEXT, " + TRANSLATED_DEFINITION + " TEXT, "
-            + TRANSLATED_LANGUAGE_ID + " INT, " + TRANSLATED_SOUND + " TEXT, " + TRANSLATED_WORD + " TEXT, " + CREATOR_ID + " INT" + ");";
+            + TRANSLATED_LANGUAGE_ID + " INT, " + TRANSLATED_SOUND + " TEXT, " + TRANSLATED_WORD + " TEXT, " + CREATOR_ID + " INT, " +
+            IS_NATIVE_SOUND_LOCAL + " INT, " + NATIVE_SOUND_LOCAL + " TEXT, " + IS_TRANSLATED_SOUND_LOCAL + " INT, " + TRANSLATED_SOUND_LOCAL + " TEXT, " +
+            IS_PICTURE_LOCAL + " INT, " + PICTURE_LOCAL + " TEXT" + ");";
 
     public MobileDatabaseReader(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -231,8 +245,59 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(LEVEL_NAME, course.getLevelName());
         values.put(LEARNED_LANGUAGE_NAME, course.getLearnedLanguageName());
         values.put(NATIVE_LANGUAGE_NAME, course.getNativeLanguageName());
+        values.put(IS_AVATAR_LOCAL, course.getIsAvatarLocal());
+        values.put(AVATAR_LOCAL, course.getAvatarLocal());
+        long course_id = db.insertWithOnConflict(TABLE_COURSES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+        return course_id;
+    }
 
-        long course_id = db.insertWithOnConflict(TABLE_COURSES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    public long updateCourse(Course course) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, course.getId());
+        values.put(ACCESS_CODE, course.getAccessCode());
+        values.put(AVATAR, course.getAvatar());
+        values.put(COURSENAME, course.getCourseName());
+        values.put(CREATED_AT, String.valueOf(course.getCreatedAt()));
+        values.put(DESCRIPTION, course.getDescription());
+        values.put(LEARNED_LANGUAGE_ID, course.getLearningLanguageId());
+        values.put(LEVEL_ID, course.getLevelId());
+        values.put(NATIVE_LANGUAGE_ID, course.getNativeLanguageId());
+        values.put(TAGS, course.getTags());
+        values.put(TEACHER_ID, course.getTeacherId());
+        values.put(TEACHER_NAME, course.getTeacherName());
+        values.put(TEACHER_SURNAME, course.getTeacherSurname());
+        values.put(LEVEL_NAME, course.getLevelName());
+        values.put(LEARNED_LANGUAGE_NAME, course.getLearnedLanguageName());
+        values.put(NATIVE_LANGUAGE_NAME, course.getNativeLanguageName());
+        long course_id = db.update(TABLE_COURSES, values, KEY_ID + '=' + course.getId(), null);
+        db.close();
+        return course_id;
+    }
+
+    public long updateCourseFullSynch(Course course) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, course.getId());
+        values.put(ACCESS_CODE, course.getAccessCode());
+        values.put(AVATAR, course.getAvatar());
+        values.put(COURSENAME, course.getCourseName());
+        values.put(CREATED_AT, String.valueOf(course.getCreatedAt()));
+        values.put(DESCRIPTION, course.getDescription());
+        values.put(LEARNED_LANGUAGE_ID, course.getLearningLanguageId());
+        values.put(LEVEL_ID, course.getLevelId());
+        values.put(NATIVE_LANGUAGE_ID, course.getNativeLanguageId());
+        values.put(TAGS, course.getTags());
+        values.put(TEACHER_ID, course.getTeacherId());
+        values.put(TEACHER_NAME, course.getTeacherName());
+        values.put(TEACHER_SURNAME, course.getTeacherSurname());
+        values.put(LEVEL_NAME, course.getLevelName());
+        values.put(LEARNED_LANGUAGE_NAME, course.getLearnedLanguageName());
+        values.put(NATIVE_LANGUAGE_NAME, course.getNativeLanguageName());
+        values.put(IS_AVATAR_LOCAL, course.getIsAvatarLocal());
+        values.put(AVATAR_LOCAL, course.getAvatarLocal());
+        long course_id = db.update(TABLE_COURSES, values, KEY_ID + '=' + course.getId(), null);
         db.close();
         return course_id;
     }
@@ -364,7 +429,41 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(IS_COMPLETED, test.getIsCompleted());
         values.put(SCORE, test.getScore());
         values.put(IS_LOCAL, test.getIsLocal());
-        long test_id = db.insertWithOnConflict(TABLE_TESTS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        values.put(IS_COMPLETED_LOCAL, test.getIsCompletedLocal());
+        values.put(ANSWER_CONCATENATION, test.getAnswersConcatenation());
+        long test_id = db.insertWithOnConflict(TABLE_TESTS, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+        return test_id;
+    }
+
+    public long updateTest(Test test) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, test.getId());
+        values.put(DESCRIPTION, test.getDescription());
+        values.put(LESSON_ID, test.getLessonId());
+        values.put(IS_NEW, test.getIsNew());
+        values.put(IS_COMPLETED, test.getIsCompleted());
+        values.put(SCORE, test.getScore());
+        values.put(IS_LOCAL, test.getIsLocal());
+        long test_id = db.update(TABLE_TESTS, values, KEY_ID + '=' + test.getId(), null);
+        db.close();
+        return test_id;
+    }
+
+    public long updateTestFullSynch(Test test) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, test.getId());
+        values.put(DESCRIPTION, test.getDescription());
+        values.put(LESSON_ID, test.getLessonId());
+        values.put(IS_NEW, test.getIsNew());
+        values.put(IS_COMPLETED, test.getIsCompleted());
+        values.put(SCORE, test.getScore());
+        values.put(IS_LOCAL, test.getIsLocal());
+        values.put(IS_COMPLETED_LOCAL, test.getIsCompletedLocal());
+        values.put(ANSWER_CONCATENATION, test.getAnswersConcatenation());
+        long test_id = db.update(TABLE_TESTS, values, KEY_ID + '=' + test.getId(), null);
         db.close();
         return test_id;
     }
@@ -434,7 +533,46 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(SCORE, exam.getScore());
         values.put(IS_LOCAL, exam.getIsLocal());
         values.put(IS_PASSED, exam.getIsPassed());
-        long test_id = db.insertWithOnConflict(TABLE_EXAMS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        values.put(GRADE, exam.getGrade());
+        values.put(IS_COMPLETED_LOCAL, exam.getIsCompletedLocal());
+        values.put(ANSWER_CONCATENATION, exam.getAnswersConcatenation());
+        long test_id = db.insertWithOnConflict(TABLE_EXAMS, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+        return test_id;
+    }
+
+    public long updateExam(Exam exam) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, exam.getId());
+        values.put(DESCRIPTION, exam.getDescription());
+        values.put(LESSON_ID, exam.getLessonId());
+        values.put(POINTS_TO_PASS, exam.getPointsToPass());
+        values.put(IS_NEW, exam.getIsNew());
+        values.put(SCORE, exam.getScore());
+        values.put(IS_LOCAL, exam.getIsLocal());
+        values.put(IS_PASSED, exam.getIsPassed());
+        values.put(GRADE, exam.getGrade());
+        long test_id = db.update(TABLE_EXAMS, values, KEY_ID + '=' + exam.getId(), null);
+        db.close();
+        return test_id;
+    }
+
+    public long updateExamFullSynch(Exam exam) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, exam.getId());
+        values.put(DESCRIPTION, exam.getDescription());
+        values.put(LESSON_ID, exam.getLessonId());
+        values.put(POINTS_TO_PASS, exam.getPointsToPass());
+        values.put(IS_NEW, exam.getIsNew());
+        values.put(SCORE, exam.getScore());
+        values.put(IS_LOCAL, exam.getIsLocal());
+        values.put(IS_PASSED, exam.getIsPassed());
+        values.put(GRADE, exam.getGrade());
+        values.put(IS_COMPLETED_LOCAL, exam.getIsCompletedLocal());
+        values.put(ANSWER_CONCATENATION, exam.getAnswersConcatenation());
+        long test_id = db.update(TABLE_EXAMS, values, KEY_ID + '=' + exam.getId(), null);
         db.close();
         return test_id;
     }
@@ -472,7 +610,35 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(LESSON_ID, lecture.getLessonId());
         values.put(NAME, lecture.getName());
         values.put(LECTURE_URL, lecture.getLectureUrl());
-        long lecture_id = db.insertWithOnConflict(TABLE_LECTURES, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        values.put(IS_LECTURE_LOCAL, lecture.getIsLectureLocal());
+        values.put(LECTURE_LOCAL, lecture.getLectureLocal());
+        long lecture_id = db.insertWithOnConflict(TABLE_LECTURES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+        return lecture_id;
+    }
+
+    public long updateLecture(Lecture lecture) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, lecture.getId());
+        values.put(LESSON_ID, lecture.getLessonId());
+        values.put(NAME, lecture.getName());
+        values.put(LECTURE_URL, lecture.getLectureUrl());
+        long lecture_id = db.update(TABLE_LECTURES, values, KEY_ID + '=' + lecture.getId(), null);
+        db.close();
+        return lecture_id;
+    }
+
+    public long updateLectureFullSynch(Lecture lecture) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, lecture.getId());
+        values.put(LESSON_ID, lecture.getLessonId());
+        values.put(NAME, lecture.getName());
+        values.put(LECTURE_URL, lecture.getLectureUrl());
+        values.put(IS_LECTURE_LOCAL, lecture.getIsLectureLocal());
+        values.put(LECTURE_LOCAL, lecture.getLectureLocal());
+        long lecture_id = db.update(TABLE_LECTURES, values, KEY_ID + '=' + lecture.getId(), null);
         db.close();
         return lecture_id;
     }
@@ -603,7 +769,59 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(TRANSLATED_SOUND, word.getTranslatedSound());
         values.put(TRANSLATED_WORD, word.getTranslatedWord());
         values.put(CREATOR_ID, word.getCreatorId());
-        long word_id = db.insertWithOnConflict(TABLE_WORDS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        values.put(IS_NATIVE_SOUND_LOCAL, word.getIsNativeSoundLocal());
+        values.put(IS_TRANSLATED_SOUND_LOCAL, word.getIsTranslatedSoundLocal());
+        values.put(NATIVE_SOUND_LOCAL, word.getNativeSoundLocal());
+        values.put(TRANSLATED_SOUND_LOCAL, word.getTranslatedSoundLocal());
+        values.put(IS_PICTURE_LOCAL, word.getIsPictureLocal());
+        values.put(PICTURE_LOCAL, word.getPictureLocal());
+        long word_id = db.insertWithOnConflict(TABLE_WORDS, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        db.close();
+        return word_id;
+    }
+
+    public long updateWord(Word word) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, word.getId());
+        values.put(NATIVE_DEFINITION, word.getNativeDefinition());
+        values.put(NATIVE_LANGUAGE_ID, word.getNativeLanguageId());
+        values.put(NATIVE_SOUND, word.getNativeSound());
+        values.put(NATIVE_WORD, word.getNativeWord());
+        values.put(PICTURE, word.getPicture());
+        values.put(TAGS, word.getTags());
+        values.put(TRANSLATED_DEFINITION, word.getTranslatedDefinition());
+        values.put(TRANSLATED_LANGUAGE_ID, word.getTranslatedLanguageId());
+        values.put(TRANSLATED_SOUND, word.getTranslatedSound());
+        values.put(TRANSLATED_WORD, word.getTranslatedWord());
+        values.put(CREATOR_ID, word.getCreatorId());
+        long word_id = db.update(TABLE_WORDS, values, KEY_ID + '=' + word.getId(), null);
+        db.close();
+        return word_id;
+    }
+
+    public long updateWordFullSynch(Word word) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, word.getId());
+        values.put(NATIVE_DEFINITION, word.getNativeDefinition());
+        values.put(NATIVE_LANGUAGE_ID, word.getNativeLanguageId());
+        values.put(NATIVE_SOUND, word.getNativeSound());
+        values.put(NATIVE_WORD, word.getNativeWord());
+        values.put(PICTURE, word.getPicture());
+        values.put(TAGS, word.getTags());
+        values.put(TRANSLATED_DEFINITION, word.getTranslatedDefinition());
+        values.put(TRANSLATED_LANGUAGE_ID, word.getTranslatedLanguageId());
+        values.put(TRANSLATED_SOUND, word.getTranslatedSound());
+        values.put(TRANSLATED_WORD, word.getTranslatedWord());
+        values.put(CREATOR_ID, word.getCreatorId());
+        values.put(IS_NATIVE_SOUND_LOCAL, word.getIsNativeSoundLocal());
+        values.put(IS_TRANSLATED_SOUND_LOCAL, word.getIsTranslatedSoundLocal());
+        values.put(NATIVE_SOUND_LOCAL, word.getNativeSoundLocal());
+        values.put(TRANSLATED_SOUND_LOCAL, word.getTranslatedSoundLocal());
+        values.put(IS_PICTURE_LOCAL, word.getIsPictureLocal());
+        values.put(PICTURE_LOCAL, word.getPictureLocal());
+        long word_id = db.update(TABLE_WORDS, values, KEY_ID + '=' + word.getId(), null);
         db.close();
         return word_id;
     }

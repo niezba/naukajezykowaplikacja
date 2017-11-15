@@ -10,6 +10,8 @@ public class Lecture {
     Integer lessonId;
     String name;
     String lectureUrl;
+    Integer isLectureLocal;
+    String lectureLocal;
 
     public Lecture() {
     }
@@ -51,5 +53,21 @@ public class Lecture {
 
     public void setLectureUrl(String lectureUrl) {
         this.lectureUrl = lectureUrl;
+    }
+
+    public Integer getIsLectureLocal() {
+        return isLectureLocal;
+    }
+
+    public void setIsLectureLocal(Integer isLectureLocal) {
+        this.isLectureLocal = isLectureLocal;
+    }
+
+    public String getLectureLocal() {
+        return lectureLocal;
+    }
+
+    public void setLectureLocal(String lectureLocal) {
+        this.lectureLocal = lectureLocal;
     }
 }

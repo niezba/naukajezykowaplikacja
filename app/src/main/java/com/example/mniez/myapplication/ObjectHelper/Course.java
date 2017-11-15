@@ -28,6 +28,8 @@ public class Course {
     String learnedLanguageName;
     Boolean isParticipant;
     Boolean isSecured;
+    Integer isAvatarLocal;
+    String avatarLocal;
 
     public Boolean getParticipant() {
         return isParticipant;
@@ -194,5 +196,45 @@ public class Course {
 
     public void setTeacherSurname(String teacherSurname) {
         this.teacherSurname = teacherSurname;
+    }
+
+    public Integer getIsAvatarLocal() {
+        return isAvatarLocal;
+    }
+
+    public void setIsAvatarLocal(Integer isAvatarLocal) {
+        this.isAvatarLocal = isAvatarLocal;
+    }
+
+    public String getAvatarLocal() {
+        return avatarLocal;
+    }
+
+    public void setAvatarLocal(String avatarLocal) {
+        this.avatarLocal = avatarLocal;
+    }
+
+    public Course(Integer id, String accessCode, String avatar, String courseName, String createdAt, String description, Integer learningLanguageId, Integer levelId, Integer nativeLanguageId, String tags, Integer teacherId, String teacherName, String teacherSurname, String levelName, String nativeLanguageName, String learnedLanguageName, Boolean isParticipant, Boolean isSecured, Integer isAvatarLocal, String avatarLocal) {
+
+        this.id = id;
+        this.accessCode = accessCode;
+        this.avatar = avatar;
+        this.courseName = courseName;
+        this.createdAt = createdAt;
+        this.description = description;
+        this.learningLanguageId = learningLanguageId;
+        this.levelId = levelId;
+        this.nativeLanguageId = nativeLanguageId;
+        this.tags = tags;
+        this.teacherId = teacherId;
+        this.teacherName = teacherName;
+        this.teacherSurname = teacherSurname;
+        this.levelName = levelName;
+        this.nativeLanguageName = nativeLanguageName;
+        this.learnedLanguageName = learnedLanguageName;
+        this.isParticipant = isParticipant;
+        this.isSecured = isSecured;
+        this.isAvatarLocal = isAvatarLocal;
+        this.avatarLocal = avatarLocal;
     }
 }
