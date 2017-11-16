@@ -18,6 +18,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -220,6 +221,22 @@ public class CourseElementsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_offline, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if(isOffline == 1) {
+            menu.findItem(R.id.action_offline).setChecked(true);
+        }
+        return true;
+    }
+
     public class LessonFetchTask extends AsyncTask<Void, Void, Boolean> {
 
         private final int fetchedCourseId;
@@ -288,6 +305,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                 lecture.setName(singleLectureName);
                                 lecture.setLectureUrl(singleLectureUrl);
                                 dbReader.insertLecture(lecture);
+                                dbReader.updateLecture(lecture);
                             }
                             dbReader.insertLesson(newLesson, fetchedCourseId);
                             System.out.println("Lesson inserted");
@@ -392,6 +410,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                                 translatLang.setId(translatedLanguageInteger);
                                                 translatLang.setLanguageName(translatedLanguageName);
                                                 dbReader.insertWord(answerWord);
+                                                dbReader.updateWord(answerWord);
                                                 dbReader.insertLanguage(nativeLang);
                                                 dbReader.insertLanguage(translatLang);
                                             }
@@ -430,6 +449,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                                 }
                                                 wrongAnswerIds[l] = wordIdInteger;
                                                 dbReader.insertWord(wrongAnswer);
+                                                dbReader.updateWord(wrongAnswer);
                                             }
                                             newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
                                             newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
@@ -455,6 +475,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                             dbReader.insertTestQuestion(newQuestion);
                                         }
                                         dbReader.insertTest(newTest);
+                                        dbReader.updateTest(newTest);
                                         System.out.println("Test inserted");
 
                                     }
@@ -512,6 +533,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                             Integer totalPointsInteger = Integer.parseInt(totalPoints);
                                             completedExam.setPointsToPass(totalPointsInteger);
                                             dbReader.insertExam(completedExam);
+                                            dbReader.updateExam(completedExam);
                                             System.out.println("Completed exam inserted");
                                         } else {
                                             String testId = singleExam.get("id").toString();
@@ -595,6 +617,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                                         translatLang.setId(translatedLanguageInteger);
                                                         translatLang.setLanguageName(translatedLanguageName);
                                                         dbReader.insertWord(answerWord);
+                                                        dbReader.updateWord(answerWord);
                                                         dbReader.insertLanguage(nativeLang);
                                                         dbReader.insertLanguage(translatLang);
                                                     }
@@ -633,6 +656,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                                         }
                                                         wrongAnswerIds[l] = wordIdInteger;
                                                         dbReader.insertWord(wrongAnswer);
+                                                        dbReader.updateWord(wrongAnswer);
                                                     }
                                                     newQuestion.setOtherAnswerOneId(wrongAnswerIds[0]);
                                                     newQuestion.setOtherAnswerTwoId(wrongAnswerIds[1]);
@@ -658,6 +682,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                                     dbReader.insertExamQuestion(newQuestion);
                                                 }
                                                 dbReader.insertExam(newExam);
+                                                dbReader.updateExam(newExam);
                                                 System.out.println("Exam inserted");
                                             }
 

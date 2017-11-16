@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -137,6 +138,21 @@ public class MainActivity extends BaseDrawerActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_offline, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if(isOffline == 1) {
+            menu.findItem(R.id.action_offline).setChecked(true);
+        }
+        return true;
+    }
 
     private void showProgress(final boolean show) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
@@ -156,6 +172,8 @@ public class MainActivity extends BaseDrawerActivity {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
+
+
 
     public class CourseFetchTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -220,6 +238,7 @@ public class MainActivity extends BaseDrawerActivity {
                             String learningLanguage = singleCourse.get("learningLanguage").toString();
                             newCourse.setLearnedLanguageName(learningLanguage);
                             dbReader.insertCourse(newCourse);
+                            dbReader.updateCourse(newCourse);
                             System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
                                     + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
                         }

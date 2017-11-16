@@ -2,7 +2,9 @@ package com.example.mniez.myapplication.StudentModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -34,15 +36,19 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 public class FullSynchronizationActivity extends AppCompatActivity {
 
@@ -53,6 +59,12 @@ public class FullSynchronizationActivity extends AppCompatActivity {
     private FullSynchronizationActivity.CourseFetchTask mFetchTask = null;
     int imagesQueue;
     int progress;
+    ArrayList<Exam> examsToSynchr = new ArrayList<>();
+    ArrayList<Test> testsToSynchr = new ArrayList<>();
+
+    SharedPreferences sharedpreferences;
+    private static final String PREFERENCES_OFFLINE = "isOffline";
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +73,10 @@ public class FullSynchronizationActivity extends AppCompatActivity {
         mProgressView = (ProgressBar) findViewById(R.id.synchr_progress);
         showProgress(true);
         progress = 0;
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putInt(PREFERENCES_OFFLINE, 1);
+        editor.commit();
         dbReader = new MobileDatabaseReader(getApplicationContext());
         mFetchTask = new FullSynchronizationActivity.CourseFetchTask("");
         mFetchTask.execute();
@@ -98,6 +114,92 @@ public class FullSynchronizationActivity extends AppCompatActivity {
             // TODO: attempt authentication against a network service.
 
             try {
+                examsToSynchr = dbReader.getAllLocallyCompletedExams();
+                for(Exam ex: examsToSynchr) {
+                    try {
+                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserExamScore");
+                        HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                        myConnection.setRequestMethod("POST");
+                        myConnection.setDoOutput(true);
+                        myConnection.setRequestProperty("Accept","*/*");
+                        String request;
+                        request = "examId=" + ex.getId() + "&answers=" + ex.getAnswersConcatenation();
+                        System.out.println(request);
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        PrintWriter out = new PrintWriter(myConnection.getOutputStream());
+                        out.print(request);
+                        out.close();
+                        myConnection.connect();
+                        System.out.print(myConnection.getResponseCode());
+                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+
+                        String jsonString = sb.toString();
+                        System.out.println("JSON: " + jsonString);
+                        myConnection.disconnect();
+                        if (myConnection.getResponseCode() == 200) {
+
+                        }
+
+                        else {
+                        }
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                testsToSynchr = dbReader.getAllLocallyCompletedTests();
+                for(Test ts: testsToSynchr) {
+                    try {
+                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
+                        HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                        myConnection.setRequestMethod("POST");
+                        myConnection.setDoOutput(true);
+                        myConnection.setRequestProperty("Accept","*/*");
+                        String request;
+                        request = "testId=" + ts.getId() + "&answers=" + ts.getAnswersConcatenation();
+                        System.out.println(request);
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        PrintWriter out = new PrintWriter(myConnection.getOutputStream());
+                        out.print(request);
+                        out.close();
+                        myConnection.connect();
+                        System.out.print(myConnection.getResponseCode());
+                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+
+                        String jsonString = sb.toString();
+                        System.out.println("JSON: " + jsonString);
+                        myConnection.disconnect();
+                        if (myConnection.getResponseCode() == 200) {
+
+                        }
+
+                        else {
+                        }
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
@@ -164,6 +266,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                             out.close();
                                             System.out.println("Avatar " + fileName + " loaded");
                                             imagesQueue--;
+                                            System.out.println("Image queue: " + imagesQueue);
                                         } catch (Exception e) {
                                             // some action
                                         }
@@ -172,6 +275,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                     @Override
                                     public void onBitmapFailed(Drawable errorDrawable) {
                                         imagesQueue--;
+                                        System.out.println("Image queue: " + imagesQueue);
                                     }
 
                                     @Override
@@ -429,6 +533,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                 out.close();
                                                                                 imagesQueue--;
                                                                                 System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                                System.out.println("Image queue: " + imagesQueue);
                                                                             } catch (Exception e) {
                                                                                 // some action
                                                                             }
@@ -437,6 +542,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                         @Override
                                                                         public void onBitmapFailed(Drawable errorDrawable) {
                                                                             imagesQueue--;
+                                                                            System.out.println("Image queue: " + imagesQueue);
                                                                         }
 
                                                                         @Override
@@ -583,6 +689,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                 out.close();
                                                                                 imagesQueue--;
                                                                                 System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                                System.out.println("Image queue: " + imagesQueue);
                                                                             } catch (Exception e) {
                                                                                 // some action
                                                                             }
@@ -591,6 +698,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                         @Override
                                                                         public void onBitmapFailed(Drawable errorDrawable) {
                                                                             imagesQueue--;
+                                                                            System.out.println("Image queue: " + imagesQueue);
                                                                         }
 
                                                                         @Override
@@ -824,6 +932,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                         out.close();
                                                                                         imagesQueue--;
                                                                                         System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                                        System.out.println("Image queue: " + imagesQueue);
                                                                                     } catch (Exception e) {
                                                                                         // some action
                                                                                     }
@@ -832,6 +941,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                 @Override
                                                                                 public void onBitmapFailed(Drawable errorDrawable) {
                                                                                     imagesQueue--;
+                                                                                    System.out.println("Image queue: " + imagesQueue);
                                                                                 }
 
                                                                                 @Override
@@ -922,10 +1032,8 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                 if (singleOtherAnswer.has("translatedSound")) {
                                                                     String translatedSound = singleOtherAnswer.get("translatedSound").toString();
                                                                     wrongAnswer.setTranslatedSound(translatedSound);
-                                                                    String nativeSound = singleOtherAnswer.get("nativeSound").toString();
-                                                                    wrongAnswer.setNativeSound(nativeSound);
-                                                                    final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
-                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
+                                                                    final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
+                                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
                                                                     URLConnection soundConnection = soundEndpoint.openConnection();
                                                                     try {
                                                                         InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
@@ -933,7 +1041,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                         if (!myDir.exists()) {
                                                                             myDir.mkdirs();
                                                                         }
-                                                                        File myFile = new File(myDir, answerNativeSoundFileName);
+                                                                        File myFile = new File(myDir, answerTranslatedSoundFileName);
                                                                         FileOutputStream outputStream = new FileOutputStream(myFile);
 
                                                                         byte buffer[] = new byte[1024];
@@ -944,9 +1052,9 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                             outputStream.write(buffer, 0, dataSize);
                                                                         }
                                                                         outputStream.close();
-                                                                        System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
-                                                                        wrongAnswer.setIsNativeSoundLocal(1);
-                                                                        wrongAnswer.setNativeSoundLocal(answerNativeSoundFileName);
+                                                                        System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
+                                                                        wrongAnswer.setIsTranslatedSoundLocal(1);
+                                                                        wrongAnswer.setTranslatedSoundLocal(answerTranslatedSoundFileName);
                                                                     } catch (IOException e) {
 
                                                                     }
@@ -980,6 +1088,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                         out.close();
                                                                                         imagesQueue--;
                                                                                         System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                                        System.out.println("Image queue: " + imagesQueue);
                                                                                     } catch (Exception e) {
                                                                                         // some action
                                                                                     }
@@ -988,6 +1097,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                                 @Override
                                                                                 public void onBitmapFailed(Drawable errorDrawable) {
                                                                                     imagesQueue--;
+                                                                                    System.out.println("Image queue: " + imagesQueue);
                                                                                 }
 
                                                                                 @Override
@@ -1032,9 +1142,6 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                         dbReader.insertExam(newExam);
                                                         dbReader.updateExamFullSynch(newExam);
                                                         System.out.println("Exam inserted");
-
-                                                        while(imagesQueue > 0) {
-                                                        }
                                                     }
 
                                                 }
@@ -1060,6 +1167,8 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
                                 + " " + teacherFirstName + " " + teacherLastName + " " + nativeLanguage + " " + learningLanguage);
                     }
+
+
 
                    // return true;
                 } catch (JSONException e) {

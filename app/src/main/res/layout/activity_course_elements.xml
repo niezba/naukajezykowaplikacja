@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context="com.example.mniez.myapplication.StudentModule.CourseElementsActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -25,7 +26,7 @@
                 android:id="@+id/imageView2"
                 android:layout_width="match_parent"
                 android:transitionName="courseImage"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 app:srcCompat="@android:color/darker_gray"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
@@ -49,8 +50,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
+        android:tint="#ffffff"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@android:drawable/arrow_up_float" />
+        app:srcCompat="@drawable/ic_info_black_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>

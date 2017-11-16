@@ -40,8 +40,14 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".StudentModule.GradesActivity"
+            android:label="@string/title_activity_course"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".StudentModule.CourseElementsActivity"
             android:label="@string/title_activity_course_elements"
+            android:parentActivityName=".StudentModule.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -75,14 +81,17 @@
             android:name=".StudentModule.CourseDetailsActivity"
             android:label="@string/title_activity_details"
             android:parentActivityName=".StudentModule.MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
         </activity>
         <activity android:name=".StudentModule.FullSynchronizationActivity"
+            android:screenOrientation="portrait"
             android:noHistory="true"></activity>
         <activity android:name=".StudentModule.SynchronizationActivity"
+            android:screenOrientation="portrait"
             android:noHistory="true"></activity>
         <provider
             android:name="android.support.v4.content.FileProvider"

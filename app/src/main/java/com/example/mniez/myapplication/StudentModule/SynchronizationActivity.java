@@ -2,7 +2,9 @@ package com.example.mniez.myapplication.StudentModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,11 +30,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class SynchronizationActivity extends AppCompatActivity {
 
@@ -41,6 +47,12 @@ public class SynchronizationActivity extends AppCompatActivity {
     ProgressBar mProgressView;
     MobileDatabaseReader dbReader;
     private SynchronizationActivity.CourseFetchTask mFetchTask = null;
+    ArrayList<Exam> examsToSynchr = new ArrayList<>();
+    ArrayList<Test> testsToSynchr = new ArrayList<>();
+
+    SharedPreferences sharedpreferences;
+    private static final String PREFERENCES_OFFLINE = "isOffline";
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +60,10 @@ public class SynchronizationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_synchronization);
         mProgressView = (ProgressBar) findViewById(R.id.synchr_progress2);
         showProgress(true);
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putInt(PREFERENCES_OFFLINE, 0);
+        editor.commit();
         dbReader = new MobileDatabaseReader(getApplicationContext());
         mFetchTask = new SynchronizationActivity.CourseFetchTask("");
         mFetchTask.execute();
@@ -85,6 +101,92 @@ public class SynchronizationActivity extends AppCompatActivity {
             // TODO: attempt authentication against a network service.
 
             try {
+                examsToSynchr = dbReader.getAllLocallyCompletedExams();
+                for(Exam ex: examsToSynchr) {
+                    try {
+                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
+                        HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                        myConnection.setRequestMethod("POST");
+                        myConnection.setDoOutput(true);
+                        myConnection.setRequestProperty("Accept","*/*");
+                        String request;
+                        request = "testId=" + ex.getId() + "&answers=" + ex.getAnswersConcatenation() + "&exam=true";
+                        System.out.println(request);
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        PrintWriter out = new PrintWriter(myConnection.getOutputStream());
+                        out.print(request);
+                        out.close();
+                        myConnection.connect();
+                        System.out.print(myConnection.getResponseCode());
+                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+
+                        String jsonString = sb.toString();
+                        System.out.println("JSON: " + jsonString);
+                        myConnection.disconnect();
+                        if (myConnection.getResponseCode() == 200) {
+
+                        }
+
+                        else {
+                        }
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                testsToSynchr = dbReader.getAllLocallyCompletedTests();
+                for(Test ts: testsToSynchr) {
+                    try {
+                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
+                        HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                        myConnection.setRequestMethod("POST");
+                        myConnection.setDoOutput(true);
+                        myConnection.setRequestProperty("Accept","*/*");
+                        String request;
+                        request = "testId=" + ts.getId() + "&answers=" + ts.getAnswersConcatenation();
+                        System.out.println(request);
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        PrintWriter out = new PrintWriter(myConnection.getOutputStream());
+                        out.print(request);
+                        out.close();
+                        myConnection.connect();
+                        System.out.print(myConnection.getResponseCode());
+                        BufferedReader br = new BufferedReader(new InputStreamReader(myConnection.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+
+                        String jsonString = sb.toString();
+                        System.out.println("JSON: " + jsonString);
+                        myConnection.disconnect();
+                        if (myConnection.getResponseCode() == 200) {
+
+                        }
+
+                        else {
+                        }
+                    } catch (ProtocolException e) {
+                        e.printStackTrace();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");

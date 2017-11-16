@@ -73,6 +73,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final String PREFERENCES_ID = "loggedUserId";
     private static final String PREFERENCES_ROLE = "loggedUserMainRole";
     private static final String PREFERENCES_OFFLINE = "isOffline";
+    private static final String PREFERENCES_IS_LOGGED_ON_DEVICE = "isLoggedOnDevice";
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -354,58 +355,67 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username="+mEmail+"&password="+mPassword);
-                HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
-                myConnection.setRequestMethod("GET");
-                myConnection.setDoOutput(true);
-                myConnection.connect();
+            if(sharedpreferences.getInt("isOffline",0) == 0) {
+                try {
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username=" + mEmail + "&password=" + mPassword);
+                    HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setDoOutput(true);
+                    myConnection.connect();
 
-                BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
-                StringBuilder sb = new StringBuilder();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
+                    StringBuilder sb = new StringBuilder();
 
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    br.close();
+
+                    String jsonString = sb.toString();
+                    System.out.println("JSON: " + jsonString);
+
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    String errCode = jsonObject.get("error_code").toString();
+                    myConnection.disconnect();
+                    System.out.println("Error code: " + errCode);
+                    if (errCode.equals("0")) {
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+                        String appUserName = jsonObject.get("username").toString();
+                        String appNameSurname = jsonObject.get("firstName").toString() + " " + jsonObject.get("lastName").toString();
+                        String appUserId = jsonObject.get("id").toString();
+                        JSONArray appRoles = jsonObject.getJSONArray("roles");
+                        String appRole = appRoles.getString(0);
+                        editor.putString(PREFERENCES_USERNAME, appUserName);
+                        editor.putString(PREFERENCES_NAMESURNAME, appNameSurname);
+                        editor.putString(PREFERENCES_PASSWORD, mPassword);
+                        editor.putString(PREFERENCES_ID, appUserId);
+                        editor.putString(PREFERENCES_ROLE, appRole);
+                        userRole = appRole;
+                        editor.commit();
+                        return true;
+                    } else {
+                        errorText = jsonObject.get("error_message").toString();
+                    }
+
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } /*catch (JSONException e) {
+                e.printStackTrace();
+            }*/ catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                br.close();
-
-                String jsonString = sb.toString();
-                System.out.println("JSON: " + jsonString);
-
-                JSONObject jsonObject = new JSONObject(jsonString);
-                String errCode = jsonObject.get("error_code").toString();
-                myConnection.disconnect();
-                System.out.println("Error code: " + errCode);
-                if(errCode.equals("0")) {
-                    SharedPreferences.Editor editor = sharedpreferences.edit();
-                    String appUserName = jsonObject.get("username").toString();
-                    String appNameSurname = jsonObject.get("firstName").toString() + " " + jsonObject.get("lastName").toString();
-                    String appUserId = jsonObject.get("id").toString();
-                    JSONArray appRoles = jsonObject.getJSONArray("roles");
-                    String appRole = appRoles.getString(0);
-                    editor.putString(PREFERENCES_USERNAME, appUserName);
-                    editor.putString(PREFERENCES_NAMESURNAME, appNameSurname);
-                    editor.putString(PREFERENCES_PASSWORD, mPassword);
-                    editor.putString(PREFERENCES_ID, appUserId);
-                    editor.putString(PREFERENCES_ROLE, appRole);
-                    userRole = appRole;
-                    editor.commit();
+            }
+            else {
+                if (mEmail.equals(sharedpreferences.getString(PREFERENCES_USERNAME, "")) && mPassword.equals(sharedpreferences.getString(PREFERENCES_PASSWORD, ""))) {
                     return true;
                 }
                 else {
-                    errorText = jsonObject.get("error_message").toString();
+                    return false;
                 }
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } /*catch (JSONException e) {
-                e.printStackTrace();
-            }*/ catch (JSONException e) {
-                e.printStackTrace();
             }
 
 
@@ -419,35 +429,45 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                if (userRole.equals("ROLE_STUDENT")) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                    builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
-                            .setTitle("Chcesz pracować w trybie offline?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 1);
-                            editor.commit();
-                            Intent intent = new Intent(LoginActivity.this, FullSynchronizationActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                if (sharedpreferences.getString(PREFERENCES_ROLE, "").equals("ROLE_STUDENT")) {
+                    if(sharedpreferences.getInt(PREFERENCES_OFFLINE, 0) == 1) {
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                    else if (sharedpreferences.getInt(PREFERENCES_OFFLINE, 0) == 0 && sharedpreferences.getInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 0) == 1) {
+                        Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
+                        startActivity(intent);
+                    }
+                    else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                        builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
+                                .setTitle("Chcesz pracować w trybie offline?");
+                        builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                SharedPreferences.Editor editor = sharedpreferences.edit();
+                                editor.putInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 1);
+                                editor.commit();
+                                Intent intent = new Intent(LoginActivity.this, FullSynchronizationActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                        builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                SharedPreferences.Editor editor = sharedpreferences.edit();
+                                editor.putInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 1);
+                                editor.commit();
+                                Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
                 }
-                else if (userRole.equals("ROLE_TEACHER")) {
+                else if (sharedpreferences.getString(PREFERENCES_ROLE, "").equals("ROLE_TEACHER")) {
 
                 }
-                else if (userRole.equals("ROLE_ADMIN")) {
+                else if (sharedpreferences.getString(PREFERENCES_ROLE, "").equals("ROLE_ADMIN")) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
                     builder.setMessage("Funkcjonalności administratora nie są dostępne z poziomu aplikacji. Aby zarządzać Dummy zaloguj się poprzez przeglądarkę.")
                             .setTitle("Opcja niedostępna");

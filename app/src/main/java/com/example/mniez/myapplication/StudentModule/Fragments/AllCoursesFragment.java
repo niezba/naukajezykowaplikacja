@@ -1,5 +1,7 @@
 package com.example.mniez.myapplication.StudentModule.Fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,16 +36,20 @@ public class AllCoursesFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SearchCoursesListAdapter mAdapter;
+    SharedPreferences sharedpreferences;
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
 
     String currentId;
     String currentRole;
+    Integer isOffline;
 
     ArrayList<Course> courseList = new ArrayList<Course>();
     private AllCoursesFragment.CourseFetchTask mFetchTask = null;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        sharedpreferences = this.getActivity().getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt("isOffline", 0);
         mFetchTask = new AllCoursesFragment.CourseFetchTask(currentId);
         mFetchTask.execute((Void) null);
     }
@@ -78,92 +84,94 @@ public class AllCoursesFragment extends Fragment {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            try {
-                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/search");
-                HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
-                myConnection.setRequestMethod("GET");
-                myConnection.setDoOutput(true);
-                myConnection.connect();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
-                StringBuilder sb = new StringBuilder();
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                br.close();
-
-                String jsonString = sb.toString();
-                System.out.println("JSON: " + jsonString);
-                courseList.clear();
-
+            if(isOffline == 0) {
                 try {
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    String jsonObjectString = jsonObject.toString();
-                    System.out.println(jsonObjectString);
-                    myConnection.disconnect();
-                    Iterator<?> keys = jsonObject.keys();
-                    while(keys.hasNext()) {
-                        String key = (String) keys.next();
-                        if (jsonObject.get(key) instanceof JSONObject) {
-                            Course newCourse = new Course();
-                            Integer courseIdInteger = Integer.parseInt(key);
-                            newCourse.setId(courseIdInteger);
-                            String courseName = ((JSONObject) jsonObject.get(key)).get("coursename").toString();
-                            newCourse.setCourseName(courseName);
-                            String description = ((JSONObject) jsonObject.get(key)).get("description").toString();
-                            newCourse.setDescription(description);
-                            String createdAt = ((JSONObject) jsonObject.get(key)).get("createdAt").toString();
-                            newCourse.setCreatedAt(createdAt);
-                            String levelName = ((JSONObject) jsonObject.get(key)).get("level").toString();
-                            newCourse.setLevelName(levelName);
-                            String avatar = ((JSONObject) jsonObject.get(key)).get("avatar").toString();
-                            newCourse.setAvatar(avatar);
-                            String teacherFirstName = ((JSONObject) jsonObject.get(key)).get("teacher").toString();
-                            newCourse.setTeacherName(teacherFirstName);
-                            System.out.println(teacherFirstName);
-                            String learningLanguage = ((JSONObject) jsonObject.get(key)).get("language").toString();
-                            newCourse.setLearnedLanguageName(learningLanguage);
-                            Boolean isParticipant = ((JSONObject) jsonObject.get(key)).getBoolean("isParticipant");
-                            if (isParticipant == true) {
-                                newCourse.setParticipant(true);
-                            }
-                            else {
-                                newCourse.setParticipant(false);
-                            }
-                            Boolean secured = ((JSONObject) jsonObject.get(key)).getBoolean("secured");
-                            newCourse.setSecured(secured);
-                            courseList.add(newCourse);
-                            System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
-                                    + " " + teacherFirstName + " " + learningLanguage);
-                        }
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/search");
+                    HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
+                    myConnection.setRequestMethod("GET");
+                    myConnection.setDoOutput(true);
+                    myConnection.connect();
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(webpageEndpoint.openStream()));
+                    StringBuilder sb = new StringBuilder();
+
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
                     }
+                    br.close();
+
+                    String jsonString = sb.toString();
+                    System.out.println("JSON: " + jsonString);
+                    courseList.clear();
+
+                    try {
+                        JSONObject jsonObject = new JSONObject(jsonString);
+                        String jsonObjectString = jsonObject.toString();
+                        System.out.println(jsonObjectString);
+                        myConnection.disconnect();
+                        Iterator<?> keys = jsonObject.keys();
+                        while (keys.hasNext()) {
+                            String key = (String) keys.next();
+                            if (jsonObject.get(key) instanceof JSONObject) {
+                                Course newCourse = new Course();
+                                Integer courseIdInteger = Integer.parseInt(key);
+                                newCourse.setId(courseIdInteger);
+                                String courseName = ((JSONObject) jsonObject.get(key)).get("coursename").toString();
+                                newCourse.setCourseName(courseName);
+                                String description = ((JSONObject) jsonObject.get(key)).get("description").toString();
+                                newCourse.setDescription(description);
+                                String createdAt = ((JSONObject) jsonObject.get(key)).get("createdAt").toString();
+                                newCourse.setCreatedAt(createdAt);
+                                String levelName = ((JSONObject) jsonObject.get(key)).get("level").toString();
+                                newCourse.setLevelName(levelName);
+                                String avatar = ((JSONObject) jsonObject.get(key)).get("avatar").toString();
+                                newCourse.setAvatar(avatar);
+                                String teacherFirstName = ((JSONObject) jsonObject.get(key)).get("teacher").toString();
+                                newCourse.setTeacherName(teacherFirstName);
+                                System.out.println(teacherFirstName);
+                                String learningLanguage = ((JSONObject) jsonObject.get(key)).get("language").toString();
+                                newCourse.setLearnedLanguageName(learningLanguage);
+                                Boolean isParticipant = ((JSONObject) jsonObject.get(key)).getBoolean("isParticipant");
+                                if (isParticipant == true) {
+                                    newCourse.setParticipant(true);
+                                } else {
+                                    newCourse.setParticipant(false);
+                                }
+                                Boolean secured = ((JSONObject) jsonObject.get(key)).getBoolean("secured");
+                                newCourse.setSecured(secured);
+                                courseList.add(newCourse);
+                                System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
+                                        + " " + teacherFirstName + " " + learningLanguage);
+                            }
+                        }
                     /*int coursesCount = jsonObject.length();
                     for (int i = 0; i < coursesCount; i++){
 
                     }*/
-                    return true;
-                } catch (JSONException e) {
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    String errCode = jsonObject.get("error_code").toString();
-                    System.out.println("Error code: " + errCode);
-                }
+                        return true;
+                    } catch (JSONException e) {
+                        JSONObject jsonObject = new JSONObject(jsonString);
+                        String errCode = jsonObject.get("error_code").toString();
+                        System.out.println("Error code: " + errCode);
+                    }
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } /*catch (JSONException e) {
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } /*catch (JSONException e) {
                 e.printStackTrace();
             }*/ catch (JSONException e) {
-                e.printStackTrace();
+                    e.printStackTrace();
+                }
+                return false;
             }
-
+            return true;
 
             // TODO: register the new account here.
-            return false;
+
         }
 
         @Override

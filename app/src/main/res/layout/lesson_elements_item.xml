@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content"
-    android:background="@color/lightGray">
+    android:gravity="center_horizontal">
 
     <TextView
         android:layout_marginStart="7dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,23 +16,26 @@
 
     <TextView
         android:id="@+id/testName"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="14dp"
-        android:layout_toRightOf="@+id/textView3"
+        android:layout_below="@+id/textView3"
+        android:layout_marginBottom="10dp"
+        android:layout_marginStart="7dp"
         android:fontFamily="sans-serif-condensed"
         android:text="TextView"
+        android:textAllCaps="true"
         android:textSize="14sp" />
 
-    <TextView
+    <Button
         android:id="@+id/testScore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/testName"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="7dp"
         android:layout_alignParentRight="true"
-        android:text="TextView"
-        android:textSize="18sp"/>
+        android:layout_centerInParent="true"
+        android:layout_marginEnd="7dp"
+        android:layout_marginStart="20dp"
+        android:background="#00ffffff"
+        android:text="Przejdź"
+        android:textColor="@color/colorPrimary"
+        android:textSize="14sp" />
 </RelativeLayout>

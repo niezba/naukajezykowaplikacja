@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,7 +61,7 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
         LayoutInflater inflater = (LayoutInflater) mKontekst.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.lesson_elements_item, parent, false);
         TextView textView = (TextView) rowView.findViewById(R.id.testName);
-        TextView textView2 = (TextView) rowView.findViewById(R.id.testScore);
+        Button textView2 = (Button) rowView.findViewById(R.id.testScore);
         TextView textView3 = (TextView) rowView.findViewById(R.id.textView3);
         final LessonElement singleLessonEl = mLessonElements.get(position);
 
@@ -71,19 +72,19 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
         if(rowType == 0) {
             textView3.setText("Test");
             //textView3.setTextColor(R.color.colorPrimaryDark);
-            textView2.setText(singleLessonEl.getLessonElementScoredPoints() + " / " + singleLessonEl.getLessonElementTotalPoints());
+            //textView2.setText(singleLessonEl.getLessonElementScoredPoints() + " / " + singleLessonEl.getLessonElementTotalPoints());
         }
         else if(rowType == 1) {
             textView3.setText("Wykład");
             //textView3.setTextColor(R.color.colorAccent);
-            textView2.setVisibility(View.GONE);
+            //textView2.setVisibility(View.GONE);
         }
         else if(rowType == 2) {
             textView3.setText("Sprawdzian");
             //textView3.setTextColor(R.color.colorAccent);
-            textView2.setVisibility(View.GONE);
+            //textView2.setVisibility(View.GONE);
         }
-        rowView.setOnClickListener(new View.OnClickListener() {
+        textView2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 switch (rowType) {
@@ -129,7 +130,9 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                             }
                         }
                         else {
-                            Toast.makeText(mKontekst, "Brak materiału offline dla wykładu " + elId, Toast.LENGTH_SHORT).show();
+                            mFetchTask = new FetchLectureForLessonId(elId);
+                            mFetchTask.execute();
+                            //Toast.makeText(mKontekst, "Brak materiału offline dla wykładu " + elId, Toast.LENGTH_SHORT).show();
                         }
                         break;
                     case 2:
@@ -226,7 +229,7 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
             } catch (IOException e) {
 
             }
-            return null;
+            return false;
         }
 
         @Override

@@ -1,5 +1,7 @@
 package com.example.mniez.myapplication.StudentModule.Fragments;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -36,19 +38,23 @@ public class SearchCoursesFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private SearchCoursesListAdapter mAdapter;
+    SharedPreferences sharedpreferences;
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
 
     String currentId;
     String currentRole;
     String phrase;
     String language;
     String level;
+    Integer isOffline;
 
     ArrayList<Course> courseList = new ArrayList<Course>();
     public SearchCoursesFragment.CourseFetchTask mFetchTask = null;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        sharedpreferences = this.getActivity().getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt("isOffline", 0);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

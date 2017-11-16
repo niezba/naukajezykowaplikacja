@@ -996,6 +996,32 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         return score;
     }
 
+    public ArrayList<Test> getAllLocallyCompletedTests() {
+        ArrayList<Test> tests = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_TESTS + " WHERE " + IS_COMPLETED_LOCAL + " = 1 AND " + ANSWER_CONCATENATION + " IS NOT NULL";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                Test ts = new Test();
+                ts.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                ts.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
+                ts.setDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
+                ts.setIsNew(c.getInt(c.getColumnIndex(IS_NEW)));
+                ts.setIsCompleted(c.getInt(c.getColumnIndex(IS_COMPLETED)));
+                ts.setScore(c.getInt(c.getColumnIndex(SCORE)));
+                ts.setIsLocal(c.getInt(c.getColumnIndex(IS_LOCAL)));
+                ts.setIsCompletedLocal(c.getInt(c.getColumnIndex(IS_COMPLETED_LOCAL)));
+                ts.setAnswersConcatenation(c.getString(c.getColumnIndex(ANSWER_CONCATENATION)));
+                System.out.println(ts.getDescription());
+                tests.add(ts);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return tests;
+    }
+
     public long updateScoreForExam(int examId, int score, int grade) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues args = new ContentValues();
@@ -1014,5 +1040,31 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         args.put(ANSWER_CONCATENATION, answersConcat);
         db.update(TABLE_EXAMS, args, KEY_ID + "=" + examId, null);
         return score;
+    }
+
+    public ArrayList<Exam> getAllLocallyCompletedExams() {
+        ArrayList<Exam> exams = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_EXAMS + " WHERE " + IS_COMPLETED_LOCAL + " = 1 AND " + ANSWER_CONCATENATION + " IS NOT NULL";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                Exam ex = new Exam();
+                ex.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                ex.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
+                ex.setDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
+                ex.setIsNew(c.getInt(c.getColumnIndex(IS_NEW)));
+                ex.setIsPassed(c.getInt(c.getColumnIndex(IS_PASSED)));
+                ex.setScore(c.getInt(c.getColumnIndex(SCORE)));
+                ex.setIsLocal(c.getInt(c.getColumnIndex(IS_LOCAL)));
+                ex.setIsCompletedLocal(c.getInt(c.getColumnIndex(IS_COMPLETED_LOCAL)));
+                ex.setAnswersConcatenation(c.getString(c.getColumnIndex(ANSWER_CONCATENATION)));
+                System.out.println(ex.getDescription());
+                exams.add(ex);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return exams;
     }
 }

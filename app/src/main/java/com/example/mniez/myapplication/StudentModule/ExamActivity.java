@@ -458,13 +458,13 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
             answerArray = answerArray.concat("]");
             System.out.println(answerArray);
             try {
-                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserExamScore");
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("POST");
                 myConnection.setDoOutput(true);
                 myConnection.setRequestProperty("Accept","*/*");
                 String request;
-                request = "testId=" + testId + "&answers=" + answerArray + "&exam=true";
+                request = "examId=" + testId + "&answers=" + answerArray;
                 System.out.println(request);
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 PrintWriter out = new PrintWriter(myConnection.getOutputStream());
