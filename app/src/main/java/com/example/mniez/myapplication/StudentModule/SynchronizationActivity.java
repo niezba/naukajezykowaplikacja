@@ -53,6 +53,10 @@ public class SynchronizationActivity extends AppCompatActivity {
     SharedPreferences sharedpreferences;
     private static final String PREFERENCES_OFFLINE = "isOffline";
     private static final String MY_PREFERENCES = "DummyLangPreferences";
+    private static final String PREFERENCES_USERNAME = "loggedUserLogin";
+    private static final String PREFERENCES_PASSWORD = "loggedUserPassword";
+    String mEmail;
+    String mPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +65,8 @@ public class SynchronizationActivity extends AppCompatActivity {
         mProgressView = (ProgressBar) findViewById(R.id.synchr_progress2);
         showProgress(true);
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        mEmail = sharedpreferences.getString(PREFERENCES_USERNAME, "");
+        mPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putInt(PREFERENCES_OFFLINE, 0);
         editor.commit();
@@ -101,16 +107,50 @@ public class SynchronizationActivity extends AppCompatActivity {
             // TODO: attempt authentication against a network service.
 
             try {
+                URL loginEndpoint = new URL("http://pzmmd.cba.pl/api/login?username=" + mEmail + "&password=" + mPassword);
+                HttpURLConnection loginConnection = (HttpURLConnection) loginEndpoint.openConnection();
+                loginConnection.setRequestMethod("GET");
+                loginConnection.setDoOutput(true);
+                loginConnection.connect();
+
+                BufferedReader bl = new BufferedReader(new InputStreamReader(loginEndpoint.openStream()));
+                StringBuilder sl = new StringBuilder();
+
+                String linel;
+                while ((linel = bl.readLine()) != null) {
+                    sl.append(linel + "\n");
+                }
+                bl.close();
+
+                String jsonloginString = sl.toString();
+                System.out.println("JSON: " + jsonloginString);
+
+                JSONObject jsonloginObject = new JSONObject(jsonloginString);
+                String errLoginCode = jsonloginObject.get("error_code").toString();
+                loginConnection.disconnect();
+                System.out.println("Error code: " + errLoginCode);
+                if (errLoginCode.equals("0")) {
+                    //SharedPreferences.Editor editor = sharedpreferences.edit();
+                    /*String appUserName = jsonloginObject.get("username").toString();
+                    String appNameSurname = jsonloginObject.get("firstName").toString() + " " + jsonloginObject.get("lastName").toString();
+                    String appUserId = jsonloginObject.get("id").toString();
+                    JSONArray appRoles = jsonloginObject.getJSONArray("roles");
+                    String appRole = appRoles.getString(0);
+                    editor.commit();
+                    return true;*/
+                } else {
+                    String errorText = jsonloginObject.get("error_message").toString();
+                }
                 examsToSynchr = dbReader.getAllLocallyCompletedExams();
                 for(Exam ex: examsToSynchr) {
                     try {
-                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserTestScore");
+                        URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/updateUserExamScore");
                         HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                         myConnection.setRequestMethod("POST");
                         myConnection.setDoOutput(true);
                         myConnection.setRequestProperty("Accept","*/*");
                         String request;
-                        request = "testId=" + ex.getId() + "&answers=" + ex.getAnswersConcatenation() + "&exam=true";
+                        request = "examId=" + ex.getId() + "&answers=" + ex.getAnswersConcatenation();
                         System.out.println(request);
                         ByteArrayOutputStream os = new ByteArrayOutputStream();
                         PrintWriter out = new PrintWriter(myConnection.getOutputStream());

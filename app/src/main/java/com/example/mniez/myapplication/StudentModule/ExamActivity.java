@@ -85,6 +85,7 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
     int score;
     int grade;
     int courseId;
+    int isPassed;
     int isOffline;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -97,32 +98,39 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                     setQuestion(-1);
                     return true;
                 case R.id.navigation_dashboard:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(ExamActivity.this);
-                    builder.setMessage("Czy chcesz zakończyć rozwiązywanie sprawdzianu? Nie będzie można rozwiązać go ponownie.")
-                            .setTitle("Zakończenie sprawdzianu");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            isCompleted = 1;
-                            if(isOffline == 0) {
-                                progress = ProgressDialog.show(ExamActivity.this, "Proszę czekać",
-                                        "Wysyłam wyniki", true);
-                                mSendTask = new SendTestResultsTask();
-                                mSendTask.execute();
+                    if(isCompleted == 0) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ExamActivity.this);
+                        builder.setMessage("Czy chcesz zakończyć rozwiązywanie sprawdzianu? Nie będzie można rozwiązać go ponownie.")
+                                .setTitle("Zakończenie sprawdzianu");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                isCompleted = 1;
+                                if (isOffline == 0) {
+                                    dialog.dismiss();
+                                    progress = ProgressDialog.show(ExamActivity.this, "Proszę czekać",
+                                            "Wysyłam wyniki", true);
+                                    mSendTask = new SendTestResultsTask();
+                                    mSendTask.execute();
+                                } else {
+                                    dialog.dismiss();
+                                    progress = ProgressDialog.show(ExamActivity.this, "Proszę czekać",
+                                            "Przeliczam wyniki", true);
+                                    resolveOfflineExam();
+                                }
                             }
-                            else {
-                                progress = ProgressDialog.show(ExamActivity.this, "Proszę czekać",
-                                        "Przeliczam wyniki", true);
-                                resolveOfflineExam();
+                        });
+                        builder.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
                             }
-                        }
-                    });
-                    builder.setNegativeButton("Anuluj", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                    else {
+                        Intent intent = new Intent(ExamActivity.this,MainActivity.class);
+                        startActivity(intent);
+                    }
                     return true;
                 case R.id.navigation_notifications:
                     setQuestion(1);
@@ -228,7 +236,7 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
         Word correctAnswer = dbReader.getParticularWordData(testQuestion.getAnswerId());
         Word otherAnswerOne = dbReader.getParticularWordData(testQuestion.getOtherAnswerOneId());
         Word otherAnswerTwo = dbReader.getParticularWordData(testQuestion.getOtherAnswerTwoId());
-        Word otherAnswerThree = dbReader.getParticularWordData(testQuestion.getOtherAnswerTwoId());
+        Word otherAnswerThree = dbReader.getParticularWordData(testQuestion.getOtherAnswerThreeId());
         newList.add(correctAnswer);
         newList.add(otherAnswerOne);
         newList.add(otherAnswerTwo);
@@ -360,9 +368,9 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                 questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
                 switchCurrentAnswerType(testQuestions.get(questionCounter));
                 populateAnswersForQuestion(testQuestions.get(questionCounter));
-                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
-                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
-                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
                 String currentString;
                 if (answerStrings[questionCounter] == null) {
                     currentString = "";
@@ -370,11 +378,36 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                 else {
                     currentString = answerStrings[questionCounter];
                 }
-                mInputAnswersFragment.initiateAnswers(inputAnswerString, testQuestions.get(questionCounter).getAnswerTypeId(), currentString, inputAnswerId);
+                mInputAnswersFragment.initiateAnswers(inputAnswerString, testQuestions.get(questionCounter).getAnswerTypeId(), currentString, inputAnswerId, isCompleted);
             }
             else {
                 Toast.makeText(this, "To jest ostatnie pytanie w sprawdzianie", Toast.LENGTH_SHORT).show();
             }
+        }
+        else if (prevOrNext == 2) {
+            System.out.println("Ustawiam wyniki testu");
+            questionCounter = 0;
+            currentQuestionTypeId = testQuestions.get(questionCounter).getQuestionTypeId();
+            currentQuestionWordId = testQuestions.get(questionCounter).getAnswerId();
+            String newQuestionToAsk = testQuestions.get(questionCounter).getQuestion();
+            mNumberFragment.setNumberOfQuestion(questionCounter + 1);
+            mQuestionFragment.setQuestionBasedOnType(currentQuestionTypeId, currentQuestionWordId, newQuestionToAsk);
+            mProgressFragment.setProgress(((((float) questionCounter)+1)/ (float) testQuestions.size())*100.0);
+            questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
+            switchCurrentAnswerType(testQuestions.get(questionCounter));
+            populateAnswersForQuestion(testQuestions.get(questionCounter));
+            populateAnswersForInputQuestion(testQuestions.get(questionCounter));
+            mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+            mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+            mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+            String currentString;
+            if (answerStrings[questionCounter] == null) {
+                currentString = "";
+            }
+            else {
+                currentString = answerStrings[questionCounter];
+            }
+            mInputAnswersFragment.initiateAnswers(inputAnswerString, testQuestions.get(questionCounter).getAnswerTypeId(), currentString, inputAnswerId, isCompleted);
         }
         else if (prevOrNext == -1) {
             if (questionCounter > 0 ) {
@@ -388,9 +421,9 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                 questionWords = populateCurrentListOfWords(testQuestions.get(questionCounter));
                 switchCurrentAnswerType(testQuestions.get(questionCounter));
                 populateAnswersForQuestion(testQuestions.get(questionCounter));
-                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
-                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
-                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds);
+                mAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+                mImageAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
+                mSoundsAnswersFragment.initiateAnswers(answersString, testQuestions.get(questionCounter).getAnswerTypeId(), answerIds[questionCounter], currentAnswerIds, isCompleted, testQuestions.get(questionCounter).getAnswerId());
                 String currentString;
                 if (answerStrings[questionCounter] == null) {
                     currentString = "";
@@ -398,7 +431,7 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                 else {
                     currentString = answerStrings[questionCounter];
                 }
-                mInputAnswersFragment.initiateAnswers(inputAnswerString, testQuestions.get(questionCounter).getAnswerTypeId(), currentString, inputAnswerId);
+                mInputAnswersFragment.initiateAnswers(inputAnswerString, testQuestions.get(questionCounter).getAnswerTypeId(), currentString, inputAnswerId, isCompleted);
             }
             else {
                 Toast.makeText(this, "To jest pierwsze pytanie w sprawdzianie", Toast.LENGTH_SHORT).show();
@@ -486,10 +519,11 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
                 myConnection.disconnect();
                 if (myConnection.getResponseCode() == 200) {
                     JSONObject resultsObject = new JSONObject(jsonString);
-                    String resultString = resultsObject.getString("score");
+                    JSONObject resultScore = resultsObject.getJSONObject("score");
+                    String resultString = resultScore.getString("points");
                     Integer resultInt = Integer.parseInt(resultString);
                     score = resultInt;
-                    String gradeString = resultsObject.getString("grade");
+                    String gradeString = resultScore.getString("grade");
                     Integer gradeInt = Integer.parseInt(gradeString);
                     grade = gradeInt;
                 }
@@ -516,15 +550,17 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
 
             if (success) {
                 progress.dismiss();
-                int totalPoints = dbReader.calculateTotalPointsForTest(testId);
+                setQuestion(2);
+                setTitle("Wyniki");
+                int totalPoints = dbReader.calculateTotalPointsForExam(testId);
                 AlertDialog.Builder builder = new AlertDialog.Builder(ExamActivity.this);
                 builder.setMessage("Zdobyłeś w tym sprawdzianie " + score + " na " +  totalPoints + " punktów. Twoja ocena to " + grade)
                         .setTitle("Wyniki").setCancelable(false);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+
+
                         dbReader.updateScoreForExam(testId, score, grade);
-                        Intent intent = new Intent(ExamActivity.this,MainActivity.class);
-                        startActivity(intent);
                     }
                 });
                 AlertDialog dialog = builder.create();
@@ -573,7 +609,8 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
         }
         score = pointsSum.intValue();
         progress.dismiss();
-
+        setQuestion(2);
+        setTitle("Wyniki");
         AlertDialog.Builder builder = new AlertDialog.Builder(ExamActivity.this);
         builder.setMessage("Zdobyłeś w tym sprawdzianie " + score + " na " +  totalPoints + " punktów. Twoja ocena to " + grade)
                 .setTitle("Wyniki").setCancelable(false);
@@ -581,8 +618,7 @@ public class ExamActivity extends AppCompatActivity implements AnswersFragment.O
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dbReader.updateScoreForExamLocal(testId, score, grade, 1, finalAnswerArray);
-                Intent intent = new Intent(ExamActivity.this,MainActivity.class);
-                startActivity(intent);
+
             }
         });
         AlertDialog dialog = builder.create();

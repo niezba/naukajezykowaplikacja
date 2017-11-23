@@ -1,14 +1,17 @@
-package com.example.mniez.myapplication.StudentModule;
+package com.example.mniez.myapplication.TeacherModule;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,13 +24,11 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
-import com.example.mniez.myapplication.ObjectHelper.Exam;
-import com.example.mniez.myapplication.ObjectHelper.Lesson;
-import com.example.mniez.myapplication.ObjectHelper.ScoredElement;
 import com.example.mniez.myapplication.R;
-import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseListAdapter;
-import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CoursesSearchTabAdapter;
-import com.example.mniez.myapplication.StudentModule.ActivityAdapter.GradesListAdapter;
+import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.CourseListAdapter;
+import com.example.mniez.myapplication.TeacherModule.TeacherBaseDrawerActivity;
+import com.example.mniez.myapplication.TeacherModule.FullSynchronizationActivity;
+import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,7 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class GradesActivity extends BaseDrawerActivity {
+public class TeacherMainActivity extends TeacherBaseDrawerActivity {
 
     SharedPreferences sharedpreferences;
     private static final String MY_PREFERENCES = "DummyLangPreferences";
@@ -50,38 +51,45 @@ public class GradesActivity extends BaseDrawerActivity {
     private static final String PREFERENCES_NAMESURNAME = "loggedUserNameSurname";
     private static final String PREFERENCES_ROLE = "loggedUserMainRole";
     private static final String PREFERENCES_ID = "loggedUserId";
-    private static final String PREFERENCES_OFFLINE = "isOffline";
     private static final String ADMIN_ROLE_NAME = "Administrator";
     private static final String TEACHER_ROLE_NAME = "Nauczyciel";
     private static final String STUDENT_ROLE_NAME = "Uczeń";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
 
-    Integer isOffline;
-    ArrayList<Object> allScoredEls = new ArrayList<>();
-    MobileDatabaseReader dbReader;
-    GradesFetchTask mFetchTask = null;
-    private UserLoginTask mAuthTask = null;
     private RecyclerView recyclerView;
-    private GradesListAdapter mAdapter;
+    private CourseListAdapter mAdapter;
     String currentUsername;
     String currentPassword;
+    Integer isOffline;
 
+    private View mProgressView;
+    String currentId;
+    String currentRole;
+
+    ArrayList<Course> courseList = new ArrayList<Course>();
+    private CourseFetchTask mFetchTask = null;
+    private UserLoginTask mAuthTask = null;
+
+    MobileDatabaseReader dbReader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getLayoutInflater().inflate(R.layout.content_grades, frameLayout);
-        setTitle("Moje oceny");
+        getLayoutInflater().inflate(R.layout.content_main, frameLayout);
+        mProgressView = findViewById(R.id.login_progress);
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
         currentUsername = sharedpreferences.getString(PREFERENCES_USERNAME, "");
         currentPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
         String currentNameSurname = sharedpreferences.getString(PREFERENCES_NAMESURNAME, "");
-        String currentId = sharedpreferences.getString(PREFERENCES_ID, "");
-        String currentRole = sharedpreferences.getString(PREFERENCES_ROLE, "");
+        currentId = sharedpreferences.getString(PREFERENCES_ID, "");
+        currentRole = sharedpreferences.getString(PREFERENCES_ROLE, "");
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View navHeaderView= navigationView.getHeaderView(0);
         TextView navUsername = (TextView) navHeaderView.findViewById(R.id.loggedUsername);
         TextView navFullname = (TextView) navHeaderView.findViewById(R.id.loggedNameSurname);
+        setTitle("Moje kursy");
         String userRole;
         switch(currentRole) {
             case "ROLE_ADMIN":
@@ -99,16 +107,35 @@ public class GradesActivity extends BaseDrawerActivity {
         }
         navUsername.setText(userRole);
         navFullname.setText(currentNameSurname);
-        isOffline = sharedpreferences.getInt("isOffline", 0);
         dbReader = new MobileDatabaseReader(getApplicationContext());
-        recyclerView = (RecyclerView) findViewById(R.id.gradesRecyclerView);
-        //recyclerView.setHasFixedSize(true);
-        mAdapter = new GradesListAdapter(allScoredEls, this, recyclerView);
+        dbReader.getWritableDatabase();
+        showProgress(true);
+        mFetchTask = new CourseFetchTask(currentId);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerViewCourse);
+        recyclerView.setHasFixedSize(true);
+        mAdapter = new CourseListAdapter(courseList, this, recyclerView, isOffline);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        mFetchTask = new GradesFetchTask();
-        mFetchTask.execute();
+        mFetchTask.execute((Void) null);
+        System.out.println(mAdapter.getItemCount());
+        dbReader.close();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        navigationView.getMenu().getItem(0).setChecked(true);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            finish();
+        }
     }
 
     @Override
@@ -123,7 +150,6 @@ public class GradesActivity extends BaseDrawerActivity {
         super.onPrepareOptionsMenu(menu);
         if(isOffline == 1) {
             menu.findItem(R.id.action_offline).setChecked(true);
-            menu.findItem(R.id.action_synch).setVisible(true);
         }
         return true;
     }
@@ -134,12 +160,12 @@ public class GradesActivity extends BaseDrawerActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(TeacherMainActivity.this);
                     builder.setMessage("To potrwa chwilkę")
                             .setTitle("Wykonać synchronizację?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(TeacherMainActivity.this, SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 0);
                             editor.commit();
@@ -159,12 +185,12 @@ public class GradesActivity extends BaseDrawerActivity {
                     dialog.show();
                 }
                 else if(item.isChecked() == false) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(TeacherMainActivity.this);
                     builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(TeacherMainActivity.this, FullSynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -179,47 +205,47 @@ public class GradesActivity extends BaseDrawerActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 }
-                return super.onOptionsItemSelected(item);
-            case R.id.action_synch:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
-                    builder.setMessage("To może trochę potrwać.")
-                            .setTitle("Wykonać pełną synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, FullSynchronizationActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        navigationView.getMenu().getItem(2).setChecked(true);
+    private void showProgress(final boolean show) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
-    public class GradesFetchTask extends AsyncTask<Void, Void, Boolean> {
 
 
-        GradesFetchTask() {
+    public class CourseFetchTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final String userId;
+
+        CourseFetchTask(String currentId) {
+            userId = currentId;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+
             if(isOffline == 0) {
                 try {
-                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/userGrades");
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
                     myConnection.setDoOutput(true);
@@ -235,75 +261,68 @@ public class GradesActivity extends BaseDrawerActivity {
                     br.close();
 
                     String jsonString = sb.toString();
-                    System.out.println("JSON Grades data downloaded");
+                    System.out.println("JSON: " + jsonString);
+
                     try {
                         JSONArray jsonObject = new JSONArray(jsonString);
                         String jsonObjectString = jsonObject.toString();
                         System.out.println(jsonObjectString);
                         myConnection.disconnect();
                         int coursesCount = jsonObject.length();
-                        for (int i = 0; i< coursesCount; i++) {
-                            Course cs = new Course();
+                        for (int i = 0; i < coursesCount; i++) {
+                            Course newCourse = new Course();
                             JSONObject singleCourse = jsonObject.getJSONObject(i);
+                            String courseId = singleCourse.get("id").toString();
+                            Integer courseIdInteger = Integer.parseInt(courseId);
+                            newCourse.setId(courseIdInteger);
                             String courseName = singleCourse.get("coursename").toString();
-                            cs.setCourseName(courseName);
-                            allScoredEls.add(cs);
-                            JSONArray courseLessons = singleCourse.getJSONArray("lessons");
-                            int lessonsCount = courseLessons.length();
-                            for(int j = 0; j< lessonsCount; j++) {
-                                Lesson ls = new Lesson();
-                                JSONObject singleLesson = courseLessons.getJSONObject(j);
-                                String lessonName = singleLesson.get("name").toString();
-                                ls.setName(lessonName);
-                                allScoredEls.add(ls);
-                                JSONArray lessonExams = singleLesson.getJSONArray("exams");
-                                int examsCount = lessonExams.length();
-                                for(int k = 0; k< examsCount; k++) {
-                                    Exam ex = new Exam();
-                                    JSONObject singleExam = lessonExams.getJSONObject(k);
-                                    String examName = singleExam.get("name").toString();
-                                    ex.setName(examName);
-                                    String examGrade = singleExam.getJSONArray("users").getJSONObject(0).get("grade").toString();
-                                    Integer examGradeInteger = Integer.parseInt(examGrade);
-                                    ex.setGrade(examGradeInteger);
-                                    allScoredEls.add(ex);
-                                }
-                            }
+                            newCourse.setCourseName(courseName);
+                            String description = singleCourse.get("description").toString();
+                            newCourse.setDescription(description);
+                            String createdAt = singleCourse.get("createdAt").toString();
+                            newCourse.setCreatedAt(createdAt);
+                            String levelName = singleCourse.get("levelName").toString();
+                            newCourse.setLevelName(levelName);
+                            String avatar = singleCourse.get("avatar").toString();
+                            newCourse.setAvatar(avatar);
+                            String nativeLanguage = singleCourse.get("nativeLanguage").toString();
+                            newCourse.setNativeLanguageName(nativeLanguage);
+                            String learningLanguage = singleCourse.get("learningLanguage").toString();
+                            newCourse.setLearnedLanguageName(learningLanguage);
+                            dbReader.insertCourse(newCourse);
+                            dbReader.updateCourse(newCourse);
+                            System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
+                                    + " " + nativeLanguage + " " + learningLanguage);
                         }
+                        return true;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    catch (JSONException e) {
-                            e.printStackTrace();
-                    }
-                } catch (IOException e) {
+
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else {
-                ArrayList<Course> allCourses = dbReader.selectAllCourses();
-                for (Course cs : allCourses) {
-                    ArrayList<Lesson> allLessonsForCourse = dbReader.selectAllLessonsForCourse(cs.getId());
-                    for(Lesson ls : allLessonsForCourse) {
-                        ArrayList<Exam> allExams = dbReader.selectAllExamsForLesson(ls.getLessonId());
-                        if(allExams.size() > 0) {
-                            allScoredEls.add(cs);
-                            allScoredEls.add(ls);
-                            for (Exam ex : allExams) {
-                                allScoredEls.add(ex);
-                            }
-                        }
-                    }
-                }
+                return false;
             }
-            return true;
+            else {
+                return true;
+            }
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             if (success) {
+                showProgress(false);
+                courseList.addAll(dbReader.selectAllCourses());
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                System.out.println(courseList);
                 mFetchTask = null;
             } else {
-                mAuthTask = new GradesActivity.UserLoginTask(currentUsername, currentPassword);
+                //showProgress(false);
+                mAuthTask = new UserLoginTask(currentUsername, currentPassword);
                 mAuthTask.execute();
             }
         }
@@ -311,7 +330,9 @@ public class GradesActivity extends BaseDrawerActivity {
         @Override
         protected void onCancelled() {
             mFetchTask = null;
+            showProgress(false);
         }
+
 
     }
 
@@ -390,18 +411,19 @@ public class GradesActivity extends BaseDrawerActivity {
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             if (success) {
-                mFetchTask = new GradesFetchTask();
+                mFetchTask = new CourseFetchTask(currentId);
                 mFetchTask.execute();
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                showProgress(false);
+                AlertDialog.Builder builder = new AlertDialog.Builder(TeacherMainActivity.this);
                 builder.setMessage("Nastąpił problem z uwierzytelnieniem. Zaloguj się ponownie.")
                         .setTitle("Ups...").setCancelable(false);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
                         sharedpreferences.edit().clear().commit();
-                        GradesActivity.this.deleteDatabase("dummyDatabase");
-                        Intent intent = new Intent(GradesActivity.this, LoginActivity.class);
+                        TeacherMainActivity.this.deleteDatabase("dummyDatabase");
+                        Intent intent = new Intent(TeacherMainActivity.this, LoginActivity.class);
                         startActivity(intent);
                     }
                 });
@@ -418,4 +440,5 @@ public class GradesActivity extends BaseDrawerActivity {
 
 
     }
+
 }

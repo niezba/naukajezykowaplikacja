@@ -14,6 +14,7 @@ import com.example.mniez.myapplication.ObjectHelper.Language;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
+import com.example.mniez.myapplication.ObjectHelper.ScoredElement;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Word;
@@ -1066,5 +1067,35 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         }
         db.close();
         return exams;
+    }
+
+    public ArrayList<ScoredElement> getAllExamsAndTestsScoresForCourseAndLesson(Integer courseId, Integer lessonId) {
+        ArrayList<ScoredElement> scoredElements = new ArrayList<>();
+        String selectQuery = "SELECT z.* FROM (SELECT c." + KEY_ID + ", c." + COURSENAME + ", l." + LESSON_ID + ", l." + NAME + ", 2 AS row_type, e." + DESCRIPTION +
+                ", IFNULL(e." + SCORE + ",0) AS score, IFNULL(e." + GRADE + ",0) AS grade FROM " + TABLE_EXAMS + " e JOIN " + TABLE_LESSONS + " l ON e." + LESSON_ID + " = " + "l." + LESSON_ID +
+                " JOIN " + TABLE_COURSES + " c ON c." + KEY_ID + " = " + "l." + COURSE_ID + " WHERE c." + KEY_ID + " = " + courseId + " AND l." + LESSON_ID + " = " + lessonId +
+                " UNION SELECT c." + KEY_ID + ", c." + COURSENAME + ", l." + LESSON_ID + ", l." + NAME + ", 1 AS row_type, t." + DESCRIPTION +
+                ", IFNULL(t." + SCORE + ",0) AS score, 0 AS grade" + GRADE + " FROM " + TABLE_TESTS + " t JOIN " + TABLE_LESSONS + " l ON t." + LESSON_ID + " = " + "l." + LESSON_ID +
+                " JOIN " + TABLE_COURSES + " c ON c." + KEY_ID + " = " + "l." + COURSE_ID + " WHERE c." + KEY_ID + " = " + courseId + " AND l." + LESSON_ID + " = " + lessonId
+                + ") z ORDER BY z." + KEY_ID + ", z." + LESSON_ID;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                ScoredElement se = new ScoredElement();
+                se.setCourseId(c.getInt(c.getColumnIndex(KEY_ID)));
+                se.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
+                se.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
+                se.setLessonName(c.getString(c.getColumnIndex(NAME)));
+                se.setRowType(c.getInt(c.getColumnIndex("row_type")));
+                se.setTestExamName(c.getString(c.getColumnIndex(DESCRIPTION)));
+                se.setTestExamScore(c.getInt(c.getColumnIndex("score")));
+                se.setExamGrade(c.getInt(c.getColumnIndex("grade")));
+                scoredElements.add(se);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return scoredElements;
     }
 }

@@ -14,6 +14,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -150,8 +151,84 @@ public class MainActivity extends BaseDrawerActivity {
         super.onPrepareOptionsMenu(menu);
         if(isOffline == 1) {
             menu.findItem(R.id.action_offline).setChecked(true);
+            menu.findItem(R.id.action_synch).setVisible(true);
         }
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_offline:
+                if(item.isChecked() == true) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("To potrwa chwilkę")
+                            .setTitle("Wykonać synchronizację?");
+                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(MainActivity.this, SynchronizationActivity.class);
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putInt(PREFERENCES_OFFLINE, 0);
+                            editor.commit();
+                            startActivity(intent);
+                        }
+                    });
+                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putInt(PREFERENCES_OFFLINE, 0);
+                            editor.commit();
+                            item.setChecked(false);
+                            isOffline = 0;
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                else if(item.isChecked() == false) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
+                            .setTitle("Chcesz pracować w trybie offline?");
+                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(MainActivity.this, FullSynchronizationActivity.class);
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putInt(PREFERENCES_OFFLINE, 1);
+                            editor.commit();
+                            startActivity(intent);
+                        }
+                    });
+                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                return super.onOptionsItemSelected(item);
+            case R.id.action_synch:
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("To może trochę potrwać.")
+                            .setTitle("Wykonać pełną synchronizację?");
+                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent intent = new Intent(MainActivity.this, FullSynchronizationActivity.class);
+                            startActivity(intent);
+                        }
+                    });
+                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                return super.onOptionsItemSelected(item);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showProgress(final boolean show) {
@@ -279,7 +356,7 @@ public class MainActivity extends BaseDrawerActivity {
                 System.out.println(courseList);
                 mFetchTask = null;
             } else {
-                //showProgress(false);
+                mFetchTask = null;
                 mAuthTask = new UserLoginTask(currentUsername, currentPassword);
                 mAuthTask.execute();
             }

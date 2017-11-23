@@ -8,4 +8,9 @@
         android:orderInCategory="100"
         android:title="Tryb offline"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_synch"
+        android:orderInCategory="101"
+        android:title="Synchronizuj"
+        android:visible="false" />
 </menu>

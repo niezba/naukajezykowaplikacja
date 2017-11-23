@@ -1,27 +1,29 @@
-package com.example.mniez.myapplication.StudentModule;
+package com.example.mniez.myapplication.TeacherModule;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.design.widget.NavigationView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.CourseBrowseActivity;
+import com.example.mniez.myapplication.StudentModule.GradesActivity;
 
 /**
  * Created by mniez on 18.10.2017.
  */
 
-public class BaseDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class TeacherBaseDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     SharedPreferences sharedpreferences;
     private static final String MY_PREFERENCES = "DummyLangPreferences";
@@ -33,7 +35,7 @@ public class BaseDrawerActivity extends AppCompatActivity implements NavigationV
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        super.setContentView(R.layout.activity_main);
+        super.setContentView(R.layout.activity_teacher_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,18 +73,18 @@ public class BaseDrawerActivity extends AppCompatActivity implements NavigationV
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            startActivity(new Intent(getApplicationContext(), TeacherMainActivity.class));
         } else if (id == R.id.nav_gallery) {
             startActivity(new Intent(getApplicationContext(), CourseBrowseActivity.class));
         } else if (id == R.id.nav_slideshow) {
             startActivity(new Intent(getApplicationContext(), GradesActivity.class));
         } else if (id == R.id.nav_share) {
-            startActivity(new Intent(getApplicationContext(), InfoActivity.class));
+
         } else if (id == R.id.nav_send) {
             sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
-            BaseDrawerActivity.this.deleteDatabase("dummyDatabase");
-            Intent intent = new Intent(BaseDrawerActivity.this, LoginActivity.class);
+            TeacherBaseDrawerActivity.this.deleteDatabase("dummyDatabase");
+            Intent intent = new Intent(TeacherBaseDrawerActivity.this, LoginActivity.class);
             startActivity(intent);
         }
         drawerLayout.closeDrawer(GravityCompat.START);

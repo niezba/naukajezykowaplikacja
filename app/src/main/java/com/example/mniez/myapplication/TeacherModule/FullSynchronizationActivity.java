@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.StudentModule;
+package com.example.mniez.myapplication.TeacherModule;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -9,9 +9,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -27,6 +27,7 @@ import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -65,10 +66,6 @@ public class FullSynchronizationActivity extends AppCompatActivity {
     SharedPreferences sharedpreferences;
     private static final String PREFERENCES_OFFLINE = "isOffline";
     private static final String MY_PREFERENCES = "DummyLangPreferences";
-    private static final String PREFERENCES_USERNAME = "loggedUserLogin";
-    private static final String PREFERENCES_PASSWORD = "loggedUserPassword";
-    String mEmail;
-    String mPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +75,6 @@ public class FullSynchronizationActivity extends AppCompatActivity {
         showProgress(true);
         progress = 0;
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
-        mEmail = sharedpreferences.getString(PREFERENCES_USERNAME, "");
-        mPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putInt(PREFERENCES_OFFLINE, 1);
         editor.commit();
@@ -120,40 +115,6 @@ public class FullSynchronizationActivity extends AppCompatActivity {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL loginEndpoint = new URL("http://pzmmd.cba.pl/api/login?username=" + mEmail + "&password=" + mPassword);
-                HttpURLConnection loginConnection = (HttpURLConnection) loginEndpoint.openConnection();
-                loginConnection.setRequestMethod("GET");
-                loginConnection.setDoOutput(true);
-                loginConnection.connect();
-
-                BufferedReader bl = new BufferedReader(new InputStreamReader(loginEndpoint.openStream()));
-                StringBuilder sl = new StringBuilder();
-
-                String linel;
-                while ((linel = bl.readLine()) != null) {
-                    sl.append(linel + "\n");
-                }
-                bl.close();
-
-                String jsonloginString = sl.toString();
-                System.out.println("JSON: " + jsonloginString);
-
-                JSONObject jsonloginObject = new JSONObject(jsonloginString);
-                String errLoginCode = jsonloginObject.get("error_code").toString();
-                loginConnection.disconnect();
-                System.out.println("Error code: " + errLoginCode);
-                if (errLoginCode.equals("0")) {
-                    //SharedPreferences.Editor editor = sharedpreferences.edit();
-                    /*String appUserName = jsonloginObject.get("username").toString();
-                    String appNameSurname = jsonloginObject.get("firstName").toString() + " " + jsonloginObject.get("lastName").toString();
-                    String appUserId = jsonloginObject.get("id").toString();
-                    JSONArray appRoles = jsonloginObject.getJSONArray("roles");
-                    String appRole = appRoles.getString(0);
-                    editor.commit();
-                    return true;*/
-                } else {
-                    String errorText = jsonloginObject.get("error_message").toString();
-                }
                 examsToSynchr = dbReader.getAllLocallyCompletedExams();
                 for(Exam ex: examsToSynchr) {
                     try {

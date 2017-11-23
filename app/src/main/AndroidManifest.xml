@@ -51,15 +51,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".StudentModule.MainActivity"
-            android:screenOrientation="portrait">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
-        </activity>
-        <activity
             android:name=".StudentModule.TestActivity"
             android:label="@string/title_activity_test_exam"
             android:parentActivityName=".StudentModule.CourseElementsActivity"
@@ -93,6 +84,34 @@
         <activity android:name=".StudentModule.SynchronizationActivity"
             android:screenOrientation="portrait"
             android:noHistory="true"></activity>
+        <activity android:name=".StudentModule.InfoActivity"
+            android:screenOrientation="portrait"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".TeacherModule.SynchronizationActivity"
+            android:screenOrientation="portrait"
+            android:noHistory="true"></activity>
+        <activity
+            android:name=".TeacherModule.TeacherMainActivity"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TeacherModule.CourseElementsActivity"
+            android:label="@string/title_activity_course_elements"
+            android:parentActivityName=".StudentModule.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TeacherModule.CourseDetailsActivity"
+            android:label="@string/title_activity_details"
+            android:parentActivityName=".StudentModule.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.StudentModule.MainActivity" />
+        </activity>
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.example.mniez.myapplication.fileprovider"

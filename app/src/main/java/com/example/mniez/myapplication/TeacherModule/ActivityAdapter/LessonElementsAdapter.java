@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.StudentModule.ActivityAdapter;
+package com.example.mniez.myapplication.TeacherModule.ActivityAdapter;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -14,15 +14,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ExamActivity;
-import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
-import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.StudentModule.TestActivity;
 
 import java.io.BufferedInputStream;
@@ -72,42 +69,27 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
         if(rowType == 0) {
             textView3.setText("Test");
             //textView3.setTextColor(R.color.colorPrimaryDark);
-            textView2.setText("Rozwiąż");
+            textView2.setText("Podgląd");
         }
         else if(rowType == 1) {
             textView3.setText("Wykład");
             //textView3.setTextColor(R.color.colorAccent);
-            textView2.setText("Zobacz");
+            textView2.setText("Podgląd");
         }
         else if(rowType == 2) {
             textView3.setText("Sprawdzian");
             //textView3.setTextColor(R.color.colorAccent);
-            textView2.setText("Rozwiąż");
+            textView2.setText("Podgląd");
         }
         textView2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 switch (rowType) {
                     case 0:
-                        AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
-                        builder.setMessage("Czy chcesz rozpocząć rozwiązywanie testu?")
-                                .setTitle("Rozpoczęcie testu");
-                        builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
                                 Intent intent = new Intent(view.getContext(), TestActivity.class);
                                 intent.putExtra("test_id", singleLessonEl.getLessonElementId());
                                 intent.putExtra("course_id", courseId);
                                 view.getContext().startActivity(intent);
-                            }
-                        });
-                        builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-
                         break;
                     case 1:
                         dbReader = new MobileDatabaseReader(mKontekst);
@@ -122,9 +104,9 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                             target.setDataAndType(uri,"application/pdf");
                             target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                            Intent intent = Intent.createChooser(target, "Open File");
+                            Intent intent2 = Intent.createChooser(target, "Open File");
                             try {
-                                mKontekst.startActivity(intent);
+                                mKontekst.startActivity(intent2);
                             } catch (ActivityNotFoundException e) {
                                 // Instruct the user to install a PDF reader here, or something
                             }
@@ -136,37 +118,10 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                         }
                         break;
                     case 2:
-                        if (singleLessonEl.getLessonElementIsNew() == 0) {
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
-                            builder2.setMessage("Czy chcesz rozpocząć rozwiązywanie sprawdzianu? Pamiętaj że sprawdzian jest oceniany i że można go rozwiązać tylko raz.")
-                                    .setTitle("Rozpoczęcie sprawdzianu");
-                            builder2.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    Intent intent2 = new Intent(view.getContext(), ExamActivity.class);
-                                    intent2.putExtra("test_id", singleLessonEl.getLessonElementId());
-                                    intent2.putExtra("course_id", courseId);
-                                    view.getContext().startActivity(intent2);
-                                }
-                            });
-                            builder2.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User cancelled the dialog
-                                }
-                            });
-                            AlertDialog dialog2 = builder2.create();
-                            dialog2.show();
-                        }
-                        else {
-                            AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
-                            builder2.setMessage("Ten sprawdzian został już przez Ciebie rozwiązany, Twoja ocena to " + singleLessonEl.getLessonElementGrade())
-                                    .setTitle("Wynik sprawdzianu");
-                            builder2.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                }
-                            });
-                            AlertDialog dialog2 = builder2.create();
-                            dialog2.show();
-                        }
+                                    Intent intent3 = new Intent(view.getContext(), ExamActivity.class);
+                                    intent3.putExtra("test_id", singleLessonEl.getLessonElementId());
+                                    intent3.putExtra("course_id", courseId);
+                                    view.getContext().startActivity(intent3);
                         break;
                     default:
                         break;

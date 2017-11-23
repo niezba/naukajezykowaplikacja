@@ -6,13 +6,23 @@
     android:background="@color/lightGray"
     android:gravity="center">
 
-            <EditText
-                android:id="@+id/answerInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:hint="Odpowiedź"
-                android:freezesText="true"/>
+    <EditText
+        android:id="@+id/answerInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:freezesText="true"
+        android:hint="Odpowiedź"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/correctAnswer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-condensed"
+        android:text="TextView"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:visibility="gone"/>
 
 </LinearLayout>

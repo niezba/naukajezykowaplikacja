@@ -1,4 +1,4 @@
-package com.example.mniez.myapplication.StudentModule;
+package com.example.mniez.myapplication.TeacherModule;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +21,9 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
+import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
+import com.example.mniez.myapplication.StudentModule.SynchronizationActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -44,7 +46,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
+        setContentView(R.layout.activity_teacher_details);
         Intent intent = getIntent();
         Bundle extras = getIntent().getExtras();
         courseId = 0;
@@ -136,7 +138,6 @@ public class CourseDetailsActivity extends AppCompatActivity {
         super.onPrepareOptionsMenu(menu);
         if(isOffline == 1) {
             menu.findItem(R.id.action_offline).setChecked(true);
-            menu.findItem(R.id.action_synch).setVisible(true);
         }
         return true;
     }
@@ -192,25 +193,6 @@ public class CourseDetailsActivity extends AppCompatActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 }
-                return super.onOptionsItemSelected(item);
-            case R.id.action_synch:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(CourseDetailsActivity.this);
-                    builder.setMessage("To może trochę potrwać.")
-                            .setTitle("Wykonać pełną synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseDetailsActivity.this, FullSynchronizationActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,8 @@ public class SoundAnswersFragment extends Fragment {
     protected int currentAnswerTypeId;
     protected String[] answerString;
     int setAnswerId;
+    int isCompleted;
+    int correctAnswer;
     MobileDatabaseReader dbReader;
     ArrayList<Word> wordList;
     int isOffline;
@@ -101,12 +104,16 @@ public class SoundAnswersFragment extends Fragment {
             public void onClick(View view) {
                 //ans1.setChecked(true);
                 ans1.setTypeface(null, Typeface.BOLD);
+                ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 //ans2.setChecked(false);
                 ans2.setTypeface(null, Typeface.NORMAL);
+                ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans3.setChecked(false);
                 ans3.setTypeface(null, Typeface.NORMAL);
+                ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
+                ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[0]);
                 try {
                     resetTexts();
@@ -136,12 +143,16 @@ public class SoundAnswersFragment extends Fragment {
             public void onClick(View view) {
                 //ans1.setChecked(false);
                 ans1.setTypeface(null, Typeface.NORMAL);
+                ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans2.setChecked(true);
                 ans2.setTypeface(null, Typeface.BOLD);
+                ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 //ans3.setChecked(false);
                 ans3.setTypeface(null, Typeface.NORMAL);
+                ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
+                ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[1]);
                 try {
                     resetTexts();
@@ -171,12 +182,16 @@ public class SoundAnswersFragment extends Fragment {
             public void onClick(View view) {
                 //ans1.setChecked(false);
                 ans1.setTypeface(null, Typeface.NORMAL);
+                ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans2.setChecked(false);
                 ans2.setTypeface(null, Typeface.NORMAL);
+                ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans3.setChecked(true);
                 ans3.setTypeface(null, Typeface.BOLD);
+                ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 //ans4.setChecked(false);
                 ans4.setTypeface(null, Typeface.NORMAL);
+                ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[2]);
                 try {
                     resetTexts();
@@ -206,12 +221,16 @@ public class SoundAnswersFragment extends Fragment {
             public void onClick(View view) {
                 //ans1.setChecked(false);
                 ans1.setTypeface(null, Typeface.NORMAL);
+                ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans2.setChecked(false);
                 ans2.setTypeface(null, Typeface.NORMAL);
+                ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans3.setChecked(false);
                 ans3.setTypeface(null, Typeface.NORMAL);
+                ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 //ans4.setChecked(true);
                 ans4.setTypeface(null, Typeface.BOLD);
+                ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 mCallback.onAnswerSelected(answerIds[3]);
                 try {
                     resetTexts();
@@ -241,7 +260,7 @@ public class SoundAnswersFragment extends Fragment {
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        initiateAnswers(answerString, currentAnswerTypeId, 0, answerIds);
+        initiateAnswers(answerString, currentAnswerTypeId, 0, answerIds, 0, 0);
     }
 
     public void resetTexts() {
@@ -251,40 +270,109 @@ public class SoundAnswersFragment extends Fragment {
         ans4.setText("Dźwięk 4");
     }
 
-    public void initiateAnswers(String[] newAnswerString, int newQuestionType, int newSetAnswerId, int[] newAnswerIds) {
+    public void initiateAnswers(String[] newAnswerString, int newQuestionType, int newSetAnswerId, int[] newAnswerIds, int newIsCompleted, int currentCorrectAnswer) {
         answerString = newAnswerString;
         currentAnswerTypeId = newQuestionType;
         answerIds = newAnswerIds;
         setAnswerId = newSetAnswerId;
+        isCompleted = newIsCompleted;
+        correctAnswer = currentCorrectAnswer;
         System.out.println("Typ pytania: " + newQuestionType);
         switch(currentAnswerTypeId) {
             case 9:
-                dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
-                wordList = new ArrayList<>();
-                for(int i = 0; i<4; i++) {
-                    wordList.add(dbReader.getParticularWordData(answerIds[i]));
-                }
-                if (answerIds[0] == newSetAnswerId) {
-                    ans1.performClick();
-                }
-                else if (answerIds[1] == newSetAnswerId) {
-                    ans2.performClick();
-                }
-                else if (answerIds[2] == newSetAnswerId) {
-                    ans3.performClick();
-                }
-                else if (answerIds[3] == newSetAnswerId) {
-                    ans4.performClick();
+                if(isCompleted == 0) {
+                    dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                    wordList = new ArrayList<>();
+                    for (int i = 0; i < 4; i++) {
+                        wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                    }
+                    if (answerIds[0] == newSetAnswerId) {
+                        ans1.performClick();
+                    } else if (answerIds[1] == newSetAnswerId) {
+                        ans2.performClick();
+                    } else if (answerIds[2] == newSetAnswerId) {
+                        ans3.performClick();
+                    } else if (answerIds[3] == newSetAnswerId) {
+                        ans4.performClick();
+                    } else {
+                        //ans1.setChecked(false);
+                        ans1.setTypeface(null, Typeface.NORMAL);
+                        ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        //ans2.setChecked(false);
+                        ans2.setTypeface(null, Typeface.NORMAL);
+                        ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        //ans3.setChecked(false);
+                        ans3.setTypeface(null, Typeface.NORMAL);
+                        ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        //ans4.setChecked(false);
+                        ans4.setTypeface(null, Typeface.NORMAL);
+                        ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    }
                 }
                 else {
-                    //ans1.setChecked(false);
-                    ans1.setTypeface(null, Typeface.NORMAL);
-                    //ans2.setChecked(false);
-                    ans2.setTypeface(null, Typeface.NORMAL);
-                    //ans3.setChecked(false);
-                    ans3.setTypeface(null, Typeface.NORMAL);
-                    //ans4.setChecked(false);
-                    ans4.setTypeface(null, Typeface.NORMAL);
+                    dbReader = new MobileDatabaseReader(getActivity().getApplicationContext());
+                    wordList = new ArrayList<>();
+                    for (int i = 0; i < 4; i++) {
+                        wordList.add(dbReader.getParticularWordData(answerIds[i]));
+                    }
+                    if (answerIds[0] == newSetAnswerId) {
+                        ans1.performClick();
+                        ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    } else if (answerIds[1] == newSetAnswerId) {
+                        ans2.performClick();
+                        ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    } else if (answerIds[2] == newSetAnswerId) {
+                        ans3.performClick();
+                        ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    } else if (answerIds[3] == newSetAnswerId) {
+                        ans4.performClick();
+                        ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    } else {
+                        ans1.setClickable(false);
+                        ans1.setTypeface(null, Typeface.NORMAL);
+                        ans1.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        ans2.setEnabled(false);
+                        ans2.setTypeface(null, Typeface.NORMAL);
+                        ans2.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        ans3.setEnabled(false);
+                        ans3.setTypeface(null, Typeface.NORMAL);
+                        ans3.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                        ans4.setEnabled(false);
+                        ans4.setTypeface(null, Typeface.NORMAL);
+                        ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
+                    }
+                    ans1.setClickable(false);
+                    ans2.setClickable(false);
+                    ans3.setClickable(false);
+                    ans4.setClickable(false);
+                    if (answerIds[0] == correctAnswer) {
+                        ans1.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                    } else if (answerIds[0] == newSetAnswerId && (answerIds[0] > correctAnswer || answerIds[0] < correctAnswer)) {
+                        ans1.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    } else if (answerIds[0] > newSetAnswerId || answerIds[0] < newSetAnswerId) {
+                        ans1.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
+                    }
+                    if (answerIds[1] == correctAnswer) {
+                        ans2.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                    } else if (answerIds[1] == newSetAnswerId && (answerIds[1] > correctAnswer || answerIds[1] < correctAnswer)) {
+                        ans2.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    } else if (answerIds[1] > newSetAnswerId || answerIds[1] < newSetAnswerId) {
+                        ans2.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
+                    }
+                    if (answerIds[2] == correctAnswer) {
+                        ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                    } else if (answerIds[2] == newSetAnswerId && (answerIds[2] > correctAnswer || answerIds[2] < correctAnswer)) {
+                        ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    } else if (answerIds[2] > newSetAnswerId || answerIds[2] < newSetAnswerId) {
+                        ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
+                    }
+                    if (answerIds[3] == correctAnswer) {
+                        ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                    } else if (answerIds[3] == newSetAnswerId && (answerIds[3] > correctAnswer || answerIds[3] < correctAnswer)) {
+                        ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    } else if (answerIds[3] > newSetAnswerId || answerIds[3] < newSetAnswerId) {
+                        ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
+                    }
                 }
                 break;
             default:

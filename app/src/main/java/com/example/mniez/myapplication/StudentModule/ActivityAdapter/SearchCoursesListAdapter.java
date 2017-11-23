@@ -23,6 +23,8 @@ import com.example.mniez.myapplication.StudentModule.CourseBrowseActivity;
 import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.Fragments.AllCoursesFragment;
+import com.example.mniez.myapplication.StudentModule.Fragments.SearchCoursesFragment;
 import com.squareup.picasso.Picasso;
 
 import java.io.BufferedReader;
@@ -45,7 +47,8 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
     private SearchCoursesListAdapter.SignInTask mFetchTask = null;
     String responseMessage;
     private ArrayList<Course> mNewCourses;
-
+    private SearchCoursesFragment scFragment;
+    private AllCoursesFragment acFragment;
 
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
@@ -68,11 +71,13 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public SearchCoursesListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView) {
+    public SearchCoursesListAdapter(ArrayList<Course> pCourses, Context context, RecyclerView pRecyclerView, SearchCoursesFragment scFragmentNew, AllCoursesFragment acFragmentNew) {
         mCourses = pCourses;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
         mNewCourses = mCourses;
+        scFragment = scFragmentNew;
+        acFragment = acFragmentNew;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -197,17 +202,22 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
 
                 String jsonString = sb.toString();
                 System.out.println("JSON: " + jsonString);
+                myConnection.disconnect();
                 if (myConnection.getResponseCode() == 200 && jsonString.contains("joined")) {
                     responseMessage = "Zapisano do kursu";
                     System.out.println(courseI);
-                    mNewCourses.get(courseI).setParticipant(true);
-                    System.out.println("Participant: " + mNewCourses.get(courseI).getParticipant());
+                    mCourses.get(courseI).setParticipant(true);
+                    System.out.println("Participant: " + mCourses.get(courseI).getParticipant());
+                    return true;
+                }
+                else if (jsonString.contains("is already member")){
+                    responseMessage = "Już jesteś członkiem tego kursu";
                 }
                 else {
                     responseMessage = "Kurs nie został dodany. Sprawdź poprawność hasła";
                 }
 
-                myConnection.disconnect();
+
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -226,16 +236,19 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
         protected void onPostExecute(final Boolean success) {
 
             if (success) {
-                Toast.makeText(mKontekst, responseMessage, Toast.LENGTH_SHORT).show();
-                mCourses.clear();
-                mCourses.addAll(mNewCourses);
-                ((CourseBrowseActivity)mKontekst).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
+                System.out.println("Czyszczę listę");
+                System.out.println("Dodaję listę");
+                System.out.println("Odświeżam recyclerView");
+                if(acFragment != null) {
+                    acFragment.recyclerView.getAdapter().notifyDataSetChanged();
+                    System.out.println("Odświeżono AllCoursesFragment");
+                }
+                if(scFragment != null) {
+                    scFragment.recyclerView.getAdapter().notifyDataSetChanged();
+                    System.out.println("Odświeżono SearchCoursesFragment");
+                }
                 mFetchTask = null;
+                Toast.makeText(mKontekst, responseMessage, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(mKontekst, responseMessage, Toast.LENGTH_SHORT).show();
                 mFetchTask = null;

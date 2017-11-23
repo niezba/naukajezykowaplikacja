@@ -7,13 +7,9 @@
             android:icon="@drawable/ic_my_courses"
             android:title="Moje kursy" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_search"
-            android:title="Przeglądaj/wyszukaj" />
-        <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_my_grades"
-            android:title="Oceny" />
+            android:title="Moi uczniowie" />
         <item
             android:id="@+id/nav_share"
             android:icon="@drawable/ic_settings"
