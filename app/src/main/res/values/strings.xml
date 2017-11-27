@@ -23,7 +23,6 @@
     <string name="title_activity_course">CourseActivity</string>
     <string name="dashboardPlaceholder">Tutaj pojawi się Dashboard. Bądźcie cierpliwi :-)</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_course_elements">CourseElementsActivity</string>
     <string name="title_activity_settings">Settings</string>

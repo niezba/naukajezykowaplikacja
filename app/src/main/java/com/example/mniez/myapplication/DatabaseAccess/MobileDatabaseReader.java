@@ -14,9 +14,12 @@ import com.example.mniez.myapplication.ObjectHelper.Language;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
-import com.example.mniez.myapplication.ObjectHelper.ScoredElement;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
+import com.example.mniez.myapplication.ObjectHelper.User;
+import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
+import com.example.mniez.myapplication.ObjectHelper.UsersExam;
+import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 
 import java.util.ArrayList;
@@ -46,6 +49,10 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String TABLE_TESTQUESTIONS = "questionsForTests";
     private static final String TABLE_EXAMQUESTIONS = "questionsForExams";
     private static final String TABLE_WORDS = "words";
+    private static final String TABLE_USER = "users";
+    private static final String TABLE_USERS_COURSE = "usersCourse";
+    private static final String TABLE_USERS_LESSON = "usersLesson";
+    private static final String TABLE_USERS_EXAM = "usersExam";
 
     //wspolne pola dla tabel
     private static final String KEY_ID = "id";
@@ -132,6 +139,16 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     private static final String IS_PICTURE_LOCAL = "is_picture_local";
     private static final String PICTURE_LOCAL = "picture_local";
 
+    //tabela users
+    private static final String USER_NAME = "username";
+    private static final String USER_SURNAME = "surname";
+
+    //tabela users_course
+    private static final String USERS_COURSE = "users_course";
+
+    //tabela users_lesson
+    private static final String USERS_LESSON = "users_lesson";
+
     //utworzenie tabeli courses
     private static final String CREATE_TABLE_COURSES = "CREATE TABLE IF NOT EXISTS " + TABLE_COURSES
             + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + ACCESS_CODE + " TEXT, " + AVATAR + " TEXT," + COURSENAME + " TEXT, "
@@ -188,6 +205,22 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
             IS_NATIVE_SOUND_LOCAL + " INT, " + NATIVE_SOUND_LOCAL + " TEXT, " + IS_TRANSLATED_SOUND_LOCAL + " INT, " + TRANSLATED_SOUND_LOCAL + " TEXT, " +
             IS_PICTURE_LOCAL + " INT, " + PICTURE_LOCAL + " TEXT" + ");";
 
+    //utworzenie tabeli users
+    private static final String CREATE_TABLE_USERS = "CREATE TABLE IF NOT EXISTS " + TABLE_USER
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USER_NAME + " TEXT, " + USER_SURNAME + "TEXT" + ");";
+
+    //utworzenie tabeli users_course
+    private static final String CREATE_TABLE_USERS_COURSE = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_COURSE
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USERS_COURSE + " INTEGER" + ")";
+
+    //utworzenie tabeli users_lesson
+    private static final String CREATE_TABLE_USERS_LESSON = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_LESSON
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USERS_LESSON + " INTEGER" + ")";
+
+    //utworzenie tabeli users_exam
+    private static final String CREATE_TABLE_USERS_EXAM = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_EXAM
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + EXAM_ID + " INTEGER, " + GRADE + " INTEGER" + ")";
+
     public MobileDatabaseReader(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mKontekst = context;
@@ -205,6 +238,10 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TESTQUESTIONS);
         db.execSQL(CREATE_TABLE_EXAMQUESTIONS);
         db.execSQL(CREATE_TABLE_WORDS);
+        db.execSQL(CREATE_TABLE_USERS);
+        db.execSQL(CREATE_TABLE_USERS_COURSE);
+        db.execSQL(CREATE_TABLE_USERS_LESSON);
+        db.execSQL(CREATE_TABLE_USERS_EXAM);
         Log.i(LOG, "Database creation");
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -221,6 +258,10 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TESTQUESTIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXAMQUESTIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_WORDS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS_COURSE);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS_LESSON);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS_EXAM);
         onCreate(db);
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -1069,33 +1110,128 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         return exams;
     }
 
-    public ArrayList<ScoredElement> getAllExamsAndTestsScoresForCourseAndLesson(Integer courseId, Integer lessonId) {
-        ArrayList<ScoredElement> scoredElements = new ArrayList<>();
-        String selectQuery = "SELECT z.* FROM (SELECT c." + KEY_ID + ", c." + COURSENAME + ", l." + LESSON_ID + ", l." + NAME + ", 2 AS row_type, e." + DESCRIPTION +
-                ", IFNULL(e." + SCORE + ",0) AS score, IFNULL(e." + GRADE + ",0) AS grade FROM " + TABLE_EXAMS + " e JOIN " + TABLE_LESSONS + " l ON e." + LESSON_ID + " = " + "l." + LESSON_ID +
-                " JOIN " + TABLE_COURSES + " c ON c." + KEY_ID + " = " + "l." + COURSE_ID + " WHERE c." + KEY_ID + " = " + courseId + " AND l." + LESSON_ID + " = " + lessonId +
-                " UNION SELECT c." + KEY_ID + ", c." + COURSENAME + ", l." + LESSON_ID + ", l." + NAME + ", 1 AS row_type, t." + DESCRIPTION +
-                ", IFNULL(t." + SCORE + ",0) AS score, 0 AS grade" + GRADE + " FROM " + TABLE_TESTS + " t JOIN " + TABLE_LESSONS + " l ON t." + LESSON_ID + " = " + "l." + LESSON_ID +
-                " JOIN " + TABLE_COURSES + " c ON c." + KEY_ID + " = " + "l." + COURSE_ID + " WHERE c." + KEY_ID + " = " + courseId + " AND l." + LESSON_ID + " = " + lessonId
-                + ") z ORDER BY z." + KEY_ID + ", z." + LESSON_ID;
+    public long insertUser(User newUser) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, newUser.getUserId());
+        values.put(USER_NAME, newUser.getUserSurname());
+        values.put(USER_SURNAME, newUser.getUserSurname());
+        long users_id = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+        return users_id;
+    }
+
+    public User selectUser(Integer userId) {
+        User singleUser = new User();
+        String selectQuery = "SELECT * FROM " + TABLE_USER + " WHERE " + KEY_ID + "=" + userId;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
         if (c.moveToFirst()) {
             do {
-                ScoredElement se = new ScoredElement();
-                se.setCourseId(c.getInt(c.getColumnIndex(KEY_ID)));
-                se.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
-                se.setLessonId(c.getInt(c.getColumnIndex(LESSON_ID)));
-                se.setLessonName(c.getString(c.getColumnIndex(NAME)));
-                se.setRowType(c.getInt(c.getColumnIndex("row_type")));
-                se.setTestExamName(c.getString(c.getColumnIndex(DESCRIPTION)));
-                se.setTestExamScore(c.getInt(c.getColumnIndex("score")));
-                se.setExamGrade(c.getInt(c.getColumnIndex("grade")));
-                scoredElements.add(se);
+                singleUser.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUser.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUser.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
             } while (c.moveToNext());
         }
         db.close();
-        return scoredElements;
+        return singleUser;
     }
+
+    public long insertUserCourse(UsersCourse newUsersCourse) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, newUsersCourse.getUserId());
+        values.put(USERS_COURSE, newUsersCourse.getCourseId());
+        long userscourse_id = db.insertWithOnConflict(TABLE_USERS_COURSE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+        return userscourse_id;
+    }
+
+    public ArrayList<UsersCourse> selectUsersForCourse(Integer courseId) {
+        ArrayList<UsersCourse> allUserCourse = new ArrayList<>();
+
+        String selectQuery = "SELECT uc."+ USERS_COURSE + ", u.* FROM "
+                + TABLE_USERS_COURSE + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_COURSE + "=" + courseId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                UsersCourse singleUserCourse = new UsersCourse();
+                singleUserCourse.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUserCourse.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUserCourse.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserCourse.setCourseId(c.getInt(c.getColumnIndex(USERS_COURSE)));
+                allUserCourse.add(singleUserCourse);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUserCourse;
+    }
+
+    public long insertUserLesson(UsersLesson newUsersLesson) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, newUsersLesson.getUserId());
+        values.put(USERS_LESSON, newUsersLesson.getLessonId());
+        long userslesson_id = db.insertWithOnConflict(TABLE_USERS_LESSON, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+        return userslesson_id;
+    }
+
+    public ArrayList<UsersLesson> selectUsersForLesson(Integer lessonId) {
+        ArrayList<UsersLesson> allUserLesson = new ArrayList<>();
+        String selectQuery = "SELECT uc."+ USERS_LESSON + ", u.* FROM "
+                + TABLE_USERS_LESSON + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_LESSON + "=" + lessonId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                UsersLesson singleUserLesson = new UsersLesson();
+                singleUserLesson.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUserLesson.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUserLesson.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserLesson.setLessonId(c.getInt(c.getColumnIndex(USERS_LESSON)));
+                allUserLesson.add(singleUserLesson);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUserLesson;
+    }
+
+    public long insertUserExam(UsersExam newUserExam) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, newUserExam.getUserId());
+        values.put(EXAM_ID, newUserExam.getExamId());
+        values.put(GRADE, newUserExam.getGrade());
+        long userexam_id = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+        return userexam_id;
+    }
+
+    public ArrayList<UsersExam> selectUsersForExam(Integer examId) {
+        ArrayList<UsersExam> allUsersExam = new ArrayList<>();
+        String selectQuery = "SELECT uc."+ USERS_LESSON + ", uc." + GRADE + ", u.* FROM "
+                + TABLE_USERS_EXAM + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + EXAM_ID + "=" + examId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                UsersExam singleUserExam = new UsersExam();
+                singleUserExam.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUserExam.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUserExam.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserExam.setExamId(c.getInt(c.getColumnIndex(EXAM_ID)));
+                singleUserExam.setGrade(c.getInt(c.getColumnIndex(GRADE)));
+                allUsersExam.add(singleUserExam);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUsersExam;
+    }
+
 }

@@ -16,14 +16,10 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
-import com.example.mniez.myapplication.ObjectHelper.ScoredElement;
 import com.example.mniez.myapplication.R;
-import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
-import com.example.mniez.myapplication.StudentModule.GradeLessonsActivity;
 import com.example.mniez.myapplication.StudentModule.Others.GradeCoursesViewHolder;
 import com.example.mniez.myapplication.StudentModule.Others.GradeElementsViewHolder;
 import com.example.mniez.myapplication.StudentModule.Others.GradesViewHolder;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 

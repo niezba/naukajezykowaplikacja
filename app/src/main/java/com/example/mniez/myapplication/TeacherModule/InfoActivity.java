@@ -78,7 +78,7 @@ public class InfoActivity extends TeacherBaseDrawerActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        navigationView.getMenu().getItem(3).setChecked(true);
+        navigationView.getMenu().getItem(2).setChecked(true);
     }
 
     @Override

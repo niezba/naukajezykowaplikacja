@@ -130,6 +130,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.mniez.myapplication.StudentModule.CourseElementsActivity" />
         </activity>
+        <activity android:name=".TeacherModule.InfoActivity"
+            android:screenOrientation="portrait"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".TeacherModule.GradesActivity"
+            android:label="@string/title_activity_course"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.example.mniez.myapplication.fileprovider"
