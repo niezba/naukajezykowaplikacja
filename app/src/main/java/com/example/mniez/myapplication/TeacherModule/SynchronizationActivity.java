@@ -363,6 +363,117 @@ public class SynchronizationActivity extends AppCompatActivity {
                                         System.out.println("Test inserted");
 
                                     }
+                                    JSONArray lessonExams = singleLesson.getJSONArray("exams");
+                                    int lessonexamLength = lessonExams.length();
+                                    System.out.println("Ilość egzaminów: " + lessonexamLength);
+                                    if (lessonexamLength > 0) {
+                                        for (int k = 0; k < lessonexamLength; k++) {
+                                            Exam newExam = new Exam();
+                                            JSONObject singleExam = lessonExams.getJSONObject(k);
+                                            String testId = singleExam.get("id").toString();
+                                            Integer testIdInteger = Integer.parseInt(testId);
+                                            newExam.setId(testIdInteger);
+                                            String testName = singleExam.get("name").toString();
+                                            newExam.setName(testName);
+                                            String testDescription = singleExam.get("description").toString();
+                                            newExam.setDescription(testDescription);
+                                            //newTest.setScore(0);
+                                            newExam.setIsNew(1);
+                                            newExam.setIsLocal(1);
+                                            //newTest.setIsCompleted(0);
+                                            newExam.setLessonId(lessonIdInteger);
+                                            JSONArray questionsArray = singleExam.getJSONArray("questions");
+                                            int questionsCount = questionsArray.length();
+                                            for (int l = 0; l < questionsCount; l++) {
+                                                ExamQuestion newQuestion = new ExamQuestion();
+                                                JSONObject singleQuestion = questionsArray.getJSONObject(l);
+                                                newQuestion.setExamId(testIdInteger);
+                                                String questionId = singleQuestion.get("id").toString();
+                                                Integer questionIdInteger = Integer.parseInt(questionId);
+                                                newQuestion.setId(questionIdInteger);
+                                                String questionToAsk = singleQuestion.get("question").toString();
+                                                newQuestion.setQuestion(questionToAsk);
+                                                String questionPoints = singleQuestion.get("points").toString();
+                                                Integer questionPointsInteger = Integer.parseInt(questionPoints);
+                                                newQuestion.setPoints(questionPointsInteger);
+                                                JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
+                                                {
+                                                    final Word answerWord = new Word();
+                                                    String wordId = questionAnswer.get("id").toString();
+                                                    Integer wordIdInteger = Integer.parseInt(wordId);
+                                                    answerWord.setId(wordIdInteger);
+                                                    String nativeWord = questionAnswer.get("nativeWord").toString();
+                                                    answerWord.setNativeWord(nativeWord);
+                                                    String translatedWord = questionAnswer.get("translatedWord").toString();
+                                                    answerWord.setTranslatedWord(translatedWord);
+                                                    if (questionAnswer.has("nativeSound")) {
+                                                        String nativeSound = questionAnswer.get("nativeSound").toString();
+                                                        answerWord.setNativeSound(nativeSound);
+                                                    }
+                                                    if (questionAnswer.has("translatedSound")) {
+                                                        String translatedSound = questionAnswer.get("translatedSound").toString();
+                                                        answerWord.setTranslatedSound(translatedSound);
+                                                    }
+                                                    if (questionAnswer.has("picture")) {
+                                                        final String pictureUrl = questionAnswer.get("picture").toString();
+                                                        answerWord.setPicture(pictureUrl);
+                                                    }
+                                                    if (questionAnswer.has("tags")) {
+                                                        String wordTags = questionAnswer.get("tags").toString();
+                                                        answerWord.setTags(wordTags);
+                                                    }
+                                                    String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
+                                                    answerWord.setNativeDefinition(nativeDefinition);
+                                                    String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
+                                                    answerWord.setTranslatedDefinition(translatedDefinition);
+                                                    JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
+                                                    String nativeXLanguage = answerNativeLang.get("id").toString();
+                                                    Integer nativeLanguageInteger = Integer.parseInt(nativeXLanguage);
+                                                    String nativeLanguageName = answerNativeLang.get("languageName").toString();
+                                                    answerWord.setNativeLanguageId(nativeLanguageInteger);
+                                                    JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
+                                                    String translatedLanguage = answerTranslatLang.get("id").toString();
+                                                    Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
+                                                    String translatedLanguageName = answerTranslatLang.get("languageName").toString();
+                                                    answerWord.setTranslatedLanguageId(translatedLanguageInteger);
+                                                    newQuestion.setAnswerId(wordIdInteger);
+                                                    Language nativeLang = new Language();
+                                                    Language translatLang = new Language();
+                                                    nativeLang.setId(nativeLanguageInteger);
+                                                    nativeLang.setLanguageName(nativeLanguageName);
+                                                    translatLang.setId(translatedLanguageInteger);
+                                                    translatLang.setLanguageName(translatedLanguageName);
+                                                    dbReader.insertWord(answerWord);
+                                                    dbReader.updateWordFullSynch(answerWord);
+                                                    dbReader.insertLanguage(nativeLang);
+                                                    dbReader.insertLanguage(translatLang);
+                                                }
+                                                JSONObject questionType = singleQuestion.getJSONObject("questionType");
+                                                String questionTypeId = questionType.get("id").toString();
+                                                Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
+                                                String questionTypeName = questionType.get("typeName").toString();
+                                                JSONObject answerType = singleQuestion.getJSONObject("answerType");
+                                                String answerTypeId = answerType.get("id").toString();
+                                                Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
+                                                String answerTypeName = answerType.get("typeName").toString();
+                                                QuestionAnswerType questionTypeOne = new QuestionAnswerType();
+                                                questionTypeOne.setId(answerTypeIdInteger);
+                                                questionTypeOne.setTypeName(answerTypeName);
+                                                QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
+                                                questionTypeTwo.setId(questionTypeIdInteger);
+                                                questionTypeTwo.setTypeName(questionTypeName);
+                                                dbReader.insertAnswertypes(questionTypeOne);
+                                                dbReader.insertAnswertypes(questionTypeTwo);
+                                                newQuestion.setQuestionTypeId(questionTypeIdInteger);
+                                                newQuestion.setAnswerTypeId(answerTypeIdInteger);
+                                                dbReader.insertExamQuestion(newQuestion);
+                                            }
+                                            dbReader.insertExam(newExam);
+                                            dbReader.updateExamFullSynch(newExam);
+                                            System.out.println("Exam inserted");
+
+                                        }
+                                    }
                                     dbReader.insertLesson(newLesson, courseIdInteger);
                                     System.out.println("Lesson inserted");
                                 }

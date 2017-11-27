@@ -7,8 +7,7 @@
     android:layout_height="match_parent"
     tools:layout_editor_absoluteX="0dp"
     tools:layout_editor_absoluteY="81dp"
-    tools:context="com.example.mniez.myapplication.StudentModule.InfoActivity"
-    tools:showIn="@layout/app_bar_main">>
+    tools:context="com.example.mniez.myapplication.StudentModule.InfoActivity">
 
     <ImageView
         android:id="@+id/imageView"
@@ -55,7 +54,7 @@
         android:id="@+id/textView25"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Udostępnione na licencji GNU General Public License v3"
+        android:text="Politechnika Lubelska, IIST 7.4"
         android:textAlignment="center"
         android:layout_marginTop="20dp"/>
 

@@ -436,7 +436,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         startActivity(intent);
                     }
                     else if (sharedpreferences.getInt(PREFERENCES_OFFLINE, 0) == 0 && sharedpreferences.getInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 0) == 1) {
-                        Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                     }
                     else {
@@ -457,7 +457,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 SharedPreferences.Editor editor = sharedpreferences.edit();
                                 editor.putInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 1);
                                 editor.commit();
-                                Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(intent);
                             }
                         });

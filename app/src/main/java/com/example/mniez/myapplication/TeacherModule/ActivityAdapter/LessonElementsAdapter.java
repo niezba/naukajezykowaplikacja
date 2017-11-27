@@ -19,8 +19,8 @@ import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
 import com.example.mniez.myapplication.R;
-import com.example.mniez.myapplication.StudentModule.ExamActivity;
-import com.example.mniez.myapplication.StudentModule.TestActivity;
+import com.example.mniez.myapplication.TeacherModule.ExamActivity;
+import com.example.mniez.myapplication.TeacherModule.TestActivity;
 
 import java.io.BufferedInputStream;
 import java.io.File;

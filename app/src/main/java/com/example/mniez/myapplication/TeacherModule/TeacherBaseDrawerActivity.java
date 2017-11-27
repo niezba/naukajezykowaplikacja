@@ -16,8 +16,7 @@ import android.widget.FrameLayout;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.R;
-import com.example.mniez.myapplication.StudentModule.CourseBrowseActivity;
-import com.example.mniez.myapplication.StudentModule.GradesActivity;
+import com.example.mniez.myapplication.StudentModule.*;
 
 /**
  * Created by mniez on 18.10.2017.
@@ -79,7 +78,7 @@ public class TeacherBaseDrawerActivity extends AppCompatActivity implements Navi
         } else if (id == R.id.nav_slideshow) {
             startActivity(new Intent(getApplicationContext(), GradesActivity.class));
         } else if (id == R.id.nav_share) {
-
+            startActivity(new Intent(getApplicationContext(), InfoActivity.class));
         } else if (id == R.id.nav_send) {
             sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
             sharedpreferences.edit().clear().commit();
