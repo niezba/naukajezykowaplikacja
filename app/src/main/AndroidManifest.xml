@@ -139,6 +139,24 @@
             android:label="@string/title_activity_course"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TeacherModule.ExamGradesActivity"
+            android:label="@string/title_activity_test_exam"
+            android:parentActivityName=".TeacherModule.CourseElementsActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.mniez.myapplication.TeacherModule.CourseElementsActivity" />
+        </activity>
+        <activity
+            android:name=".TeacherModule.StudentActivity"
+            android:label="@string/title_activity_test_exam"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".TeacherModule.ExamGradesActivity">
+             <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.mniez.myapplication.TeacherModule.ExamGradesActivity" />>
+        </activity>
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.example.mniez.myapplication.fileprovider"

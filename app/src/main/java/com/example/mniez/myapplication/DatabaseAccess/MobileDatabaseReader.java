@@ -207,19 +207,20 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
 
     //utworzenie tabeli users
     private static final String CREATE_TABLE_USERS = "CREATE TABLE IF NOT EXISTS " + TABLE_USER
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USER_NAME + " TEXT, " + USER_SURNAME + "TEXT" + ");";
+            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USER_NAME + " TEXT, " + USER_SURNAME + " TEXT, " + AVATAR + " TEXT, " + IS_AVATAR_LOCAL + " INT, " +
+            AVATAR_LOCAL + " TEXT" + ");";
 
     //utworzenie tabeli users_course
     private static final String CREATE_TABLE_USERS_COURSE = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_COURSE
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USERS_COURSE + " INTEGER" + ")";
+            + "(" + KEY_ID + " INTEGER, " + USERS_COURSE + " INTEGER, PRIMARY KEY(" + KEY_ID + ", " + USERS_COURSE + ")" + ")";
 
     //utworzenie tabeli users_lesson
     private static final String CREATE_TABLE_USERS_LESSON = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_LESSON
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + USERS_LESSON + " INTEGER" + ")";
+            + "(" + KEY_ID + " INTEGER, " + USERS_LESSON + " INTEGER, PRIMARY KEY(" + KEY_ID + ", " + USERS_LESSON + ")" + ")";
 
     //utworzenie tabeli users_exam
     private static final String CREATE_TABLE_USERS_EXAM = "CREATE TABLE IF NOT EXISTS " + TABLE_USERS_EXAM
-            + "(" + KEY_ID + " INTEGER PRIMARY KEY, " + EXAM_ID + " INTEGER, " + GRADE + " INTEGER" + ")";
+            + "(" + KEY_ID + " INTEGER , " + EXAM_ID + " INTEGER, " + GRADE + " INTEGER, PRIMARY KEY(" + KEY_ID + ", " + EXAM_ID + ")" + ")";
 
     public MobileDatabaseReader(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -1114,8 +1115,11 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_ID, newUser.getUserId());
-        values.put(USER_NAME, newUser.getUserSurname());
+        values.put(USER_NAME, newUser.getUserName());
         values.put(USER_SURNAME, newUser.getUserSurname());
+        values.put(AVATAR, newUser.getAvatar());
+        values.put(IS_AVATAR_LOCAL, newUser.getIsAvatarLocal());
+        values.put(AVATAR_LOCAL, newUser.getAvatarLocal());
         long users_id = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return users_id;
@@ -1132,10 +1136,35 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUser.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
                 singleUser.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
                 singleUser.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUser.setAvatar(c.getString(c.getColumnIndex(AVATAR)));
+                singleUser.setIsAvatarLocal(c.getInt(c.getColumnIndex(IS_AVATAR_LOCAL)));
+                singleUser.setAvatarLocal(c.getString(c.getColumnIndex(AVATAR_LOCAL)));
             } while (c.moveToNext());
         }
         db.close();
         return singleUser;
+    }
+
+    public ArrayList<User> selectAllUsers() {
+        ArrayList<User> allUsers = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_USER;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                User singleUser = new User();
+                singleUser.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUser.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUser.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUser.setAvatar(c.getString(c.getColumnIndex(AVATAR)));
+                singleUser.setIsAvatarLocal(c.getInt(c.getColumnIndex(IS_AVATAR_LOCAL)));
+                singleUser.setAvatarLocal(c.getString(c.getColumnIndex(AVATAR_LOCAL)));
+                allUsers.add(singleUser);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUsers;
     }
 
     public long insertUserCourse(UsersCourse newUsersCourse) {
@@ -1152,7 +1181,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         ArrayList<UsersCourse> allUserCourse = new ArrayList<>();
 
         String selectQuery = "SELECT uc."+ USERS_COURSE + ", u.* FROM "
-                + TABLE_USERS_COURSE + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_COURSE + "=" + courseId;
+                + TABLE_USERS_COURSE + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_COURSE + "=" + courseId;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1163,6 +1192,33 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUserCourse.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
                 singleUserCourse.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
                 singleUserCourse.setCourseId(c.getInt(c.getColumnIndex(USERS_COURSE)));
+                allUserCourse.add(singleUserCourse);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUserCourse;
+    }
+
+    public ArrayList<UsersCourse> selectAllUsersCourses(Integer userId) {
+        ArrayList<UsersCourse> allUserCourse = new ArrayList<>();
+
+        String selectQuery = "SELECT uc."+ USERS_COURSE + ", c." + COURSENAME + ", c." + DESCRIPTION + ", c." + AVATAR + " AS course_avatar, u.* FROM "
+                + TABLE_USERS_COURSE + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " JOIN " + TABLE_COURSES +
+                " c ON c." + KEY_ID + "= uc." + USERS_COURSE + " WHERE uc." + KEY_ID + "=" + userId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                System.out.println("Avatar: " + c.getString(c.getColumnIndex(AVATAR)));
+                UsersCourse singleUserCourse = new UsersCourse();
+                singleUserCourse.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUserCourse.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUserCourse.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserCourse.setCourseId(c.getInt(c.getColumnIndex(USERS_COURSE)));
+                singleUserCourse.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
+                singleUserCourse.setCourseDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
+                singleUserCourse.setCourseAvatar(c.getString(c.getColumnIndex("course_avatar")));
                 allUserCourse.add(singleUserCourse);
             } while (c.moveToNext());
         }
@@ -1183,7 +1239,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     public ArrayList<UsersLesson> selectUsersForLesson(Integer lessonId) {
         ArrayList<UsersLesson> allUserLesson = new ArrayList<>();
         String selectQuery = "SELECT uc."+ USERS_LESSON + ", u.* FROM "
-                + TABLE_USERS_LESSON + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_LESSON + "=" + lessonId;
+                + TABLE_USERS_LESSON + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + USERS_LESSON + "=" + lessonId;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1207,15 +1263,16 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
         values.put(KEY_ID, newUserExam.getUserId());
         values.put(EXAM_ID, newUserExam.getExamId());
         values.put(GRADE, newUserExam.getGrade());
-        long userexam_id = db.insertWithOnConflict(TABLE_USER, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        long userexam_id = db.insertWithOnConflict(TABLE_USERS_EXAM, null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
         return userexam_id;
     }
 
     public ArrayList<UsersExam> selectUsersForExam(Integer examId) {
         ArrayList<UsersExam> allUsersExam = new ArrayList<>();
-        String selectQuery = "SELECT uc."+ USERS_LESSON + ", uc." + GRADE + ", u.* FROM "
-                + TABLE_USERS_EXAM + " uc JOIN " + TABLE_USER + "u ON u." + KEY_ID + " = uc."  + KEY_ID + " WHERE " + EXAM_ID + "=" + examId;
+        String selectQuery = "SELECT ul."+ USERS_LESSON + ", uc." + GRADE + ", uc." + EXAM_ID + ", u.* FROM "
+                + TABLE_USERS_EXAM + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " JOIN " + TABLE_USERS_LESSON + " ul ON ul."
+                + KEY_ID + " = uc." + KEY_ID + " WHERE " + EXAM_ID + "=" + examId;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(selectQuery, null);
@@ -1225,6 +1282,33 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUserExam.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
                 singleUserExam.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
                 singleUserExam.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserExam.setExamId(c.getInt(c.getColumnIndex(EXAM_ID)));
+                singleUserExam.setGrade(c.getInt(c.getColumnIndex(GRADE)));
+                allUsersExam.add(singleUserExam);
+            } while (c.moveToNext());
+        }
+        db.close();
+        return allUsersExam;
+    }
+
+    public ArrayList<UsersExam> selectAllUsersExam(Integer userId) {
+        ArrayList<UsersExam> allUsersExam = new ArrayList<>();
+        String selectQuery = "SELECT ul."+ USERS_LESSON + ", uc." + GRADE + ", uc." + EXAM_ID + ", c." + COURSENAME + ", l." + NAME + ", e." + DESCRIPTION + ", u.* FROM "
+                + TABLE_USERS_EXAM + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " JOIN " + TABLE_USERS_LESSON + " ul ON ul."
+                + KEY_ID + " = uc." + KEY_ID + " JOIN " + TABLE_EXAMS + " e ON e." + KEY_ID + "= uc." + EXAM_ID + " JOIN " + TABLE_LESSONS + " l ON l." + LESSON_ID + "= e." + LESSON_ID
+                + " JOIN " + TABLE_COURSES + " c ON c." + KEY_ID + "=l." + COURSE_ID + " WHERE u." + KEY_ID + "=" + userId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c.moveToFirst()) {
+            do {
+                UsersExam singleUserExam = new UsersExam();
+                singleUserExam.setUserId(c.getInt(c.getColumnIndex(KEY_ID)));
+                singleUserExam.setUserName(c.getString(c.getColumnIndex(USER_NAME)));
+                singleUserExam.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
+                singleUserExam.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
+                singleUserExam.setLessonName(c.getString(c.getColumnIndex(NAME)));
+                singleUserExam.setExamDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
                 singleUserExam.setExamId(c.getInt(c.getColumnIndex(EXAM_ID)));
                 singleUserExam.setGrade(c.getInt(c.getColumnIndex(GRADE)));
                 allUsersExam.add(singleUserExam);

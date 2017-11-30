@@ -25,6 +25,10 @@ import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
+import com.example.mniez.myapplication.ObjectHelper.User;
+import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
+import com.example.mniez.myapplication.ObjectHelper.UsersExam;
+import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
@@ -487,7 +491,57 @@ public class SynchronizationActivity extends AppCompatActivity {
                             e.printStackTrace();
                         } /*catch (JSONException e) {
                 e.printStackTrace();
-            }*/
+            }*/         URL participantsEndpoint = new URL("http://pzmmd.cba.pl/api/teacher/courseParticipants/" + courseId);
+                        HttpURLConnection participantsConnection = (HttpURLConnection) participantsEndpoint.openConnection();
+                        participantsConnection.setRequestMethod("GET");
+                        participantsConnection.setDoOutput(true);
+                        participantsConnection.connect();
+
+                        BufferedReader bp = new BufferedReader(new InputStreamReader(participantsEndpoint.openStream()));
+                        StringBuilder sp = new StringBuilder();
+
+                        String linep;
+                        while ((linep = bp.readLine()) != null) {
+                            sp.append(linep + "\n");
+                        }
+                        bp.close();
+
+                        String jsonParticipantsString = sp.toString();
+                        System.out.println("JSON: " + jsonParticipantsString);
+                        JSONArray participantsArray = new JSONArray(jsonParticipantsString);
+                        participantsConnection.disconnect();
+                        int participantsCount = participantsArray.length();
+                        for (int p = 0; p< participantsCount; p++) {
+                            JSONObject singleParticipant = participantsArray.getJSONObject(p);
+                            User singleUser = new User();
+                            singleUser.setUserId(singleParticipant.getInt("id"));
+                            singleUser.setUserName(singleParticipant.getString("firstName"));
+                            singleUser.setUserSurname(singleParticipant.getString("lastName"));
+                            if (singleParticipant.has("avatar")) {
+                                singleUser.setAvatar(singleParticipant.getString("avatar"));
+                            }
+                            singleUser.setIsAvatarLocal(0);
+                            UsersCourse singleUsersCourse = new UsersCourse(singleUser.getUserId(), singleUser.getUserName(), singleUser.getUserSurname(), courseIdInteger);
+                            dbReader.insertUser(singleUser);
+                            dbReader.insertUserCourse(singleUsersCourse);
+                            JSONArray userLessons = singleParticipant.getJSONArray("grades");
+                            for (int l = 0; l< userLessons.length(); l++) {
+                                JSONObject singleUsersLessonJson = userLessons.getJSONObject(l);
+                                UsersLesson singleUsersLesson = new UsersLesson(singleUsersCourse.getUserId(), singleUsersCourse.getUserName(), singleUsersCourse.getUserSurname(), singleUsersCourse.getCourseId());
+                                singleUsersLesson.setLessonId(singleUsersLessonJson.getInt("id"));
+                                dbReader.insertUserLesson(singleUsersLesson);
+                                JSONArray userExamsArray = singleUsersLessonJson.getJSONArray("exams");
+                                for (int x = 0; x<userExamsArray.length(); x++) {
+                                    JSONObject singleUsersExamJson = userExamsArray.getJSONObject(x);
+                                    UsersExam singleUsersExam = new UsersExam(singleUsersLesson.getUserId(), singleUsersLesson.getUserName(), singleUsersLesson.getUserSurname(), singleUsersLesson.getCourseId(), singleUsersLesson.getLessonId());
+                                    singleUsersExam.setExamId(singleUsersExamJson.getInt("id"));
+                                    singleUsersExam.setGrade(singleUsersExamJson.getJSONArray("users").getJSONObject(0).getInt("grade"));
+                                    dbReader.insertUserExam(singleUsersExam);
+                                }
+                            }
+
+                        }
+
                         System.out.println(courseIdInteger + " " + courseName + " " + description + " " + createdAt + " " + levelName
                                 + " " + nativeLanguage + " " + learningLanguage);
                     }

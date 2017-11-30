@@ -248,7 +248,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl" + avatar).into(new Target() {
+                                Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/web/img/avatars/courses/" + avatar).into(new Target() {
                                     @Override
                                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                                         try {

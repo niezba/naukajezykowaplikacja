@@ -84,7 +84,7 @@ public class CourseListAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).learnedLang.setText(course.getLearnedLanguageName());
         final String imageUrl;
         if(mIsOffline == 0) {
-            imageUrl = "http://pzmmd.cba.pl" + course.getAvatar();
+            imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + course.getAvatar();
             System.out.println(imageUrl);
             Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
         }

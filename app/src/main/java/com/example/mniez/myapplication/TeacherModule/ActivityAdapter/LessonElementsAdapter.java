@@ -20,6 +20,7 @@ import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ExamActivity;
+import com.example.mniez.myapplication.TeacherModule.ExamGradesActivity;
 import com.example.mniez.myapplication.TeacherModule.TestActivity;
 
 import java.io.BufferedInputStream;
@@ -79,7 +80,7 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
         else if(rowType == 2) {
             textView3.setText("Sprawdzian");
             //textView3.setTextColor(R.color.colorAccent);
-            textView2.setText("Podgląd");
+            textView2.setText("Więcej");
         }
         textView2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,10 +119,31 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                         }
                         break;
                     case 2:
-                                    Intent intent3 = new Intent(view.getContext(), ExamActivity.class);
-                                    intent3.putExtra("test_id", singleLessonEl.getLessonElementId());
-                                    intent3.putExtra("course_id", courseId);
-                                    view.getContext().startActivity(intent3);
+                        AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
+                        String[] options = {"Oceny", "Poprawne odpowiedzi"};
+                        builder2.setItems(options, new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                switch (i) {
+                                    case 0:
+                                        Intent intent1 = new Intent(view.getContext(), ExamGradesActivity.class);
+                                        intent1.putExtra("exam_id", singleLessonEl.getLessonElementId());
+                                        intent1.putExtra("course_id", courseId);
+                                        view.getContext().startActivity(intent1);
+                                        break;
+                                    case 1:
+                                        Intent intent2 = new Intent(view.getContext(), ExamActivity.class);
+                                        intent2.putExtra("test_id", singleLessonEl.getLessonElementId());
+                                        intent2.putExtra("course_id", courseId);
+                                        view.getContext().startActivity(intent2);
+                                        break;
+                                }
+                            }
+                        });
+                        AlertDialog dialog2 = builder2.create();
+                        dialog2.show();
+
                         break;
                     default:
                         break;

@@ -8,6 +8,15 @@ public class UsersExam extends UsersLesson {
 
     Integer examId;
     Integer grade;
+    String examDescription;
+
+    public String getExamDescription() {
+        return examDescription;
+    }
+
+    public void setExamDescription(String examDescription) {
+        this.examDescription = examDescription;
+    }
 
     public UsersExam(Integer userId, String userName, String userSurname, Integer courseId, Integer lessonId, Integer examId, Integer grade) {
         super(userId, userName, userSurname, courseId, lessonId);

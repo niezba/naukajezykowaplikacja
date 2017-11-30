@@ -7,14 +7,42 @@ package com.example.mniez.myapplication.ObjectHelper;
 public class UsersCourse extends User {
 
     Integer courseId;
+    String courseName;
+    String courseDescription;
+    String courseAvatar;
+
+    public String getCourseAvatar() {
+        return courseAvatar;
+    }
+
+    public void setCourseAvatar(String courseAvatar) {
+        this.courseAvatar = courseAvatar;
+    }
+
+    public String getCourseDescription() {
+        return courseDescription;
+    }
+
+    public void setCourseDescription(String courseDescription) {
+        this.courseDescription = courseDescription;
+    }
 
     public UsersCourse(Integer userId, String userName, String userSurname, Integer courseId) {
         super(userId, userName, userSurname);
         this.courseId = courseId;
     }
 
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
     public UsersCourse(Integer userId, String userName, String userSurname) {
         super(userId, userName, userSurname);
+
     }
 
     public UsersCourse() {

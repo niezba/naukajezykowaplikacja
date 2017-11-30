@@ -7,6 +7,7 @@ package com.example.mniez.myapplication.ObjectHelper;
 public class UsersLesson extends UsersCourse {
 
     Integer lessonId;
+    String lessonName;
 
     public UsersLesson(Integer userId, String userName, String userSurname, Integer courseId) {
         super(userId, userName, userSurname, courseId);
@@ -20,9 +21,18 @@ public class UsersLesson extends UsersCourse {
     public UsersLesson() {
     }
 
+    public String getLessonName() {
+        return lessonName;
+    }
+
+    public void setLessonName(String lessonName) {
+        this.lessonName = lessonName;
+    }
+
     public Integer getLessonId() {
 
         return lessonId;
+
     }
 
     public void setLessonId(Integer lessonId) {
