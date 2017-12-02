@@ -136,7 +136,7 @@ public class CourseElementsActivity extends AppCompatActivity {
         else {
             Course cs = dbReader.selectCourse(courseId);
             String avatarLocalFile = cs.getAvatarLocal();
-            if (courseImage != null) {
+            if (cs.getIsAvatarLocal() == 1) {
                 File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
                 File avatarLocal = new File(avatar, avatarLocalFile);
 

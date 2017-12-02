@@ -78,25 +78,43 @@ public class CourseDetailsActivity extends AppCompatActivity {
                     });
         }
         else {
-            String avatarLocalFile = dbReader.selectCourse(courseId).getAvatarLocal();
-            courseImage = avatarLocalFile;
-            File avatar = new File(CourseDetailsActivity.this.getFilesDir() + "/Pictures");
-            File avatarLocal = new File(avatar, avatarLocalFile);
+            Course cs = dbReader.selectCourse(courseId);
+            String avatarLocalFile = cs.getAvatarLocal();
+            if (cs.getIsAvatarLocal() == 1) {
+                File avatar = new File(CourseDetailsActivity.this.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, avatarLocalFile);
 
-            Picasso.with(this)
-                    .load(avatarLocal)
-                    .noFade()
-                    .into(imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            supportStartPostponedEnterTransition();
-                        }
+                Picasso.with(this)
+                        .load(avatarLocal)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
 
-                        @Override
-                        public void onError() {
-                            supportStartPostponedEnterTransition();
-                        }
-                    });
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
+            else {
+                Picasso.with(this)
+                        .load(R.drawable.dummy)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
+
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
         }
         titleBar = intent.getStringExtra("titleBar");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
