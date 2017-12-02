@@ -35,6 +35,7 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
     private ArrayList<UsersExam> mGrades;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
+    private Integer mIsOffline;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -54,10 +55,11 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
         }
     }
 
-    public ExamGradesAdapter(ArrayList<UsersExam> pGrades, Context context, RecyclerView pRecyclerView) {
+    public ExamGradesAdapter(ArrayList<UsersExam> pGrades, Context context, RecyclerView pRecyclerView, Integer pIsOffline) {
         mGrades = pGrades;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
+        mIsOffline = pIsOffline;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -69,13 +71,26 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
         final UsersExam usersExam = mGrades.get(i);
         ((MyViewHolder) viewHolder).studentName.setText(usersExam.getUserName() + " " + usersExam.getUserSurname());
         ((MyViewHolder) viewHolder).grade.setText("OCENA: " + usersExam.getGrade().toString());
-        if (usersExam.getAvatar() != null) {
-            String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + usersExam.getAvatar();
-            System.out.println("Image url: " + imageUrl);
-            Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+        if(mIsOffline == 0) {
+            if (usersExam.getAvatar() != null) {
+                String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + usersExam.getAvatar();
+                System.out.println("Image url: " + imageUrl);
+                Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+            } else {
+                Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+            }
         }
         else {
-            Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+            if (usersExam.getIsAvatarLocal() == 1) {
+                String imageUrl = usersExam.getAvatarLocal();
+                System.out.println(imageUrl);
+                File avatar = new File(mKontekst.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, usersExam.getAvatarLocal());
+                Picasso.with(mKontekst).load(avatarLocal).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+            }
+            else {
+                Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+            }
         }
         final int studentId = usersExam.getUserId();
         ((MyViewHolder) viewHolder).detailButton.setOnClickListener(new View.OnClickListener() {

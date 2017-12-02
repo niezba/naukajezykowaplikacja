@@ -734,12 +734,7 @@ public class SynchronizationActivity extends AppCompatActivity {
                     }
                    // return true;
                 } catch (JSONException e) {
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    String errCode = jsonObject.get("error_code").toString();
-                    System.out.println("Error code: " + errCode);
-                    if(errCode.equals("1")) {
-                        return false;
-                    }
+                    e.printStackTrace();
                 }
 
                 return true;

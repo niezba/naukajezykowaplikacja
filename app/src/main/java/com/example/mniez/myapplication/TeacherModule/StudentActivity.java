@@ -1,5 +1,7 @@
 package com.example.mniez.myapplication.TeacherModule;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -19,12 +21,15 @@ import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.ExamGradesAdapter;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserCoursesAdapter;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserGradesAdapter;
+import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserListAdapter;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class StudentActivity extends AppCompatActivity {
 
+    SharedPreferences sharedpreferences;
     Integer userId;
     ArrayList<UsersCourse> allCourses = new ArrayList<>();
     ArrayList<UsersExam> allGrades = new ArrayList<>();
@@ -32,10 +37,11 @@ public class StudentActivity extends AppCompatActivity {
     private RecyclerView recyclerView, recyclerView2;
     private UserGradesAdapter mAdapter;
     private UserCoursesAdapter mAdapter2;
-
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
     TextView userNameView, userIdView;
     ImageView avatar;
-
+    Integer isOffline;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +62,8 @@ public class StudentActivity extends AppCompatActivity {
         spec.setContent(R.id.tab2);
         spec.setIndicator("Sprawdziany");
         host.addTab(spec);
-
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         dbReader = new MobileDatabaseReader(getApplicationContext());
         setTitle("Karta ucznia");
         User currentUser = dbReader.selectUser(userId);
@@ -65,11 +72,24 @@ public class StudentActivity extends AppCompatActivity {
         avatar = (ImageView) findViewById(R.id.usersAvatar);
         userNameView.setText(currentUser.getUserName() + " " + currentUser.getUserSurname());
         userIdView.setText("Id ucznia: " + currentUser.getUserId().toString());
-        if(currentUser.getAvatar() != null) {
-            Picasso.with(this).load("http://pzmmd.cba.pl/web/img/avatars/users/" + currentUser.getAvatar()).fit().centerInside().into(avatar);
+        if(isOffline == 0) {
+            if (currentUser.getAvatar() != null) {
+                Picasso.with(this).load("http://pzmmd.cba.pl/web/img/avatars/users/" + currentUser.getAvatar()).fit().centerInside().into(avatar);
+            } else {
+                Picasso.with(this).load(R.drawable.dummy_kopia).fit().centerInside().into(avatar);
+            }
         }
         else {
-            Picasso.with(this).load(R.drawable.dummy_kopia).fit().centerInside().into(avatar);
+            if (currentUser.getIsAvatarLocal() == 1) {
+                String imageUrl = currentUser.getAvatarLocal();
+                System.out.println(imageUrl);
+                File localavatar = new File(this.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(localavatar, currentUser.getAvatarLocal());
+                Picasso.with(this).load(avatarLocal).fit().centerCrop().into(avatar);
+            }
+            else {
+                Picasso.with(this).load(R.drawable.dummy_kopia).fit().centerCrop().into(avatar);
+            }
         }
         recyclerView = (RecyclerView) findViewById(R.id.userGradesRecyclerView);
         allGrades = dbReader.selectAllUsersExam(userId);
@@ -79,7 +99,7 @@ public class StudentActivity extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView2 = (RecyclerView) findViewById(R.id.userCoursesRecyclerView);
-        mAdapter2 = new UserCoursesAdapter(allCourses, this, recyclerView2);
+        mAdapter2 = new UserCoursesAdapter(allCourses, this, recyclerView2, isOffline);
         recyclerView2.setLayoutManager(new LinearLayoutManager(this));
         recyclerView2.setAdapter(mAdapter2);
         recyclerView2.setItemAnimator(new DefaultItemAnimator());

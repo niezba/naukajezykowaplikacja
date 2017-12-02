@@ -10,6 +10,24 @@ public class UsersCourse extends User {
     String courseName;
     String courseDescription;
     String courseAvatar;
+    Integer isCourseAvatarLocal;
+    String courseAvatarLocal;
+
+    public Integer getIsCourseAvatarLocal() {
+        return isCourseAvatarLocal;
+    }
+
+    public void setIsCourseAvatarLocal(Integer isCourseAvatarLocal) {
+        this.isCourseAvatarLocal = isCourseAvatarLocal;
+    }
+
+    public String getCourseAvatarLocal() {
+        return courseAvatarLocal;
+    }
+
+    public void setCourseAvatarLocal(String courseAvatarLocal) {
+        this.courseAvatarLocal = courseAvatarLocal;
+    }
 
     public String getCourseAvatar() {
         return courseAvatar;

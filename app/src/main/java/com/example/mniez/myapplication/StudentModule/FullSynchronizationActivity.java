@@ -279,53 +279,33 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         final String levelName = singleCourse.get("levelName").toString();
                         newCourse.setLevelName(levelName);
                         final String avatar = singleCourse.get("avatar").toString();
-                        imagesQueue++;
                         newCourse.setAvatar(avatar);
                         final String fileName = "course_" + courseId + "_avatar" + ".jpg";
-                        newCourse.setIsAvatarLocal(1);
-                        newCourse.setAvatarLocal(fileName);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl" + avatar).into(new Target() {
-                                    @Override
-                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                        try {
-                                            String root = Environment.getExternalStorageDirectory().toString();
-                                            File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                            if (!myDir.exists()) {
-                                                myDir.mkdirs();
-                                            }
-
-                                            myDir = new File(myDir, fileName);
-                                            FileOutputStream out = new FileOutputStream(myDir);
-                                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                            out.flush();
-                                            out.close();
-                                            System.out.println("Avatar " + fileName + " loaded");
-                                            imagesQueue--;
-                                            System.out.println("Image queue: " + imagesQueue);
-                                        } catch (Exception e) {
-                                            // some action
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onBitmapFailed(Drawable errorDrawable) {
-                                        imagesQueue--;
-                                        System.out.println("Image queue: " + imagesQueue);
-                                    }
-
-                                    @Override
-                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                    }
-                                });
+                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/web/img/avatars/courses/" + avatar);
+                        URLConnection avatarConnection = avatarEndpoint.openConnection();
+                        try {
+                            InputStream inputStream = new BufferedInputStream(avatarEndpoint.openStream(), 10240);
+                            File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
+                            if (!myDir.exists()) {
+                                myDir.mkdirs();
                             }
-                        });
+                            File myFile = new File(myDir, fileName);
+                            FileOutputStream outputStream = new FileOutputStream(myFile);
 
+                            byte buffer[] = new byte[1024];
+                            int dataSize;
+                            int loadedSize = 0;
+                            while ((dataSize = inputStream.read(buffer)) != -1) {
+                                loadedSize += dataSize;
+                                outputStream.write(buffer, 0, dataSize);
+                            }
+                            outputStream.close();
+                            System.out.println("Picture " + fileName + " downloaded");
+                            newCourse.setIsAvatarLocal(1);
+                            newCourse.setAvatarLocal(fileName);
+                        } catch (IOException e) {
+
+                        }
                         String teacherFirstName = singleCourse.get("teacherFirstName").toString();
                         newCourse.setTeacherName(teacherFirstName);
                         String teacherLastName = singleCourse.get("teacherLastName").toString();
@@ -545,53 +525,34 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                             }
                                                         }
                                                         if (questionAnswer.has("picture")) {
-                                                            imagesQueue++;
                                                             final String pictureUrl = questionAnswer.get("picture").toString();
                                                             answerWord.setPicture(pictureUrl);
                                                             final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                            answerWord.setIsPictureLocal(1);
-                                                            answerWord.setPictureLocal(answerPictureFileName);
-                                                            runOnUiThread(new Runnable() {
-                                                                @Override
-                                                                public void run() {
-                                                                    Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                        @Override
-                                                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                            try {
-                                                                                String root = Environment.getExternalStorageDirectory().toString();
-                                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                if (!myDir.exists()) {
-                                                                                    myDir.mkdirs();
-                                                                                }
-
-                                                                                myDir = new File(myDir, answerPictureFileName);
-                                                                                FileOutputStream out = new FileOutputStream(myDir);
-                                                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                out.flush();
-                                                                                out.close();
-                                                                                imagesQueue--;
-                                                                                System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                System.out.println("Image queue: " + imagesQueue);
-                                                                            } catch (Exception e) {
-                                                                                // some action
-                                                                            }
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onBitmapFailed(Drawable errorDrawable) {
-                                                                            imagesQueue--;
-                                                                            System.out.println("Image queue: " + imagesQueue);
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                        }
-                                                                    });
+                                                            URL pictureEndpoint = new URL("http://pzmmd.cba.pl/media/imgs/" + pictureUrl);
+                                                            URLConnection pictureConnection = pictureEndpoint.openConnection();
+                                                            try {
+                                                                InputStream inputStream = new BufferedInputStream(pictureEndpoint.openStream(), 10240);
+                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
+                                                                if (!myDir.exists()) {
+                                                                    myDir.mkdirs();
                                                                 }
-                                                            });
+                                                                File myFile = new File(myDir, answerPictureFileName);
+                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                                byte buffer[] = new byte[1024];
+                                                                int dataSize;
+                                                                int loadedSize = 0;
+                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                    loadedSize += dataSize;
+                                                                    outputStream.write(buffer, 0, dataSize);
+                                                                }
+                                                                outputStream.close();
+                                                                System.out.println("Picture " + answerPictureFileName + " downloaded");
+                                                                answerWord.setIsPictureLocal(1);
+                                                                answerWord.setPictureLocal(answerPictureFileName);
+                                                            } catch (IOException e) {
+
+                                                            }
                                                         }
                                                         if (questionAnswer.has("tags")) {
                                                             String wordTags = questionAnswer.get("tags").toString();
@@ -701,53 +662,34 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                             }
                                                         }
                                                         if (singleOtherAnswer.has("picture")) {
-                                                            imagesQueue++;
                                                             final String pictureUrl = singleOtherAnswer.get("picture").toString();
                                                             wrongAnswer.setPicture(pictureUrl);
                                                             final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                            wrongAnswer.setIsPictureLocal(1);
-                                                            wrongAnswer.setPictureLocal(answerPictureFileName);
-                                                            runOnUiThread(new Runnable() {
-                                                                @Override
-                                                                public void run() {
-                                                                    Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                        @Override
-                                                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                            try {
-                                                                                String root = Environment.getExternalStorageDirectory().toString();
-                                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                if (!myDir.exists()) {
-                                                                                    myDir.mkdirs();
-                                                                                }
-
-                                                                                myDir = new File(myDir, answerPictureFileName);
-                                                                                FileOutputStream out = new FileOutputStream(myDir);
-                                                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                out.flush();
-                                                                                out.close();
-                                                                                imagesQueue--;
-                                                                                System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                System.out.println("Image queue: " + imagesQueue);
-                                                                            } catch (Exception e) {
-                                                                                // some action
-                                                                            }
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onBitmapFailed(Drawable errorDrawable) {
-                                                                            imagesQueue--;
-                                                                            System.out.println("Image queue: " + imagesQueue);
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                        }
-                                                                    });
+                                                            URL pictureEndpoint = new URL("http://pzmmd.cba.pl/media/imgs/" + pictureUrl);
+                                                            URLConnection pictureConnection = pictureEndpoint.openConnection();
+                                                            try {
+                                                                InputStream inputStream = new BufferedInputStream(pictureEndpoint.openStream(), 10240);
+                                                                File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
+                                                                if (!myDir.exists()) {
+                                                                    myDir.mkdirs();
                                                                 }
-                                                            });
+                                                                File myFile = new File(myDir, answerPictureFileName);
+                                                                FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                                byte buffer[] = new byte[1024];
+                                                                int dataSize;
+                                                                int loadedSize = 0;
+                                                                while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                    loadedSize += dataSize;
+                                                                    outputStream.write(buffer, 0, dataSize);
+                                                                }
+                                                                outputStream.close();
+                                                                System.out.println("Picture " + answerPictureFileName + " downloaded");
+                                                                wrongAnswer.setIsPictureLocal(1);
+                                                                wrongAnswer.setPictureLocal(answerPictureFileName);
+                                                            } catch (IOException e) {
+
+                                                            }
                                                         }
                                                         if (singleOtherAnswer.has("tags")) {
                                                             String wordTags = singleOtherAnswer.get("tags").toString();
@@ -944,53 +886,34 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                     }
                                                                 }
                                                                 if (questionAnswer.has("picture")) {
-                                                                    imagesQueue++;
                                                                     final String pictureUrl = questionAnswer.get("picture").toString();
                                                                     answerWord.setPicture(pictureUrl);
                                                                     final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                                    answerWord.setIsPictureLocal(1);
-                                                                    answerWord.setPictureLocal(answerPictureFileName);
-                                                                    runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                                @Override
-                                                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                                    try {
-                                                                                        String root = Environment.getExternalStorageDirectory().toString();
-                                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                        if (!myDir.exists()) {
-                                                                                            myDir.mkdirs();
-                                                                                        }
-
-                                                                                        myDir = new File(myDir, answerPictureFileName);
-                                                                                        FileOutputStream out = new FileOutputStream(myDir);
-                                                                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                        out.flush();
-                                                                                        out.close();
-                                                                                        imagesQueue--;
-                                                                                        System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                        System.out.println("Image queue: " + imagesQueue);
-                                                                                    } catch (Exception e) {
-                                                                                        // some action
-                                                                                    }
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onBitmapFailed(Drawable errorDrawable) {
-                                                                                    imagesQueue--;
-                                                                                    System.out.println("Image queue: " + imagesQueue);
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                                }
-                                                                            });
+                                                                    URL pictureEndpoint = new URL("http://pzmmd.cba.pl/media/imgs/" + pictureUrl);
+                                                                    URLConnection pictureConnection = pictureEndpoint.openConnection();
+                                                                    try {
+                                                                        InputStream inputStream = new BufferedInputStream(pictureEndpoint.openStream(), 10240);
+                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
+                                                                        if (!myDir.exists()) {
+                                                                            myDir.mkdirs();
                                                                         }
-                                                                    });
+                                                                        File myFile = new File(myDir, answerPictureFileName);
+                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                                        byte buffer[] = new byte[1024];
+                                                                        int dataSize;
+                                                                        int loadedSize = 0;
+                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                            loadedSize += dataSize;
+                                                                            outputStream.write(buffer, 0, dataSize);
+                                                                        }
+                                                                        outputStream.close();
+                                                                        System.out.println("Picture " + answerPictureFileName + " downloaded");
+                                                                        answerWord.setIsPictureLocal(1);
+                                                                        answerWord.setPictureLocal(answerPictureFileName);
+                                                                    } catch (IOException e) {
+
+                                                                    }
                                                                 }
                                                                 if (questionAnswer.has("tags")) {
                                                                     String wordTags = questionAnswer.get("tags").toString();
@@ -1100,53 +1023,34 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                                                     }
                                                                 }
                                                                 if (singleOtherAnswer.has("picture")) {
-                                                                    imagesQueue++;
                                                                     final String pictureUrl = singleOtherAnswer.get("picture").toString();
                                                                     wrongAnswer.setPicture(pictureUrl);
                                                                     final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
-                                                                    wrongAnswer.setIsPictureLocal(1);
-                                                                    wrongAnswer.setPictureLocal(answerPictureFileName);
-                                                                    runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Picasso.with(FullSynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
-                                                                                @Override
-                                                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                                                                    try {
-                                                                                        String root = Environment.getExternalStorageDirectory().toString();
-                                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
-
-                                                                                        if (!myDir.exists()) {
-                                                                                            myDir.mkdirs();
-                                                                                        }
-
-                                                                                        myDir = new File(myDir, answerPictureFileName);
-                                                                                        FileOutputStream out = new FileOutputStream(myDir);
-                                                                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-
-                                                                                        out.flush();
-                                                                                        out.close();
-                                                                                        imagesQueue--;
-                                                                                        System.out.println("Picture " + answerPictureFileName + " loaded");
-                                                                                        System.out.println("Image queue: " + imagesQueue);
-                                                                                    } catch (Exception e) {
-                                                                                        // some action
-                                                                                    }
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onBitmapFailed(Drawable errorDrawable) {
-                                                                                    imagesQueue--;
-                                                                                    System.out.println("Image queue: " + imagesQueue);
-                                                                                }
-
-                                                                                @Override
-                                                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                                                                                }
-                                                                            });
+                                                                    URL pictureEndpoint = new URL("http://pzmmd.cba.pl/media/imgs/" + pictureUrl);
+                                                                    URLConnection pictureConnection = pictureEndpoint.openConnection();
+                                                                    try {
+                                                                        InputStream inputStream = new BufferedInputStream(pictureEndpoint.openStream(), 10240);
+                                                                        File myDir = new File(FullSynchronizationActivity.this.getFilesDir() + "/Pictures");
+                                                                        if (!myDir.exists()) {
+                                                                            myDir.mkdirs();
                                                                         }
-                                                                    });
+                                                                        File myFile = new File(myDir, answerPictureFileName);
+                                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                                        byte buffer[] = new byte[1024];
+                                                                        int dataSize;
+                                                                        int loadedSize = 0;
+                                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                            loadedSize += dataSize;
+                                                                            outputStream.write(buffer, 0, dataSize);
+                                                                        }
+                                                                        outputStream.close();
+                                                                        System.out.println("Picture " + answerPictureFileName + " downloaded");
+                                                                        wrongAnswer.setIsPictureLocal(1);
+                                                                        wrongAnswer.setPictureLocal(answerPictureFileName);
+                                                                    } catch (IOException e) {
+
+                                                                    }
                                                                 }
                                                                 if (singleOtherAnswer.has("tags")) {
                                                                     String wordTags = singleOtherAnswer.get("tags").toString();

@@ -1202,7 +1202,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
     public ArrayList<UsersCourse> selectAllUsersCourses(Integer userId) {
         ArrayList<UsersCourse> allUserCourse = new ArrayList<>();
 
-        String selectQuery = "SELECT uc."+ USERS_COURSE + ", c." + COURSENAME + ", c." + DESCRIPTION + ", c." + AVATAR + " AS course_avatar, u.* FROM "
+        String selectQuery = "SELECT uc."+ USERS_COURSE + ", c." + COURSENAME + ", c." + DESCRIPTION + ", c." + AVATAR + " AS course_avatar, c." + IS_AVATAR_LOCAL + " AS course_is_avatar_local, c."
+                + AVATAR_LOCAL + " AS course_avatar_local, u.* FROM "
                 + TABLE_USERS_COURSE + " uc JOIN " + TABLE_USER + " u ON u." + KEY_ID + " = uc."  + KEY_ID + " JOIN " + TABLE_COURSES +
                 " c ON c." + KEY_ID + "= uc." + USERS_COURSE + " WHERE uc." + KEY_ID + "=" + userId;
 
@@ -1219,6 +1220,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUserCourse.setCourseName(c.getString(c.getColumnIndex(COURSENAME)));
                 singleUserCourse.setCourseDescription(c.getString(c.getColumnIndex(DESCRIPTION)));
                 singleUserCourse.setCourseAvatar(c.getString(c.getColumnIndex("course_avatar")));
+                singleUserCourse.setIsCourseAvatarLocal(c.getInt(c.getColumnIndex("course_is_avatar_local")));
+                singleUserCourse.setCourseAvatarLocal(c.getString(c.getColumnIndex("course_avatar_local")));
                 allUserCourse.add(singleUserCourse);
             } while (c.moveToNext());
         }
@@ -1285,6 +1288,8 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUserExam.setExamId(c.getInt(c.getColumnIndex(EXAM_ID)));
                 singleUserExam.setGrade(c.getInt(c.getColumnIndex(GRADE)));
                 singleUserExam.setAvatar(c.getString(c.getColumnIndex(AVATAR)));
+                singleUserExam.setAvatarLocal(c.getString(c.getColumnIndex(AVATAR_LOCAL)));
+                singleUserExam.setIsAvatarLocal(c.getInt(c.getColumnIndex(IS_AVATAR_LOCAL)));
                 allUsersExam.add(singleUserExam);
             } while (c.moveToNext());
         }

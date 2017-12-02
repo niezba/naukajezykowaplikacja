@@ -14,6 +14,7 @@ import com.example.mniez.myapplication.ObjectHelper.UsersExam;
 import com.example.mniez.myapplication.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -25,6 +26,7 @@ public class UserCoursesAdapter extends RecyclerView.Adapter{
     private ArrayList<UsersCourse> mCourses;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
+    Integer mIsOffline;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -40,10 +42,11 @@ public class UserCoursesAdapter extends RecyclerView.Adapter{
         }
     }
 
-    public UserCoursesAdapter(ArrayList<UsersCourse> pCourses, Context context, RecyclerView pRecyclerView) {
+    public UserCoursesAdapter(ArrayList<UsersCourse> pCourses, Context context, RecyclerView pRecyclerView, Integer pIsOffline) {
         mCourses = pCourses;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
+        mIsOffline = pIsOffline;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -55,9 +58,28 @@ public class UserCoursesAdapter extends RecyclerView.Adapter{
         final UsersCourse usersCourse = mCourses.get(i);
         ((MyViewHolder) viewHolder).studentCourseName.setText(usersCourse.getCourseName());
         ((MyViewHolder) viewHolder).studentCourseDescription.setText(usersCourse.getCourseDescription());
-        String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + usersCourse.getCourseAvatar();
-        System.out.println("Image url: " + imageUrl);
-        Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+        if(mIsOffline == 0) {
+            String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + usersCourse.getCourseAvatar();
+            System.out.println(imageUrl);
+            Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+        }
+        else {
+            if (usersCourse.getIsCourseAvatarLocal() == 1) {
+                String imageUrl = usersCourse.getCourseAvatarLocal();
+                System.out.println(imageUrl);
+                File avatar = new File(mKontekst.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, usersCourse.getCourseAvatarLocal());
+                Picasso.with(mKontekst).load(avatarLocal).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            }
+            else {
+                //dorobić obrazek z placeholderem
+                String imageUrl = "";
+                Picasso.with(mKontekst).load(R.drawable.dummy).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            }
+        }
+        //String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + usersCourse.getCourseAvatar();
+        //System.out.println("Image url: " + imageUrl);
+        //Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
     }
 
     public int getItemCount() {

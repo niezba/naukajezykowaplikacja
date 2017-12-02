@@ -17,6 +17,7 @@ import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.StudentActivity;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -28,6 +29,7 @@ public class UserListAdapter extends RecyclerView.Adapter{
     private ArrayList<User> mUsers;
     private Context mKontekst;
     private RecyclerView mRecyclerView;
+    private Integer mIsOffline;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -43,10 +45,11 @@ public class UserListAdapter extends RecyclerView.Adapter{
         }
     }
 
-    public UserListAdapter(ArrayList<User> pUsers, Context context, RecyclerView pRecyclerView) {
+    public UserListAdapter(ArrayList<User> pUsers, Context context, RecyclerView pRecyclerView, Integer pIsOffline) {
         mUsers = pUsers;
         mKontekst = context;
         mRecyclerView = pRecyclerView;
+        mIsOffline = pIsOffline;
     }
 
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
@@ -58,14 +61,28 @@ public class UserListAdapter extends RecyclerView.Adapter{
         final User user = mUsers.get(i);
         ((MyViewHolder) viewHolder).studentName.setText(user.getUserName() + " " + user.getUserSurname());
         final int studentId = user.getUserId();
-        if (user.getAvatar() != null) {
-            String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + user.getAvatar();
-            System.out.println("Image url: " + imageUrl);
-            Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+        if(mIsOffline == 0) {
+            if (user.getAvatar() != null) {
+                String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + user.getAvatar();
+                System.out.println("Image url: " + imageUrl);
+                Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            } else {
+                Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            }
         }
         else {
-            Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            if (user.getIsAvatarLocal() == 1) {
+                String imageUrl = user.getAvatarLocal();
+                System.out.println(imageUrl);
+                File avatar = new File(mKontekst.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, user.getAvatarLocal());
+                Picasso.with(mKontekst).load(avatarLocal).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            }
+            else {
+                Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
+            }
         }
+
         ((MyViewHolder) viewHolder).cv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

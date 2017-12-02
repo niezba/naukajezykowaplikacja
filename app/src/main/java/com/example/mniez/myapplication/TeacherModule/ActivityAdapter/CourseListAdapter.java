@@ -97,7 +97,7 @@ public class CourseListAdapter extends RecyclerView.Adapter{
             else {
                 //dorobić obrazek z placeholderem
                 imageUrl = "";
-                Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
+                Picasso.with(mKontekst).load(R.drawable.dummy).fit().centerCrop().into(((MyViewHolder) viewHolder).avatarView);
             }
         }
         final int courseId = course.getId();

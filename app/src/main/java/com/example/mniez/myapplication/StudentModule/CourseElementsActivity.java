@@ -132,23 +132,41 @@ public class CourseElementsActivity extends AppCompatActivity {
             Course cs = dbReader.selectCourse(courseId);
             String avatarLocalFile = cs.getAvatarLocal();
             courseImage = avatarLocalFile;
-            File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
-            File avatarLocal = new File(avatar, avatarLocalFile);
+            if (courseImage != null) {
+                File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, avatarLocalFile);
 
-            Picasso.with(this)
-                    .load(avatarLocal)
-                    .noFade()
-                    .into(imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            supportStartPostponedEnterTransition();
-                        }
+                Picasso.with(this)
+                        .load(avatarLocal)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
 
-                        @Override
-                        public void onError() {
-                            supportStartPostponedEnterTransition();
-                        }
-                    });
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
+            else {
+                Picasso.with(this)
+                        .load(R.drawable.dummy)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
+
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
         }
         mProgressView = findViewById(R.id.login_progress_course);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -245,29 +263,11 @@ public class CourseElementsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseElementsActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);

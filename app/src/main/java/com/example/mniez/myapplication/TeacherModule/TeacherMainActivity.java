@@ -27,7 +27,6 @@ import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.CourseListAdapter;
 import com.example.mniez.myapplication.TeacherModule.TeacherBaseDrawerActivity;
-import com.example.mniez.myapplication.TeacherModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
 
 import org.json.JSONArray;
@@ -160,29 +159,11 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(TeacherMainActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(TeacherMainActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(TeacherMainActivity.this);
@@ -190,7 +171,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(TeacherMainActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(TeacherMainActivity.this, SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -351,7 +332,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/login?username="+mEmail+"&password="+mPassword);
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username="+mEmail+"&password="+mPassword);
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);

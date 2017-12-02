@@ -114,29 +114,11 @@ public class InfoActivity extends TeacherBaseDrawerActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(InfoActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
@@ -161,22 +143,22 @@ public class InfoActivity extends TeacherBaseDrawerActivity {
                 }
                 return super.onOptionsItemSelected(item);
             case R.id.action_synch:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
-                    builder.setMessage("To może trochę potrwać.")
-                            .setTitle("Wykonać pełną synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(InfoActivity.this, FullSynchronizationActivity.class);
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(InfoActivity.this);
+                builder.setMessage("To może trochę potrwać.")
+                        .setTitle("Wykonać pełną synchronizację?");
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(InfoActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
 
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
                 return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);

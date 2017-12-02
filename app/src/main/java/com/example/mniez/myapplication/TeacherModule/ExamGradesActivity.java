@@ -47,6 +47,10 @@ public class ExamGradesActivity extends AppCompatActivity {
     MobileDatabaseReader dbReader;
     private RecyclerView recyclerView;
     private ExamGradesAdapter mAdapter;
+    SharedPreferences sharedpreferences;
+    private static final String MY_PREFERENCES = "DummyLangPreferences";
+    private static final String PREFERENCES_OFFLINE = "isOffline";
+    Integer isOffline;
 
 
     @Override
@@ -56,11 +60,13 @@ public class ExamGradesActivity extends AppCompatActivity {
         examId = extras.getInt("exam_id");
         courseId = extras.getInt("course_id");
         setContentView(R.layout.activity_exam_grades);
+        sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
+        isOffline = sharedpreferences.getInt(PREFERENCES_OFFLINE, 0);
         dbReader = new MobileDatabaseReader(getApplicationContext());
         setTitle("Oceny z egzaminu " + dbReader.selectExamName(examId));
         recyclerView = (RecyclerView) findViewById(R.id.userExamsRecyclerView);
         allGrades = dbReader.selectUsersForExam(examId);
-        mAdapter = new ExamGradesAdapter(allGrades, this, recyclerView);
+        mAdapter = new ExamGradesAdapter(allGrades, this, recyclerView, isOffline);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());

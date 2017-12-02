@@ -103,7 +103,6 @@ public class CourseDetailsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         tex1 = (TextView) findViewById(R.id.textView10);
         tex2 = (TextView) findViewById(R.id.textView12);
-        tex3 = (TextView) findViewById(R.id.textView14);
         tex4 = (TextView) findViewById(R.id.textView16);
         tex5 = (TextView) findViewById(R.id.textView18);
         tex6 = (TextView) findViewById(R.id.textView20);
@@ -148,29 +147,11 @@ public class CourseDetailsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(CourseDetailsActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseDetailsActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(CourseDetailsActivity.this);
@@ -178,7 +159,7 @@ public class CourseDetailsActivity extends AppCompatActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseDetailsActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(CourseDetailsActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -193,6 +174,25 @@ public class CourseDetailsActivity extends AppCompatActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 }
+                return super.onOptionsItemSelected(item);
+            case R.id.action_synch:
+                AlertDialog.Builder builder = new AlertDialog.Builder(CourseDetailsActivity.this);
+                builder.setMessage("To może trochę potrwać.")
+                        .setTitle("Wykonać pełną synchronizację?");
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(CourseDetailsActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -202,7 +202,6 @@ public class CourseDetailsActivity extends AppCompatActivity {
         currentCourse = dbReader.selectCourse(courseId);
         tex1.setText(currentCourse.getNativeLanguageName());
         tex2.setText(currentCourse.getLearnedLanguageName());
-        tex3.setText(currentCourse.getTeacherName() + " " + currentCourse.getTeacherSurname());
         tex4.setText(currentCourse.getDescription());
         tex5.setText(currentCourse.getLevelName());
         tex6.setText(currentCourse.getCreatedAt().substring(0,10));

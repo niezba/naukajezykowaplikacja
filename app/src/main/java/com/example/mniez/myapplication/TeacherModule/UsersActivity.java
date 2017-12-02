@@ -75,6 +75,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
         super.onCreate(savedInstanceState);
         getLayoutInflater().inflate(R.layout.content_grades, frameLayout);
         setTitle("Moi uczniowie");
+        mProgressView = findViewById(R.id.progressBar);
         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
         currentUsername = sharedpreferences.getString(PREFERENCES_USERNAME, "");
         currentPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
@@ -101,13 +102,14 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                 userRole = "Rola niezdefiniowana";
                 break;
         }
+        showProgress(true);
         navUsername.setText(userRole);
         navFullname.setText(currentNameSurname);
         isOffline = sharedpreferences.getInt("isOffline", 0);
         dbReader = new MobileDatabaseReader(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.gradesRecyclerView);
         recyclerView.setHasFixedSize(true);
-        mAdapter = new UserListAdapter(allUsers, this, recyclerView);
+        mAdapter = new UserListAdapter(allUsers, this, recyclerView, isOffline);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -138,29 +140,11 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
@@ -168,7 +152,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -190,7 +174,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Wykonać pełną synchronizację?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
                             startActivity(intent);
                         }
                     });
@@ -211,6 +195,25 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
     protected void onResume() {
         super.onResume();
         navigationView.getMenu().getItem(1).setChecked(true);
+    }
+
+    private void showProgress(final boolean show) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     public class GradesFetchTask extends AsyncTask<Void, Void, Boolean> {
@@ -341,6 +344,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                 System.out.println("UsersCount: " + allUsers.size());
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                showProgress(false);
                 mFetchTask = null;
             } else {
                 mAuthTask = new UsersActivity.UserLoginTask(currentUsername, currentPassword);

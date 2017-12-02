@@ -31,6 +31,7 @@ import com.example.mniez.myapplication.ObjectHelper.UsersExam;
 import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -64,6 +65,7 @@ public class SynchronizationActivity extends AppCompatActivity {
     private SynchronizationActivity.CourseFetchTask mFetchTask = null;
     ArrayList<Exam> examsToSynchr = new ArrayList<>();
     ArrayList<Test> testsToSynchr = new ArrayList<>();
+    int imagesQueue;
 
     SharedPreferences sharedpreferences;
     private static final String PREFERENCES_OFFLINE = "isOffline";
@@ -84,7 +86,7 @@ public class SynchronizationActivity extends AppCompatActivity {
         mEmail = sharedpreferences.getString(PREFERENCES_USERNAME, "");
         mPassword = sharedpreferences.getString(PREFERENCES_PASSWORD, "");
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putInt(PREFERENCES_OFFLINE, 0);
+        editor.putInt(PREFERENCES_OFFLINE, 1);
         editor.commit();
         dbReader = new MobileDatabaseReader(getApplicationContext());
         mFetchTask = new SynchronizationActivity.CourseFetchTask("");
@@ -196,8 +198,35 @@ public class SynchronizationActivity extends AppCompatActivity {
                         newCourse.setCreatedAt(createdAt);
                         String levelName = singleCourse.get("levelName").toString();
                         newCourse.setLevelName(levelName);
-                        String avatar = singleCourse.get("avatar").toString();
+                        final String avatar = singleCourse.get("avatar").toString();
                         newCourse.setAvatar(avatar);
+                        imagesQueue++;
+                        final String fileName = "course_" + courseId + "_avatar" + ".jpg";
+                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/web/img/avatars/courses/" + avatar);
+                        URLConnection avatarConnection = avatarEndpoint.openConnection();
+                        try {
+                            InputStream inputStream = new BufferedInputStream(avatarEndpoint.openStream(), 10240);
+                            File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Pictures");
+                            if (!myDir.exists()) {
+                                myDir.mkdirs();
+                            }
+                            File myFile = new File(myDir, fileName);
+                            FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                            byte buffer[] = new byte[1024];
+                            int dataSize;
+                            int loadedSize = 0;
+                            while ((dataSize = inputStream.read(buffer)) != -1) {
+                                loadedSize += dataSize;
+                                outputStream.write(buffer, 0, dataSize);
+                            }
+                            outputStream.close();
+                            System.out.println("Picture " + fileName + " downloaded");
+                            newCourse.setIsAvatarLocal(1);
+                            newCourse.setAvatarLocal(fileName);
+                        } catch (IOException e) {
+
+                        }
                         String nativeLanguage = singleCourse.get("nativeLanguage").toString();
                         newCourse.setNativeLanguageName(nativeLanguage);
                         String learningLanguage = singleCourse.get("learningLanguage").toString();
@@ -252,10 +281,29 @@ public class SynchronizationActivity extends AppCompatActivity {
                                         final String lectureFileName = "lesson_" + lessonId + "_lecture_" + singleLectureId + ".pdf";
                                         URL lectureEndpoint = new URL("http://pzmmd.cba.pl/media/documents/" + singleLectureUrl);
                                         URLConnection lectureConnection = lectureEndpoint.openConnection();
-                                        lecture.setLessonId(lessonIdInteger);
-                                        lecture.setId(singleLectureIdInteger);
-                                        lecture.setName(singleLectureName);
-                                        lecture.setLectureUrl(singleLectureUrl);
+                                        try {
+                                            InputStream inputStream = new BufferedInputStream(lectureEndpoint.openStream(), 10240);
+                                            File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Documents");
+                                            if (!myDir.exists()) {
+                                                myDir.mkdirs();
+                                            }
+                                            File myFile = new File(myDir, lectureFileName);
+                                            FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                            byte buffer[] = new byte[1024];
+                                            int dataSize;
+                                            int loadedSize = 0;
+                                            while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                loadedSize += dataSize;
+                                                outputStream.write(buffer, 0, dataSize);
+                                            }
+                                            outputStream.close();
+                                            System.out.println("Lecture " + lectureFileName + " downloaded");
+                                            lecture.setIsLectureLocal(1);
+                                            lecture.setLectureLocal(lectureFileName);
+                                        } catch (IOException ioe) {
+
+                                        }
                                         dbReader.insertLecture(lecture);
                                         dbReader.updateLectureFullSynch(lecture);
                                     }
@@ -303,14 +351,111 @@ public class SynchronizationActivity extends AppCompatActivity {
                                                 if (questionAnswer.has("nativeSound")) {
                                                     String nativeSound = questionAnswer.get("nativeSound").toString();
                                                     answerWord.setNativeSound(nativeSound);
+                                                    final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
+                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
+                                                    URLConnection soundConnection = soundEndpoint.openConnection();
+                                                    try {
+                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
+                                                        File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Sounds");
+                                                        if (!myDir.exists()) {
+                                                            myDir.mkdirs();
+                                                        }
+                                                        File myFile = new File(myDir, answerNativeSoundFileName);
+                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                        byte buffer[] = new byte[1024];
+                                                        int dataSize;
+                                                        int loadedSize = 0;
+                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                            loadedSize += dataSize;
+                                                            outputStream.write(buffer, 0, dataSize);
+                                                        }
+                                                        outputStream.close();
+                                                        System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
+                                                        answerWord.setIsNativeSoundLocal(1);
+                                                        answerWord.setNativeSoundLocal(answerNativeSoundFileName);
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    }
                                                 }
                                                 if (questionAnswer.has("translatedSound")) {
                                                     String translatedSound = questionAnswer.get("translatedSound").toString();
                                                     answerWord.setTranslatedSound(translatedSound);
+                                                    final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
+                                                    URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
+                                                    URLConnection soundConnection = soundEndpoint.openConnection();
+                                                    try {
+                                                        InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
+                                                        File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Sounds");
+                                                        if (!myDir.exists()) {
+                                                            myDir.mkdirs();
+                                                        }
+                                                        File myFile = new File(myDir, answerTranslatedSoundFileName);
+                                                        FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                        byte buffer[] = new byte[1024];
+                                                        int dataSize;
+                                                        int loadedSize = 0;
+                                                        while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                            loadedSize += dataSize;
+                                                            outputStream.write(buffer, 0, dataSize);
+                                                        }
+                                                        outputStream.close();
+                                                        System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
+                                                        answerWord.setIsTranslatedSoundLocal(1);
+                                                        answerWord.setTranslatedSoundLocal(answerTranslatedSoundFileName);
+                                                    } catch (IOException e) {
+                                                        e.printStackTrace();
+                                                    }
                                                 }
                                                 if (questionAnswer.has("picture")) {
+                                                    imagesQueue++;
                                                     final String pictureUrl = questionAnswer.get("picture").toString();
                                                     answerWord.setPicture(pictureUrl);
+                                                    final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
+                                                    answerWord.setIsPictureLocal(1);
+                                                    answerWord.setPictureLocal(answerPictureFileName);
+                                                    runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            Picasso.with(SynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureUrl).into(new Target() {
+                                                                @Override
+                                                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                                                    try {
+                                                                        String root = Environment.getExternalStorageDirectory().toString();
+                                                                        File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Pictures");
+
+                                                                        if (!myDir.exists()) {
+                                                                            myDir.mkdirs();
+                                                                        }
+
+                                                                        myDir = new File(myDir, answerPictureFileName);
+                                                                        FileOutputStream out = new FileOutputStream(myDir);
+                                                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+
+                                                                        out.flush();
+                                                                        out.close();
+                                                                        imagesQueue--;
+                                                                        System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                        System.out.println("Image queue: " + imagesQueue);
+                                                                    } catch (Exception e) {
+                                                                        // some action
+                                                                    }
+                                                                }
+
+                                                                @Override
+                                                                public void onBitmapFailed(Drawable errorDrawable) {
+                                                                    imagesQueue--;
+                                                                    System.out.println("Image queue: " + imagesQueue);
+                                                                }
+
+                                                                @Override
+                                                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                                                                }
+                                                            });
+                                                        }
+                                                    });
                                                 }
                                                 if (questionAnswer.has("tags")) {
                                                     String wordTags = questionAnswer.get("tags").toString();
@@ -413,14 +558,113 @@ public class SynchronizationActivity extends AppCompatActivity {
                                                     if (questionAnswer.has("nativeSound")) {
                                                         String nativeSound = questionAnswer.get("nativeSound").toString();
                                                         answerWord.setNativeSound(nativeSound);
+                                                        final String answerNativeSoundFileName = "word_" + wordId + "_nativesound" + ".mp3";
+                                                        URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + nativeSound);
+                                                        URLConnection soundConnection = soundEndpoint.openConnection();
+                                                        try {
+                                                            InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
+                                                            File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Sounds");
+                                                            if (!myDir.exists()) {
+                                                                myDir.mkdirs();
+                                                            }
+                                                            File myFile = new File(myDir, answerNativeSoundFileName);
+                                                            FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                            byte buffer[] = new byte[1024];
+                                                            int dataSize;
+                                                            int loadedSize = 0;
+                                                            while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                loadedSize += dataSize;
+                                                                outputStream.write(buffer, 0, dataSize);
+                                                            }
+                                                            outputStream.close();
+                                                            System.out.println("Sound " + answerNativeSoundFileName + " downloaded");
+                                                            answerWord.setIsNativeSoundLocal(1);
+                                                            answerWord.setNativeSoundLocal(answerNativeSoundFileName);
+                                                        } catch (IOException e) {
+
+                                                        }
                                                     }
                                                     if (questionAnswer.has("translatedSound")) {
                                                         String translatedSound = questionAnswer.get("translatedSound").toString();
                                                         answerWord.setTranslatedSound(translatedSound);
+                                                        final String answerTranslatedSoundFileName = "word_" + wordId + "_translatedsound" + ".mp3";
+                                                        URL soundEndpoint = new URL("http://pzmmd.cba.pl/media/sounds/" + translatedSound);
+                                                        URLConnection soundConnection = soundEndpoint.openConnection();
+                                                        try {
+                                                            InputStream inputStream = new BufferedInputStream(soundEndpoint.openStream(), 10240);
+                                                            File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Sounds");
+                                                            if (!myDir.exists()) {
+                                                                myDir.mkdirs();
+                                                            }
+                                                            File myFile = new File(myDir, answerTranslatedSoundFileName);
+                                                            FileOutputStream outputStream = new FileOutputStream(myFile);
+
+                                                            byte buffer[] = new byte[1024];
+                                                            int dataSize;
+                                                            int loadedSize = 0;
+                                                            while ((dataSize = inputStream.read(buffer)) != -1) {
+                                                                loadedSize += dataSize;
+                                                                outputStream.write(buffer, 0, dataSize);
+                                                            }
+                                                            outputStream.close();
+                                                            System.out.println("Sound " + answerTranslatedSoundFileName + " downloaded");
+                                                            answerWord.setIsTranslatedSoundLocal(1);
+                                                            answerWord.setTranslatedSoundLocal(answerTranslatedSoundFileName);
+                                                        } catch (IOException e) {
+
+                                                        }
                                                     }
                                                     if (questionAnswer.has("picture")) {
                                                         final String pictureUrl = questionAnswer.get("picture").toString();
                                                         answerWord.setPicture(pictureUrl);
+                                                        imagesQueue++;
+                                                        final String pictureXUrl = questionAnswer.get("picture").toString();
+                                                        answerWord.setPicture(pictureXUrl);
+                                                        final String answerPictureFileName = "word_" + wordId + "_picture" + ".jpg";
+                                                        answerWord.setIsPictureLocal(1);
+                                                        answerWord.setPictureLocal(answerPictureFileName);
+                                                        runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                Picasso.with(SynchronizationActivity.this).load("http://pzmmd.cba.pl/media/imgs/" + pictureXUrl).into(new Target() {
+                                                                    @Override
+                                                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                                                        try {
+                                                                            String root = Environment.getExternalStorageDirectory().toString();
+                                                                            File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Pictures");
+
+                                                                            if (!myDir.exists()) {
+                                                                                myDir.mkdirs();
+                                                                            }
+
+                                                                            myDir = new File(myDir, answerPictureFileName);
+                                                                            FileOutputStream out = new FileOutputStream(myDir);
+                                                                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+
+                                                                            out.flush();
+                                                                            out.close();
+                                                                            imagesQueue--;
+                                                                            System.out.println("Picture " + answerPictureFileName + " loaded");
+                                                                            System.out.println("Image queue: " + imagesQueue);
+                                                                        } catch (Exception e) {
+                                                                            // some action
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onBitmapFailed(Drawable errorDrawable) {
+                                                                        imagesQueue--;
+                                                                        System.out.println("Image queue: " + imagesQueue);
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
                                                     }
                                                     if (questionAnswer.has("tags")) {
                                                         String wordTags = questionAnswer.get("tags").toString();
@@ -518,9 +762,55 @@ public class SynchronizationActivity extends AppCompatActivity {
                             singleUser.setUserName(singleParticipant.getString("firstName"));
                             singleUser.setUserSurname(singleParticipant.getString("lastName"));
                             if (singleParticipant.has("avatar")) {
-                                singleUser.setAvatar(singleParticipant.getString("avatar"));
+                                final String participantAvatar = singleParticipant.get("avatar").toString();
+                                imagesQueue++;
+                                singleUser.setAvatar(participantAvatar);
+                                final String fileXName = "user_" + singleUser.getUserId() + "_avatar" + ".jpg";
+                                singleUser.setIsAvatarLocal(1);
+                                singleUser.setAvatarLocal(fileXName);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Picasso.with(SynchronizationActivity.this).load("http://pzmmd.cba.pl/web/img/avatars/users/" + participantAvatar).into(new Target() {
+                                            @Override
+                                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                                try {
+                                                    String root = Environment.getExternalStorageDirectory().toString();
+                                                    File myDir = new File(SynchronizationActivity.this.getFilesDir() + "/Pictures");
+
+                                                    if (!myDir.exists()) {
+                                                        myDir.mkdirs();
+                                                    }
+
+                                                    myDir = new File(myDir, fileXName);
+                                                    FileOutputStream out = new FileOutputStream(myDir);
+                                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+
+                                                    out.flush();
+                                                    out.close();
+                                                    System.out.println("Avatar " + fileXName + " loaded");
+                                                    imagesQueue--;
+                                                    System.out.println("Image queue: " + imagesQueue);
+                                                } catch (Exception e) {
+                                                    // some action
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onBitmapFailed(Drawable errorDrawable) {
+                                                imagesQueue--;
+                                                System.out.println("Image queue: " + imagesQueue);
+                                            }
+
+                                            @Override
+                                            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                                            }
+                                        });
+                                    }
+                                });
+
                             }
-                            singleUser.setIsAvatarLocal(0);
                             UsersCourse singleUsersCourse = new UsersCourse(singleUser.getUserId(), singleUser.getUserName(), singleUser.getUserSurname(), courseIdInteger);
                             dbReader.insertUser(singleUser);
                             dbReader.insertUserCourse(singleUsersCourse);

@@ -34,12 +34,13 @@ import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
+import com.example.mniez.myapplication.ObjectHelper.User;
+import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
+import com.example.mniez.myapplication.ObjectHelper.UsersExam;
+import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.ObjectHelper.Word;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.CourseElementListAdapter;
-import com.example.mniez.myapplication.TeacherModule.CourseDetailsActivity;
-import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
-import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -135,24 +136,41 @@ public class CourseElementsActivity extends AppCompatActivity {
         else {
             Course cs = dbReader.selectCourse(courseId);
             String avatarLocalFile = cs.getAvatarLocal();
-            courseImage = avatarLocalFile;
-            File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
-            File avatarLocal = new File(avatar, avatarLocalFile);
+            if (courseImage != null) {
+                File avatar = new File(CourseElementsActivity.this.getFilesDir() + "/Pictures");
+                File avatarLocal = new File(avatar, avatarLocalFile);
 
-            Picasso.with(this)
-                    .load(avatarLocal)
-                    .noFade()
-                    .into(imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            supportStartPostponedEnterTransition();
-                        }
+                Picasso.with(this)
+                        .load(avatarLocal)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
 
-                        @Override
-                        public void onError() {
-                            supportStartPostponedEnterTransition();
-                        }
-                    });
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
+            else {
+                Picasso.with(this)
+                        .load(R.drawable.dummy)
+                        .noFade()
+                        .into(imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                supportStartPostponedEnterTransition();
+                            }
+
+                            @Override
+                            public void onError() {
+                                supportStartPostponedEnterTransition();
+                            }
+                        });
+            }
         }
         mProgressView = findViewById(R.id.login_progress_course);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -248,29 +266,11 @@ public class CourseElementsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);
-                    builder.setMessage("To potrwa chwilkę")
-                            .setTitle("Wykonać synchronizację?");
-                    builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseElementsActivity.this, SynchronizationActivity.class);
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            startActivity(intent);
-                        }
-                    });
-                    builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            SharedPreferences.Editor editor = sharedpreferences.edit();
-                            editor.putInt(PREFERENCES_OFFLINE, 0);
-                            editor.commit();
-                            item.setChecked(false);
-                            isOffline = 0;
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    item.setChecked(false);
+                    isOffline = 0;
                 }
                 else if(item.isChecked() == false) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);
@@ -278,7 +278,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseElementsActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(CourseElementsActivity.this, SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -293,6 +293,25 @@ public class CourseElementsActivity extends AppCompatActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 }
+                return super.onOptionsItemSelected(item);
+            case R.id.action_synch:
+                AlertDialog.Builder builder = new AlertDialog.Builder(CourseElementsActivity.this);
+                builder.setMessage("To może trochę potrwać.")
+                        .setTitle("Wykonać pełną synchronizację?");
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(CourseElementsActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return super.onOptionsItemSelected(item);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -474,12 +493,171 @@ public class CourseElementsActivity extends AppCompatActivity {
                                 System.out.println("Test inserted");
 
                             }
+                            JSONArray lessonExams = singleLesson.getJSONArray("exams");
+                            int lessonexamLength = lessonExams.length();
+                            System.out.println("Ilość egzaminów: " + lessonexamLength);
+                            if (lessonexamLength > 0) {
+                                for (int k = 0; k < lessonexamLength; k++) {
+                                    Exam newExam = new Exam();
+                                    JSONObject singleExam = lessonExams.getJSONObject(k);
+                                    String testId = singleExam.get("id").toString();
+                                    Integer testIdInteger = Integer.parseInt(testId);
+                                    newExam.setId(testIdInteger);
+                                    String testName = singleExam.get("name").toString();
+                                    newExam.setName(testName);
+                                    String testDescription = singleExam.get("description").toString();
+                                    newExam.setDescription(testDescription);
+                                    //newTest.setScore(0);
+                                    newExam.setIsNew(1);
+                                    newExam.setIsLocal(1);
+                                    //newTest.setIsCompleted(0);
+                                    newExam.setLessonId(lessonIdInteger);
+                                    JSONArray questionsArray = singleExam.getJSONArray("questions");
+                                    int questionsCount = questionsArray.length();
+                                    for (int l = 0; l < questionsCount; l++) {
+                                        ExamQuestion newQuestion = new ExamQuestion();
+                                        JSONObject singleQuestion = questionsArray.getJSONObject(l);
+                                        newQuestion.setExamId(testIdInteger);
+                                        String questionId = singleQuestion.get("id").toString();
+                                        Integer questionIdInteger = Integer.parseInt(questionId);
+                                        newQuestion.setId(questionIdInteger);
+                                        String questionToAsk = singleQuestion.get("question").toString();
+                                        newQuestion.setQuestion(questionToAsk);
+                                        String questionPoints = singleQuestion.get("points").toString();
+                                        Integer questionPointsInteger = Integer.parseInt(questionPoints);
+                                        newQuestion.setPoints(questionPointsInteger);
+                                        JSONObject questionAnswer = singleQuestion.getJSONObject("answer");
+                                        {
+                                            final Word answerWord = new Word();
+                                            String wordId = questionAnswer.get("id").toString();
+                                            Integer wordIdInteger = Integer.parseInt(wordId);
+                                            answerWord.setId(wordIdInteger);
+                                            String nativeWord = questionAnswer.get("nativeWord").toString();
+                                            answerWord.setNativeWord(nativeWord);
+                                            String translatedWord = questionAnswer.get("translatedWord").toString();
+                                            answerWord.setTranslatedWord(translatedWord);
+                                            if (questionAnswer.has("nativeSound")) {
+                                                String nativeSound = questionAnswer.get("nativeSound").toString();
+                                                answerWord.setNativeSound(nativeSound);
+                                            }
+                                            if (questionAnswer.has("translatedSound")) {
+                                                String translatedSound = questionAnswer.get("translatedSound").toString();
+                                                answerWord.setTranslatedSound(translatedSound);
+                                            }
+                                            if (questionAnswer.has("picture")) {
+                                                final String pictureUrl = questionAnswer.get("picture").toString();
+                                                answerWord.setPicture(pictureUrl);
+                                            }
+                                            if (questionAnswer.has("tags")) {
+                                                String wordTags = questionAnswer.get("tags").toString();
+                                                answerWord.setTags(wordTags);
+                                            }
+                                            String nativeDefinition = questionAnswer.get("nativeDefinition").toString();
+                                            answerWord.setNativeDefinition(nativeDefinition);
+                                            String translatedDefinition = questionAnswer.get("translatedDefinition").toString();
+                                            answerWord.setTranslatedDefinition(translatedDefinition);
+                                            JSONObject answerNativeLang = questionAnswer.getJSONObject("nativeLanguage");
+                                            String nativeXLanguage = answerNativeLang.get("id").toString();
+                                            Integer nativeLanguageInteger = Integer.parseInt(nativeXLanguage);
+                                            String nativeLanguageName = answerNativeLang.get("languageName").toString();
+                                            answerWord.setNativeLanguageId(nativeLanguageInteger);
+                                            JSONObject answerTranslatLang = questionAnswer.getJSONObject("translatedLanguage");
+                                            String translatedLanguage = answerTranslatLang.get("id").toString();
+                                            Integer translatedLanguageInteger = Integer.parseInt(translatedLanguage);
+                                            String translatedLanguageName = answerTranslatLang.get("languageName").toString();
+                                            answerWord.setTranslatedLanguageId(translatedLanguageInteger);
+                                            newQuestion.setAnswerId(wordIdInteger);
+                                            Language nativeLang = new Language();
+                                            Language translatLang = new Language();
+                                            nativeLang.setId(nativeLanguageInteger);
+                                            nativeLang.setLanguageName(nativeLanguageName);
+                                            translatLang.setId(translatedLanguageInteger);
+                                            translatLang.setLanguageName(translatedLanguageName);
+                                            dbReader.insertWord(answerWord);
+                                            dbReader.updateWordFullSynch(answerWord);
+                                            dbReader.insertLanguage(nativeLang);
+                                            dbReader.insertLanguage(translatLang);
+                                        }
+                                        JSONObject questionType = singleQuestion.getJSONObject("questionType");
+                                        String questionTypeId = questionType.get("id").toString();
+                                        Integer questionTypeIdInteger = Integer.parseInt(questionTypeId);
+                                        String questionTypeName = questionType.get("typeName").toString();
+                                        JSONObject answerType = singleQuestion.getJSONObject("answerType");
+                                        String answerTypeId = answerType.get("id").toString();
+                                        Integer answerTypeIdInteger = Integer.parseInt(answerTypeId);
+                                        String answerTypeName = answerType.get("typeName").toString();
+                                        QuestionAnswerType questionTypeOne = new QuestionAnswerType();
+                                        questionTypeOne.setId(answerTypeIdInteger);
+                                        questionTypeOne.setTypeName(answerTypeName);
+                                        QuestionAnswerType questionTypeTwo = new QuestionAnswerType();
+                                        questionTypeTwo.setId(questionTypeIdInteger);
+                                        questionTypeTwo.setTypeName(questionTypeName);
+                                        dbReader.insertAnswertypes(questionTypeOne);
+                                        dbReader.insertAnswertypes(questionTypeTwo);
+                                        newQuestion.setQuestionTypeId(questionTypeIdInteger);
+                                        newQuestion.setAnswerTypeId(answerTypeIdInteger);
+                                        dbReader.insertExamQuestion(newQuestion);
+                                    }
+                                    dbReader.insertExam(newExam);
+                                    dbReader.updateExamFullSynch(newExam);
+                                    System.out.println("Exam inserted");
+
+                                }
+                            }
                             dbReader.insertLesson(newLesson, courseId);
                             System.out.println("Lesson inserted");
                         }
                     }
-                    return true;
+                    URL participantsEndpoint = new URL("http://pzmmd.cba.pl/api/teacher/courseParticipants/" + courseId);
+                    HttpURLConnection participantsConnection = (HttpURLConnection) participantsEndpoint.openConnection();
+                    participantsConnection.setRequestMethod("GET");
+                    participantsConnection.setDoOutput(true);
+                    participantsConnection.connect();
 
+                    BufferedReader bp = new BufferedReader(new InputStreamReader(participantsEndpoint.openStream()));
+                    StringBuilder sp = new StringBuilder();
+
+                    String linep;
+                    while ((linep = bp.readLine()) != null) {
+                        sp.append(linep + "\n");
+                    }
+                    bp.close();
+
+                    String jsonParticipantsString = sp.toString();
+                    System.out.println("JSON: " + jsonParticipantsString);
+                    JSONArray participantsArray = new JSONArray(jsonParticipantsString);
+                    participantsConnection.disconnect();
+                    int participantsCount = participantsArray.length();
+                    for (int p = 0; p< participantsCount; p++) {
+                        JSONObject singleParticipant = participantsArray.getJSONObject(p);
+                        User singleUser = new User();
+                        singleUser.setUserId(singleParticipant.getInt("id"));
+                        singleUser.setUserName(singleParticipant.getString("firstName"));
+                        singleUser.setUserSurname(singleParticipant.getString("lastName"));
+                        if (singleParticipant.has("avatar")) {
+                            singleUser.setAvatar(singleParticipant.getString("avatar"));
+                        }
+                        singleUser.setIsAvatarLocal(0);
+                        UsersCourse singleUsersCourse = new UsersCourse(singleUser.getUserId(), singleUser.getUserName(), singleUser.getUserSurname(), courseId);
+                        dbReader.insertUser(singleUser);
+                        dbReader.insertUserCourse(singleUsersCourse);
+                        JSONArray userLessons = singleParticipant.getJSONArray("grades");
+                        for (int l = 0; l < userLessons.length(); l++) {
+                            JSONObject singleUsersLessonJson = userLessons.getJSONObject(l);
+                            UsersLesson singleUsersLesson = new UsersLesson(singleUsersCourse.getUserId(), singleUsersCourse.getUserName(), singleUsersCourse.getUserSurname(), singleUsersCourse.getCourseId());
+                            singleUsersLesson.setLessonId(singleUsersLessonJson.getInt("id"));
+                            dbReader.insertUserLesson(singleUsersLesson);
+                            JSONArray userExamsArray = singleUsersLessonJson.getJSONArray("exams");
+                            for (int x = 0; x < userExamsArray.length(); x++) {
+                                JSONObject singleUsersExamJson = userExamsArray.getJSONObject(x);
+                                UsersExam singleUsersExam = new UsersExam(singleUsersLesson.getUserId(), singleUsersLesson.getUserName(), singleUsersLesson.getUserSurname(), singleUsersLesson.getCourseId(), singleUsersLesson.getLessonId());
+                                singleUsersExam.setExamId(singleUsersExamJson.getInt("id"));
+                                singleUsersExam.setGrade(singleUsersExamJson.getJSONArray("users").getJSONObject(0).getInt("grade"));
+                                dbReader.insertUserExam(singleUsersExam);
+                            }
+                        }
+                    }
+                    return true;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (MalformedURLException e) {
@@ -487,6 +665,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
 
                 return false;
             }
