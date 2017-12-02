@@ -135,7 +135,7 @@
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
-            android:name=".TeacherModule.GradesActivity"
+            android:name=".TeacherModule.UsersActivity"
             android:label="@string/title_activity_course"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />

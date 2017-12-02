@@ -1284,6 +1284,7 @@ public class MobileDatabaseReader extends SQLiteOpenHelper {
                 singleUserExam.setUserSurname(c.getString(c.getColumnIndex(USER_SURNAME)));
                 singleUserExam.setExamId(c.getInt(c.getColumnIndex(EXAM_ID)));
                 singleUserExam.setGrade(c.getInt(c.getColumnIndex(GRADE)));
+                singleUserExam.setAvatar(c.getString(c.getColumnIndex(AVATAR)));
                 allUsersExam.add(singleUserExam);
             } while (c.moveToNext());
         }

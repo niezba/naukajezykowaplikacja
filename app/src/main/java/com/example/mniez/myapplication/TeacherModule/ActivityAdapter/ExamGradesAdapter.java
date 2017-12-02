@@ -3,6 +3,7 @@ package com.example.mniez.myapplication.TeacherModule.ActivityAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.CardView;
@@ -41,6 +42,7 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
         public TextView studentName;
         public TextView grade;
         public Button detailButton;
+        public ImageView studentAvatar;
 
         public MyViewHolder(View pItem) {
             super(pItem);
@@ -48,6 +50,7 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
             grade = (TextView) pItem.findViewById(R.id.examStudentGrade);
             cv = (CardView) pItem.findViewById(R.id.gradesCardView);
             detailButton = (Button) pItem.findViewById(R.id.userDetailButton);
+            studentAvatar = (ImageView) pItem.findViewById(R.id.imageView5);
         }
     }
 
@@ -66,6 +69,14 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
         final UsersExam usersExam = mGrades.get(i);
         ((MyViewHolder) viewHolder).studentName.setText(usersExam.getUserName() + " " + usersExam.getUserSurname());
         ((MyViewHolder) viewHolder).grade.setText("OCENA: " + usersExam.getGrade().toString());
+        if (usersExam.getAvatar() != null) {
+            String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + usersExam.getAvatar();
+            System.out.println("Image url: " + imageUrl);
+            Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+        }
+        else {
+            Picasso.with(mKontekst).load(R.drawable.dummy_kopia).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
+        }
         final int studentId = usersExam.getUserId();
         ((MyViewHolder) viewHolder).detailButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

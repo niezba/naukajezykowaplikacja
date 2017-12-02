@@ -1,10 +1,13 @@
 package com.example.mniez.myapplication.TeacherModule;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AlertDialog;
@@ -21,11 +24,13 @@ import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
+import com.example.mniez.myapplication.ObjectHelper.User;
+import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
+import com.example.mniez.myapplication.ObjectHelper.UsersExam;
+import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.GradesListAdapter;
-import com.example.mniez.myapplication.TeacherModule.TeacherBaseDrawerActivity;
-import com.example.mniez.myapplication.TeacherModule.FullSynchronizationActivity;
-import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
+import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserListAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class GradesActivity extends TeacherBaseDrawerActivity {
+public class UsersActivity extends TeacherBaseDrawerActivity {
 
     SharedPreferences sharedpreferences;
     private static final String MY_PREFERENCES = "DummyLangPreferences";
@@ -54,14 +59,15 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
     private static final String STUDENT_ROLE_NAME = "Uczeń";
 
     Integer isOffline;
-    ArrayList<Object> allScoredEls = new ArrayList<>();
+    ArrayList<User> allUsers = new ArrayList<>();
     MobileDatabaseReader dbReader;
     GradesFetchTask mFetchTask = null;
     private UserLoginTask mAuthTask = null;
     private RecyclerView recyclerView;
-    private GradesListAdapter mAdapter;
+    private UserListAdapter mAdapter;
     String currentUsername;
     String currentPassword;
+    private View mProgressView;
 
 
     @Override
@@ -100,8 +106,8 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
         isOffline = sharedpreferences.getInt("isOffline", 0);
         dbReader = new MobileDatabaseReader(getApplicationContext());
         recyclerView = (RecyclerView) findViewById(R.id.gradesRecyclerView);
-        //recyclerView.setHasFixedSize(true);
-        mAdapter = new GradesListAdapter(allScoredEls, this, recyclerView);
+        recyclerView.setHasFixedSize(true);
+        mAdapter = new UserListAdapter(allUsers, this, recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -132,12 +138,12 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
                     builder.setMessage("To potrwa chwilkę")
                             .setTitle("Wykonać synchronizację?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 0);
                             editor.commit();
@@ -157,12 +163,12 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
                     dialog.show();
                 }
                 else if(item.isChecked() == false) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
                     builder.setMessage("Program wykona wówczas pełną synchronizację danych, może to troszkę potrwać.")
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -179,12 +185,12 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
                 }
                 return super.onOptionsItemSelected(item);
             case R.id.action_synch:
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
                     builder.setMessage("To może trochę potrwać.")
                             .setTitle("Wykonać pełną synchronizację?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(GradesActivity.this, FullSynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
                             startActivity(intent);
                         }
                     });
@@ -217,7 +223,7 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
         protected Boolean doInBackground(Void... params) {
             if(isOffline == 0) {
                 try {
-                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/userGrades");
+                    URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
                     myConnection.setDoOutput(true);
@@ -233,41 +239,89 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
                     br.close();
 
                     String jsonString = sb.toString();
-                    System.out.println("JSON Grades data downloaded");
+                    System.out.println("JSON: " + jsonString);
+
                     try {
                         JSONArray jsonObject = new JSONArray(jsonString);
                         String jsonObjectString = jsonObject.toString();
                         System.out.println(jsonObjectString);
                         myConnection.disconnect();
                         int coursesCount = jsonObject.length();
-                        for (int i = 0; i< coursesCount; i++) {
-                            Course cs = new Course();
+                        for (int i = 0; i < coursesCount; i++) {
+                            Course newCourse = new Course();
                             JSONObject singleCourse = jsonObject.getJSONObject(i);
+                            String courseId = singleCourse.get("id").toString();
+                            Integer courseIdInteger = Integer.parseInt(courseId);
+                            newCourse.setId(courseIdInteger);
                             String courseName = singleCourse.get("coursename").toString();
-                            cs.setCourseName(courseName);
-                            allScoredEls.add(cs);
-                            JSONArray courseLessons = singleCourse.getJSONArray("lessons");
-                            int lessonsCount = courseLessons.length();
-                            for(int j = 0; j< lessonsCount; j++) {
-                                Lesson ls = new Lesson();
-                                JSONObject singleLesson = courseLessons.getJSONObject(j);
-                                String lessonName = singleLesson.get("name").toString();
-                                ls.setName(lessonName);
-                                allScoredEls.add(ls);
-                                JSONArray lessonExams = singleLesson.getJSONArray("exams");
-                                int examsCount = lessonExams.length();
-                                for(int k = 0; k< examsCount; k++) {
-                                    Exam ex = new Exam();
-                                    JSONObject singleExam = lessonExams.getJSONObject(k);
-                                    String examName = singleExam.get("name").toString();
-                                    ex.setName(examName);
-                                    String examGrade = singleExam.getJSONArray("users").getJSONObject(0).get("grade").toString();
-                                    Integer examGradeInteger = Integer.parseInt(examGrade);
-                                    ex.setGrade(examGradeInteger);
-                                    allScoredEls.add(ex);
+                            newCourse.setCourseName(courseName);
+                            String description = singleCourse.get("description").toString();
+                            newCourse.setDescription(description);
+                            String createdAt = singleCourse.get("createdAt").toString();
+                            newCourse.setCreatedAt(createdAt);
+                            String levelName = singleCourse.get("levelName").toString();
+                            newCourse.setLevelName(levelName);
+                            String avatar = singleCourse.get("avatar").toString();
+                            newCourse.setAvatar(avatar);
+                            String nativeLanguage = singleCourse.get("nativeLanguage").toString();
+                            newCourse.setNativeLanguageName(nativeLanguage);
+                            String learningLanguage = singleCourse.get("learningLanguage").toString();
+                            newCourse.setLearnedLanguageName(learningLanguage);
+                            dbReader.insertCourse(newCourse);
+                            dbReader.updateCourse(newCourse);
+
+                            URL participantsEndpoint = new URL("http://pzmmd.cba.pl/api/teacher/courseParticipants/" + courseId);
+                            HttpURLConnection participantsConnection = (HttpURLConnection) participantsEndpoint.openConnection();
+                            participantsConnection.setRequestMethod("GET");
+                            participantsConnection.setDoOutput(true);
+                            participantsConnection.connect();
+
+                            BufferedReader bp = new BufferedReader(new InputStreamReader(participantsEndpoint.openStream()));
+                            StringBuilder sp = new StringBuilder();
+
+                            String linep;
+                            while ((linep = bp.readLine()) != null) {
+                                sp.append(linep + "\n");
+                            }
+                            bp.close();
+
+                            String jsonParticipantsString = sp.toString();
+                            System.out.println("JSON: " + jsonParticipantsString);
+                            JSONArray participantsArray = new JSONArray(jsonParticipantsString);
+                            participantsConnection.disconnect();
+                            int participantsCount = participantsArray.length();
+                            for (int p = 0; p < participantsCount; p++) {
+                                JSONObject singleParticipant = participantsArray.getJSONObject(p);
+                                User singleUser = new User();
+                                singleUser.setUserId(singleParticipant.getInt("id"));
+                                singleUser.setUserName(singleParticipant.getString("firstName"));
+                                singleUser.setUserSurname(singleParticipant.getString("lastName"));
+                                if (singleParticipant.has("avatar")) {
+                                    singleUser.setAvatar(singleParticipant.getString("avatar"));
+                                }
+                                singleUser.setIsAvatarLocal(0);
+                                UsersCourse singleUsersCourse = new UsersCourse(singleUser.getUserId(), singleUser.getUserName(), singleUser.getUserSurname(), courseIdInteger);
+                                dbReader.insertUser(singleUser);
+                                dbReader.insertUserCourse(singleUsersCourse);
+                                JSONArray userLessons = singleParticipant.getJSONArray("grades");
+                                for (int l = 0; l < userLessons.length(); l++) {
+                                    JSONObject singleUsersLessonJson = userLessons.getJSONObject(l);
+                                    UsersLesson singleUsersLesson = new UsersLesson(singleUsersCourse.getUserId(), singleUsersCourse.getUserName(), singleUsersCourse.getUserSurname(), singleUsersCourse.getCourseId());
+                                    singleUsersLesson.setLessonId(singleUsersLessonJson.getInt("id"));
+                                    dbReader.insertUserLesson(singleUsersLesson);
+                                    JSONArray userExamsArray = singleUsersLessonJson.getJSONArray("exams");
+                                    for (int x = 0; x < userExamsArray.length(); x++) {
+                                        JSONObject singleUsersExamJson = userExamsArray.getJSONObject(x);
+                                        UsersExam singleUsersExam = new UsersExam(singleUsersLesson.getUserId(), singleUsersLesson.getUserName(), singleUsersLesson.getUserSurname(), singleUsersLesson.getCourseId(), singleUsersLesson.getLessonId());
+                                        singleUsersExam.setExamId(singleUsersExamJson.getInt("id"));
+                                        singleUsersExam.setGrade(singleUsersExamJson.getJSONArray("users").getJSONObject(0).getInt("grade"));
+                                        dbReader.insertUserExam(singleUsersExam);
+                                    }
                                 }
                             }
                         }
+                        System.out.println("Users downloaded");
+                        return true;
                     }
                     catch (JSONException e) {
                             e.printStackTrace();
@@ -276,20 +330,6 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
                     e.printStackTrace();
                 }
             } else {
-                ArrayList<Course> allCourses = dbReader.selectAllCourses();
-                for (Course cs : allCourses) {
-                    ArrayList<Lesson> allLessonsForCourse = dbReader.selectAllLessonsForCourse(cs.getId());
-                    for(Lesson ls : allLessonsForCourse) {
-                        ArrayList<Exam> allExams = dbReader.selectAllExamsForLesson(ls.getLessonId());
-                        if(allExams.size() > 0) {
-                            allScoredEls.add(cs);
-                            allScoredEls.add(ls);
-                            for (Exam ex : allExams) {
-                                allScoredEls.add(ex);
-                            }
-                        }
-                    }
-                }
             }
             return true;
         }
@@ -297,11 +337,13 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
         @Override
         protected void onPostExecute(final Boolean success) {
             if (success) {
+                allUsers.addAll(dbReader.selectAllUsers());
+                System.out.println("UsersCount: " + allUsers.size());
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
                 mFetchTask = null;
             } else {
-                mAuthTask = new GradesActivity.UserLoginTask(currentUsername, currentPassword);
+                mAuthTask = new UsersActivity.UserLoginTask(currentUsername, currentPassword);
                 mAuthTask.execute();
             }
         }
@@ -391,15 +433,15 @@ public class GradesActivity extends TeacherBaseDrawerActivity {
                 mFetchTask = new GradesFetchTask();
                 mFetchTask.execute();
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(GradesActivity.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(UsersActivity.this);
                 builder.setMessage("Nastąpił problem z uwierzytelnieniem. Zaloguj się ponownie.")
                         .setTitle("Ups...").setCancelable(false);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         sharedpreferences = getSharedPreferences(MY_PREFERENCES, Context.MODE_PRIVATE);
                         sharedpreferences.edit().clear().commit();
-                        GradesActivity.this.deleteDatabase("dummyDatabase");
-                        Intent intent = new Intent(GradesActivity.this, LoginActivity.class);
+                        UsersActivity.this.deleteDatabase("dummyDatabase");
+                        Intent intent = new Intent(UsersActivity.this, LoginActivity.class);
                         startActivity(intent);
                     }
                 });
