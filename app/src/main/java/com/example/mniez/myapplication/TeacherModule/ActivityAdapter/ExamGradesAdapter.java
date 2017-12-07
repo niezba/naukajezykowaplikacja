@@ -73,7 +73,7 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).grade.setText("OCENA: " + usersExam.getGrade().toString());
         if(mIsOffline == 0) {
             if (usersExam.getAvatar() != null) {
-                String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + usersExam.getAvatar();
+                String imageUrl = "http://pzmmd.cba.pl/img/avatars/users/" + usersExam.getAvatar();
                 System.out.println("Image url: " + imageUrl);
                 Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentAvatar);
             } else {

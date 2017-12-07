@@ -63,7 +63,7 @@ public class UserListAdapter extends RecyclerView.Adapter{
         final int studentId = user.getUserId();
         if(mIsOffline == 0) {
             if (user.getAvatar() != null) {
-                String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/users/" + user.getAvatar();
+                String imageUrl = "http://pzmmd.cba.pl/img/avatars/users/" + user.getAvatar();
                 System.out.println("Image url: " + imageUrl);
                 Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
             } else {

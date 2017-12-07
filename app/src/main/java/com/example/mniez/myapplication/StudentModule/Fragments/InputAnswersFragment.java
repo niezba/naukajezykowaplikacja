@@ -96,9 +96,11 @@ public class InputAnswersFragment extends Fragment {
             public void afterTextChanged(Editable editable) {
                 if (inputText.getText().toString().equals(correctAnswer)) {
                     mCallback.onAnswerSelected(correctAnswerId, inputText.getText().toString());
+                    System.out.println("Input answers fragment zaznacza: " + correctAnswerId);
                 }
                 else {
                     mCallback.onAnswerSelected(-1, inputText.getText().toString());
+                    System.out.println("Input answers fragment zaznacza: -1");
                 }
             }
         });
@@ -117,27 +119,33 @@ public class InputAnswersFragment extends Fragment {
         setAnswerString = newSetAnswerString;
         isCompleted = isNewCompleted;
         System.out.println("Typ pytania: " + newQuestionType);
-        if(isCompleted == 0) {
-            if (setAnswerString.length() != 0) {
-                inputText.setText(setAnswerString);
+        switch(currentAnswerTypeId) {
+            case 16:case 17:
+            if (isCompleted == 0) {
+                if (setAnswerString.length() != 0) {
+                    inputText.setText(setAnswerString);
+                } else {
+                    inputText.setText("");
+                }
+            } else {
+                correctAnswerView.setVisibility(View.GONE);
+                inputText.setEnabled(false);
+                if (setAnswerString.length() != 0) {
+                    inputText.setText(setAnswerString);
+                } else {
+                    inputText.setText("");
+                }
+                if (setAnswerString.equals(correctAnswer)) {
+                    inputText.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                    inputText.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
+                } else {
+                    inputText.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    inputText.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
+                    correctAnswerView.setVisibility(View.VISIBLE);
+                    correctAnswerView.setText("Poprawna odpowiedź: " + correctAnswer);
+                }
             }
-        }
-        else {
-            correctAnswerView.setVisibility(View.GONE);
-            inputText.setEnabled(false);
-            if (setAnswerString.length() != 0) {
-                inputText.setText(setAnswerString);
-            }
-            if (setAnswerString.equals(correctAnswer)) {
-                inputText.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
-                inputText.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
-            }
-            else {
-                inputText.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
-                inputText.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorRed));
-                correctAnswerView.setVisibility(View.VISIBLE);
-                correctAnswerView.setText("Poprawna odpowiedź: " + correctAnswer);
-            }
+            break;
         }
     }
 

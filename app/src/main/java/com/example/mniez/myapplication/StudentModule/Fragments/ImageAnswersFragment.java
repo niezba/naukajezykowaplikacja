@@ -91,6 +91,7 @@ public class ImageAnswersFragment extends Fragment {
                 ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 mCallback.onAnswerSelected(answerIds[0]);
+                System.out.println("Image answers fragment zaznacza: " + answerIds[0]);
             }
         });
         ans2.setOnClickListener(new View.OnClickListener() {
@@ -101,6 +102,7 @@ public class ImageAnswersFragment extends Fragment {
                 ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 mCallback.onAnswerSelected(answerIds[1]);
+                System.out.println("Image answers fragment zaznacza: " + answerIds[1]);
             }
         });
         ans3.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +113,7 @@ public class ImageAnswersFragment extends Fragment {
                 ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
                 ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 mCallback.onAnswerSelected(answerIds[2]);
+                System.out.println("Image answers fragment zaznacza: " + answerIds[2]);
             }
         });
         ans4.setOnClickListener(new View.OnClickListener() {
@@ -121,6 +124,7 @@ public class ImageAnswersFragment extends Fragment {
                 ans3.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.lightGray));
                 ans4.setBackgroundTintList(ContextCompat.getColorStateList(getActivity(), R.color.colorAccent));
                 mCallback.onAnswerSelected(answerIds[3]);
+                System.out.println("Image answers fragment zaznacza: " + answerIds[3]);
             }
         });
         return rootView;

@@ -98,6 +98,7 @@ public class AnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[0]);
+                System.out.println("Answers fragment zaznacza: " + answerIds[0]);
             }
         });
         ans2.setOnClickListener(new View.OnClickListener() {
@@ -116,6 +117,7 @@ public class AnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[1]);
+                System.out.println("Answers fragment zaznacza: " + answerIds[1]);
             }
         });
         ans3.setOnClickListener(new View.OnClickListener() {
@@ -134,6 +136,7 @@ public class AnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[2]);
+                System.out.println("Answers fragment zaznacza: " + answerIds[2]);
             }
         });
         ans4.setOnClickListener(new View.OnClickListener() {
@@ -152,6 +155,7 @@ public class AnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.BOLD);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 mCallback.onAnswerSelected(answerIds[3]);
+                System.out.println("Answers fragment zaznacza: " + answerIds[3]);
             }
         });
         return rootView;

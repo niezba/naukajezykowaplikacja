@@ -192,7 +192,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         newCourse.setAvatar(avatar);
                         imagesQueue++;
                         final String fileName = "course_" + courseId + "_avatar" + ".jpg";
-                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/web/img/avatars/courses/" + avatar);
+                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/img/avatars/courses/" + avatar);
                         URLConnection avatarConnection = avatarEndpoint.openConnection();
                         try {
                             InputStream inputStream = new BufferedInputStream(avatarEndpoint.openStream(), 10240);
@@ -215,7 +215,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                             newCourse.setIsAvatarLocal(1);
                             newCourse.setAvatarLocal(fileName);
                         } catch (IOException e) {
-
+                            e.printStackTrace();
                         }
                         String nativeLanguage = singleCourse.get("nativeLanguage").toString();
                         newCourse.setNativeLanguageName(nativeLanguage);
@@ -715,7 +715,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                 final String participantAvatar = singleParticipant.get("avatar").toString();
                                 singleUser.setAvatar(participantAvatar);
                                 final String fileXName = "user_" + singleUser.getUserId() + "_avatar" + ".jpg";
-                                URL pictureEndpoint = new URL("http://pzmmd.cba.pl/web/img/avatars/users/" + participantAvatar);
+                                URL pictureEndpoint = new URL("http://pzmmd.cba.pl/img/avatars/users/" + participantAvatar);
                                 URLConnection pictureConnection = pictureEndpoint.openConnection();
                                 try {
                                     InputStream inputStream = new BufferedInputStream(pictureEndpoint.openStream(), 10240);
@@ -738,7 +738,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                                     singleUser.setIsAvatarLocal(1);
                                     singleUser.setAvatarLocal(fileXName);
                                 } catch (IOException e) {
-
+                                    e.printStackTrace();
                                 }
 
                             }

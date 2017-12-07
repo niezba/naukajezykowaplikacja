@@ -115,6 +115,7 @@ public class SoundAnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[0]);
+                System.out.println("Sound answers fragment zaznacza: " + answerIds[0]);
                 try {
                     resetTexts();
                     ans1.setText("...");
@@ -154,6 +155,7 @@ public class SoundAnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[1]);
+                System.out.println("Sound answers fragment zaznacza: " + answerIds[1]);
                 try {
                     resetTexts();
                     ans2.setText("...");
@@ -193,6 +195,7 @@ public class SoundAnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.NORMAL);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.cardview_light_background));
                 mCallback.onAnswerSelected(answerIds[2]);
+                System.out.println("Sound answers fragment zaznacza: " + answerIds[2]);
                 try {
                     resetTexts();
                     ans3.setText("...");
@@ -232,6 +235,7 @@ public class SoundAnswersFragment extends Fragment {
                 ans4.setTypeface(null, Typeface.BOLD);
                 ans4.setTextColor(ContextCompat.getColorStateList(getActivity(), R.color.colorPrimary));
                 mCallback.onAnswerSelected(answerIds[3]);
+                System.out.println("Sound answers fragment zaznacza: " + answerIds[3]);
                 try {
                     resetTexts();
                     ans4.setText("...");

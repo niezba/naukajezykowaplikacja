@@ -281,7 +281,7 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                         final String avatar = singleCourse.get("avatar").toString();
                         newCourse.setAvatar(avatar);
                         final String fileName = "course_" + courseId + "_avatar" + ".jpg";
-                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/web/img/avatars/courses/" + avatar);
+                        URL avatarEndpoint = new URL("http://pzmmd.cba.pl/img/avatars/courses/" + avatar);
                         URLConnection avatarConnection = avatarEndpoint.openConnection();
                         try {
                             InputStream inputStream = new BufferedInputStream(avatarEndpoint.openStream(), 10240);
