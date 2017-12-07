@@ -88,6 +88,9 @@
             android:screenOrientation="portrait"
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".TeacherModule.FullSynchronizationActivity"
+            android:screenOrientation="portrait"
+            android:noHistory="true"></activity>
         <activity android:name=".TeacherModule.SynchronizationActivity"
             android:screenOrientation="portrait"
             android:noHistory="true"></activity>

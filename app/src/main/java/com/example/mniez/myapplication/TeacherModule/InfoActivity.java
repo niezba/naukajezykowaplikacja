@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
-import com.example.mniez.myapplication.StudentModule.SynchronizationActivity;
 
 public class InfoActivity extends TeacherBaseDrawerActivity {
 
@@ -148,7 +147,7 @@ public class InfoActivity extends TeacherBaseDrawerActivity {
                         .setTitle("Wykonać pełną synchronizację?");
                 builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(InfoActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                        Intent intent = new Intent(InfoActivity.this, com.example.mniez.myapplication.TeacherModule.FullSynchronizationActivity.class);
                         startActivity(intent);
                     }
                 });

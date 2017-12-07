@@ -36,7 +36,7 @@ import android.widget.TextView;
 
 import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
-import com.example.mniez.myapplication.StudentModule.SynchronizationActivity;
+import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
 import com.example.mniez.myapplication.TeacherModule.TeacherMainActivity;
 
 import org.json.JSONArray;
@@ -471,7 +471,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         startActivity(intent);
                     }
                     else if (sharedpreferences.getInt(PREFERENCES_OFFLINE, 0) == 0 && sharedpreferences.getInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 0) == 1) {
-                        Intent intent = new Intent(LoginActivity.this, TeacherMainActivity.class);
+                        Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
                         startActivity(intent);
                     }
                     else {
@@ -483,7 +483,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 SharedPreferences.Editor editor = sharedpreferences.edit();
                                 editor.putInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 1);
                                 editor.commit();
-                                Intent intent = new Intent(LoginActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, com.example.mniez.myapplication.TeacherModule.FullSynchronizationActivity.class);
                                 startActivity(intent);
                             }
                         });
@@ -492,7 +492,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 SharedPreferences.Editor editor = sharedpreferences.edit();
                                 editor.putInt(PREFERENCES_IS_LOGGED_ON_DEVICE, 1);
                                 editor.commit();
-                                Intent intent = new Intent(LoginActivity.this, TeacherMainActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, SynchronizationActivity.class);
                                 startActivity(intent);
                             }
                         });

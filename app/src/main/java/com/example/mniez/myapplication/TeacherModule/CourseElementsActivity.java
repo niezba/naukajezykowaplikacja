@@ -278,7 +278,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(CourseElementsActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(CourseElementsActivity.this, FullSynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -300,7 +300,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                         .setTitle("Wykonać pełną synchronizację?");
                 builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(CourseElementsActivity.this, com.example.mniez.myapplication.TeacherModule.SynchronizationActivity.class);
+                        Intent intent = new Intent(CourseElementsActivity.this, FullSynchronizationActivity.class);
                         startActivity(intent);
                     }
                 });

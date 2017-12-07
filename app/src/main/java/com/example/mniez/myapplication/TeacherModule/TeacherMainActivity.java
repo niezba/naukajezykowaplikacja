@@ -26,8 +26,6 @@ import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.CourseListAdapter;
-import com.example.mniez.myapplication.TeacherModule.TeacherBaseDrawerActivity;
-import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -171,7 +169,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(TeacherMainActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(TeacherMainActivity.this, FullSynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();

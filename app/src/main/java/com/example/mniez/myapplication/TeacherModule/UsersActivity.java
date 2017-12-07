@@ -22,14 +22,11 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
-import com.example.mniez.myapplication.ObjectHelper.Exam;
-import com.example.mniez.myapplication.ObjectHelper.Lesson;
 import com.example.mniez.myapplication.ObjectHelper.User;
 import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
 import com.example.mniez.myapplication.ObjectHelper.UsersExam;
 import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.R;
-import com.example.mniez.myapplication.StudentModule.ActivityAdapter.GradesListAdapter;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserListAdapter;
 
 import org.json.JSONArray;
@@ -152,7 +149,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Chcesz pracować w trybie offline?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putInt(PREFERENCES_OFFLINE, 1);
                             editor.commit();
@@ -174,7 +171,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                             .setTitle("Wykonać pełną synchronizację?");
                     builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            Intent intent = new Intent(UsersActivity.this, SynchronizationActivity.class);
+                            Intent intent = new Intent(UsersActivity.this, FullSynchronizationActivity.class);
                             startActivity(intent);
                         }
                     });
