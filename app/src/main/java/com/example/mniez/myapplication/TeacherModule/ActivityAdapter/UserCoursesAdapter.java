@@ -59,7 +59,7 @@ public class UserCoursesAdapter extends RecyclerView.Adapter{
         ((MyViewHolder) viewHolder).studentCourseName.setText(usersCourse.getCourseName());
         ((MyViewHolder) viewHolder).studentCourseDescription.setText(usersCourse.getCourseDescription());
         if(mIsOffline == 0) {
-            String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + usersCourse.getCourseAvatar();
+            String imageUrl = "http://pzmmd.cba.pl/img/avatars/courses/" + usersCourse.getCourseAvatar();
             System.out.println(imageUrl);
             Picasso.with(mKontekst).load(imageUrl).fit().centerCrop().into(((MyViewHolder) viewHolder).studentCourseAvatar);
         }

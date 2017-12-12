@@ -297,6 +297,10 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
                 showProgress(false);
                 courseList.addAll(dbReader.selectAllCourses());
                 mAdapter.notifyDataSetChanged();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                }
                 mAdapter.getItemCount();
                 System.out.println(courseList);
                 mFetchTask = null;

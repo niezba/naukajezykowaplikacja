@@ -9,7 +9,9 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -74,7 +76,7 @@ public class StudentActivity extends AppCompatActivity {
         userIdView.setText("Id ucznia: " + currentUser.getUserId().toString());
         if(isOffline == 0) {
             if (currentUser.getAvatar() != null) {
-                Picasso.with(this).load("http://pzmmd.cba.pl/web/img/avatars/users/" + currentUser.getAvatar()).fit().centerInside().into(avatar);
+                Picasso.with(this).load("http://pzmmd.cba.pl/img/avatars/users/" + currentUser.getAvatar()).fit().centerInside().into(avatar);
             } else {
                 Picasso.with(this).load(R.drawable.dummy_kopia).fit().centerInside().into(avatar);
             }
@@ -98,11 +100,21 @@ public class StudentActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+        if(allGrades.size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            LinearLayout noElements = (LinearLayout) findViewById(R.id.grade_no_elements_view);
+            noElements.setVisibility(View.VISIBLE);
+        }
         recyclerView2 = (RecyclerView) findViewById(R.id.userCoursesRecyclerView);
         mAdapter2 = new UserCoursesAdapter(allCourses, this, recyclerView2, isOffline);
         recyclerView2.setLayoutManager(new LinearLayoutManager(this));
         recyclerView2.setAdapter(mAdapter2);
         recyclerView2.setItemAnimator(new DefaultItemAnimator());
+        if(allCourses.size() == 0) {
+            recyclerView2.setVisibility(View.GONE);
+            LinearLayout noElements = (LinearLayout) findViewById(R.id.course_no_elements_view);
+            noElements.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

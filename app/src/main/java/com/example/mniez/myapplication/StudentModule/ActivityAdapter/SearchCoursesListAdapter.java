@@ -90,7 +90,7 @@ public class SearchCoursesListAdapter extends RecyclerView.Adapter {
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).courseName.setText(course.getCourseName());
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).levelName.setText(course.getLevelName());
         ((SearchCoursesListAdapter.MyViewHolder) viewHolder).teacherData.setText(course.getTeacherName());
-        final String imageUrl = "http://pzmmd.cba.pl/web/img/avatars/courses/" + course.getAvatar();
+        final String imageUrl = "http://pzmmd.cba.pl/img/avatars/courses/" + course.getAvatar();
         final int courseId = course.getId();
         final String courseName = course.getCourseName();
         final Boolean isParticipant = course.getParticipant();

@@ -114,6 +114,9 @@ public class QuestionFragment extends Fragment {
                         File avatarLocal = new File(avatar, questionWord.getPictureLocal());
                         Picasso.with(QuestionFragment.this.getActivity()).load(avatarLocal).fit().centerCrop().into(questionImage);
                     }
+                    else{
+                        Picasso.with(QuestionFragment.this.getActivity()).load(R.drawable.dummy).fit().centerCrop().into(questionImage);
+                    }
                 }
                 questionImage.setVisibility(View.VISIBLE);
                 questionView.setVisibility(View.GONE);

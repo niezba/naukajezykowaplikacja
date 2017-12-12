@@ -341,6 +341,10 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                 System.out.println("UsersCount: " + allUsers.size());
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                }
                 showProgress(false);
                 mFetchTask = null;
             } else {

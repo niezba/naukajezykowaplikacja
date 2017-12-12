@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -334,7 +335,10 @@ public class MainActivity extends BaseDrawerActivity {
                 showProgress(false);
                 courseList.addAll(dbReader.selectAllCourses());
                 mAdapter.notifyDataSetChanged();
-                mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                }
                 System.out.println(courseList);
                 mFetchTask = null;
             } else {

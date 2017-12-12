@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.SearchCoursesListAdapter;
@@ -165,7 +166,7 @@ public class AllCoursesFragment extends Fragment {
                         JSONObject jsonObject = new JSONObject(jsonString);
                         String errCode = jsonObject.get("error_code").toString();
                         System.out.println("Error code: " + errCode);
-                        return false;
+                        return true;
                     }
 
 
@@ -179,7 +180,7 @@ public class AllCoursesFragment extends Fragment {
                 e.printStackTrace();
             }*/ catch (JSONException e) {
                     e.printStackTrace();
-                    return false;
+                    return true;
                 }
             }
             return true;
@@ -194,6 +195,16 @@ public class AllCoursesFragment extends Fragment {
             if (success) {
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.no_elements_view);
+                    noElements.setVisibility(View.VISIBLE);
+                }
+                else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.no_elements_view);
+                    noElements.setVisibility(View.GONE);
+                }
                 System.out.println(mAdapter.getItemCount());
                 System.out.println(courseList);
                 mFetchTask = null;

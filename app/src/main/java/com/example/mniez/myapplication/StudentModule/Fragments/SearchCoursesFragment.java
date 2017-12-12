@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.SearchCoursesListAdapter;
@@ -188,7 +189,7 @@ public class SearchCoursesFragment extends Fragment {
                         JSONObject jsonObject = new JSONObject(jsonString);
                         String errCode = jsonObject.get("error_code").toString();
                         System.out.println("Error code: " + errCode);
-                        return false;
+                        return true;
                     }
 
                 } catch (MalformedURLException e) {
@@ -201,7 +202,7 @@ public class SearchCoursesFragment extends Fragment {
                 e.printStackTrace();
             }*/ catch (JSONException e) {
                     e.printStackTrace();
-                    return false;
+                    return true;
                 }
 
             }
@@ -214,11 +215,23 @@ public class SearchCoursesFragment extends Fragment {
 
             if (success) {
                 mAdapter.notifyDataSetChanged();
-                mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.search_no_elements_view);
+                    noElements.setVisibility(View.VISIBLE);
+                }
+                else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.search_no_elements_view);
+                    noElements.setVisibility(View.GONE);
+                }
                 System.out.println(mAdapter.getItemCount());
                 System.out.println(courseList);
                 mFetchTask = null;
             } else {
+                recyclerView.setVisibility(View.GONE);
+                LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.search_no_elements_view);
+                noElements.setVisibility(View.VISIBLE);
                 mFetchTask = null;
                 mAuthTask = new UserLoginTask(currentUsername, currentPassword);
                 mAuthTask.execute();
@@ -246,7 +259,7 @@ public class SearchCoursesFragment extends Fragment {
             // TODO: attempt authentication against a network service.
 
             try {
-                URL webpageEndpoint = new URL("http://10.0.2.2:8000/api/login?username="+mEmail+"&password="+mPassword);
+                URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username="+mEmail+"&password="+mPassword);
                 HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                 myConnection.setRequestMethod("GET");
                 myConnection.setDoOutput(true);

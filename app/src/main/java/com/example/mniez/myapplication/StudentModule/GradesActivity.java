@@ -303,6 +303,10 @@ public class GradesActivity extends BaseDrawerActivity {
             if (success) {
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                }
                 showProgress(false);
                 mFetchTask = null;
             } else {

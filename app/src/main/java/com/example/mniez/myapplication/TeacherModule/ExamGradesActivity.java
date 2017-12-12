@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
@@ -70,6 +71,11 @@ public class ExamGradesActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+        if (allGrades.size() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            LinearLayout noElements = (LinearLayout) findViewById(R.id.no_elements_view);
+            noElements.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

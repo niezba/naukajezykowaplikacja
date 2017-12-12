@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
@@ -22,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
@@ -821,6 +823,11 @@ public class CourseElementsActivity extends AppCompatActivity {
                 }
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    LinearLayout noElements = (LinearLayout) findViewById(R.id.no_elements_view);
+                    noElements.setVisibility(View.VISIBLE);
+                }
                 System.out.println(lessonList);
             } else {
                 mAuthTask = new UserLoginTask(currentUsername, currentPassword);

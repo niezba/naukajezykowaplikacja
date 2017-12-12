@@ -117,6 +117,9 @@ public class CourseElementListAdapter extends RecyclerView.Adapter {
                 allLessonElements.add(newEl);
             }
         }
+        if(allLessonElements.size() == 0) {
+            allLessonElements.add(new LessonElement(3, -1, "brak"));
+        }
         LessonElementsAdapter lesAdapter = new LessonElementsAdapter(mKontekst, allLessonElements, courseId, isOffline);
         ((MyViewHolder) viewHolder).listView.setAdapter(lesAdapter);
         System.out.println("Lekcja: " + lesson.getLessonId() + ", Ilość elementów: " + allLessonElements.size());

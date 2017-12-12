@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
@@ -690,6 +691,11 @@ public class CourseElementsActivity extends AppCompatActivity {
                     courseExamsList.addAll(dbReader.selectAllExamsForLesson(element));
                 }
                 mAdapter.notifyDataSetChanged();
+                if(mAdapter.getItemCount() == 0) {
+                    recyclerView.setVisibility(View.GONE);
+                    LinearLayout noElements = (LinearLayout) findViewById(R.id.no_elements_view);
+                    noElements.setVisibility(View.VISIBLE);
+                }
                 mAdapter.getItemCount();
                 System.out.println(lessonList);
             } else {

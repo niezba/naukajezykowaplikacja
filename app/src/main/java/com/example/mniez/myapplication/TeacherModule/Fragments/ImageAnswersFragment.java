@@ -83,7 +83,7 @@ public class ImageAnswersFragment extends Fragment {
                     wordList = new ArrayList<>();
                     wordList.add(dbReader.getParticularWordData(answerIds));
                     if (isOffline == 0) {
-                        Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().into(ans1);
+                        Picasso.with(getActivity()).load("http://pzmmd.cba.pl/media/imgs/" + wordList.get(0).getPicture()).fit().centerCrop().into(ans1);
                         System.out.println(wordList.get(0).getPicture());
                     } else {
                         File avatar = new File(ImageAnswersFragment.this.getActivity().getFilesDir() + "/Pictures");
