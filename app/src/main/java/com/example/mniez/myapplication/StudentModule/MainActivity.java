@@ -136,7 +136,7 @@ public class MainActivity extends BaseDrawerActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            finish();
+            moveTaskToBack(true);
         }
     }
 

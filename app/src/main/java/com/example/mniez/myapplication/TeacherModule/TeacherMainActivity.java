@@ -131,7 +131,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            finish();
+            moveTaskToBack(true);
         }
     }
 
@@ -424,5 +424,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
 
 
     }
+
+
 
 }
