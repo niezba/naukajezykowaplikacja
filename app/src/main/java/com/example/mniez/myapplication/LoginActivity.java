@@ -527,5 +527,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
     }
+
+    @Override
+    public void onBackPressed()
+    {
+        // code here to show dialog
+        moveTaskToBack(true);
+    }
 }
 
