@@ -57,7 +57,14 @@ public class UserGradesAdapter extends RecyclerView.Adapter{
         final UsersExam usersExam = mGrades.get(i);
         ((MyViewHolder) viewHolder).studentCourseName.setText(usersExam.getCourseName());
         ((MyViewHolder) viewHolder).studentLessonName.setText(usersExam.getLessonName());
-        ((MyViewHolder) viewHolder).grade.setText("OCENA: " + usersExam.getGrade().toString());
+        String textToSet = new String();
+        if (usersExam.getGrade() == 0) {
+            textToSet = "Brak podejścia";
+        }
+        else {
+            textToSet = usersExam.getGrade().toString();
+        }
+        ((MyViewHolder) viewHolder).grade.setText("OCENA: " + textToSet);
     }
 
     public int getItemCount() {

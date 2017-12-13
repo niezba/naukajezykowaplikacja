@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
@@ -32,6 +33,7 @@ import com.example.mniez.myapplication.ObjectHelper.ExamQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Language;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
@@ -78,13 +80,12 @@ public class CourseElementsActivity extends AppCompatActivity {
     private CourseElementListAdapter mAdapter;
 
     private View mProgressView;
-    String currentId;
-    String currentRole;
     String courseImage;
 
     String currentUsername;
     String currentPassword;
     Integer isOffline;
+    Integer noConnection = 0;
 
     ArrayList<Lesson> lessonList = new ArrayList<Lesson>();
     ArrayList<Integer> lessonIdList = new ArrayList<>();
@@ -214,20 +215,9 @@ public class CourseElementsActivity extends AppCompatActivity {
 
 
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            /*mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });*/
 
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mProgressView.animate().setDuration(shortAnimTime).alpha(
@@ -238,16 +228,12 @@ public class CourseElementsActivity extends AppCompatActivity {
                 }
             });
         } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_offline, menu);
         return true;
     }
@@ -263,7 +249,6 @@ public class CourseElementsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_offline:
                 if(item.isChecked() == true) {
@@ -332,6 +317,11 @@ public class CourseElementsActivity extends AppCompatActivity {
 
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(CourseElementsActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint2 = new URL("http://pzmmd.cba.pl/api/teacher/course/" + courseId);
                     HttpURLConnection myConnection2 = (HttpURLConnection) webpageEndpoint2.openConnection();
                     myConnection2.setRequestMethod("GET");
@@ -384,7 +374,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                 lecture.setName(singleLectureName);
                                 lecture.setLectureUrl(singleLectureUrl);
                                 dbReader.insertLecture(lecture);
-                                dbReader.updateLectureFullSynch(lecture);
+                                dbReader.updateLecture(lecture);
                             }
                             JSONArray lessonTests = singleLesson.getJSONArray("tests");
                             int lessontestLength = lessonTests.length();
@@ -465,7 +455,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                         translatLang.setId(translatedLanguageInteger);
                                         translatLang.setLanguageName(translatedLanguageName);
                                         dbReader.insertWord(answerWord);
-                                        dbReader.updateWordFullSynch(answerWord);
+                                        dbReader.updateWord(answerWord);
                                         dbReader.insertLanguage(nativeLang);
                                         dbReader.insertLanguage(translatLang);
                                     }
@@ -575,7 +565,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                             translatLang.setId(translatedLanguageInteger);
                                             translatLang.setLanguageName(translatedLanguageName);
                                             dbReader.insertWord(answerWord);
-                                            dbReader.updateWordFullSynch(answerWord);
+                                            dbReader.updateWord(answerWord);
                                             dbReader.insertLanguage(nativeLang);
                                             dbReader.insertLanguage(translatLang);
                                         }
@@ -600,7 +590,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                                         dbReader.insertExamQuestion(newQuestion);
                                     }
                                     dbReader.insertExam(newExam);
-                                    dbReader.updateExamFullSynch(newExam);
+                                    dbReader.updateExam(newExam);
                                     System.out.println("Exam inserted");
 
                                 }
@@ -691,10 +681,14 @@ public class CourseElementsActivity extends AppCompatActivity {
                     courseExamsList.addAll(dbReader.selectAllExamsForLesson(element));
                 }
                 mAdapter.notifyDataSetChanged();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     LinearLayout noElements = (LinearLayout) findViewById(R.id.no_elements_view);
                     noElements.setVisibility(View.VISIBLE);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 mAdapter.getItemCount();
                 System.out.println(lessonList);

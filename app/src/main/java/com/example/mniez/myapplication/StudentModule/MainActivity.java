@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Course;
@@ -63,6 +64,7 @@ public class MainActivity extends BaseDrawerActivity {
     String currentUsername;
     String currentPassword;
     Integer isOffline;
+    Integer noConnection = 0;
 
     private View mProgressView;
     String currentId;
@@ -249,6 +251,11 @@ public class MainActivity extends BaseDrawerActivity {
 
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(MainActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -335,9 +342,13 @@ public class MainActivity extends BaseDrawerActivity {
                 showProgress(false);
                 courseList.addAll(dbReader.selectAllCourses());
                 mAdapter.notifyDataSetChanged();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 System.out.println(courseList);
                 mFetchTask = null;

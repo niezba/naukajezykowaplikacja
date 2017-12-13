@@ -34,6 +34,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.TeacherModule.SynchronizationActivity;
@@ -356,8 +357,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
+
             if(sharedpreferences.getInt("isOffline",0) == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(LoginActivity.this);
+                    if (nConnection.isNetworkConnection() == false) {
+                        errorText = "Nie masz połączenia z internetem";
+                        return false;
+                    }
+
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/login?username=" + mEmail + "&password=" + mPassword);
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -404,9 +412,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } /*catch (JSONException e) {
-                e.printStackTrace();
-            }*/ catch (JSONException e) {
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }

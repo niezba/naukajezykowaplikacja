@@ -134,7 +134,14 @@ public class GradesListAdapter extends RecyclerView.Adapter {
         Exam scoredElement = (Exam) mScoredElements.get(position);
         if (scoredElement != null) {
                     vh3.getGradesText().setText("Sprawdzian");
-                    vh3.getGradesResult().setText("Ocena: " + scoredElement.getGrade().toString());
+                    String textToSet = new String();
+                    if (scoredElement.getGrade() == 0) {
+                        textToSet = "Brak podejścia";
+                    }
+                    else {
+                        textToSet = scoredElement.getGrade().toString();
+                    }
+                    vh3.getGradesResult().setText("Ocena: " + textToSet);
         }
     }
 }

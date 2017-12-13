@@ -24,11 +24,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.ExamQuestion;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.CourseElementListAdapter;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Language;
@@ -64,9 +66,6 @@ public class CourseElementsActivity extends AppCompatActivity {
     private static final String PREFERENCES_NAMESURNAME = "loggedUserNameSurname";
     private static final String PREFERENCES_ROLE = "loggedUserMainRole";
     private static final String PREFERENCES_ID = "loggedUserId";
-    private static final String ADMIN_ROLE_NAME = "Administrator";
-    private static final String TEACHER_ROLE_NAME = "Nauczyciel";
-    private static final String STUDENT_ROLE_NAME = "Uczeń";
     private static final String PREFERENCES_OFFLINE = "isOffline";
 
     public int courseId;
@@ -74,13 +73,12 @@ public class CourseElementsActivity extends AppCompatActivity {
     private CourseElementListAdapter mAdapter;
 
     private View mProgressView;
-    String currentId;
-    String currentRole;
     String courseImage;
 
     String currentUsername;
     String currentPassword;
     Integer isOffline;
+    Integer noConnection = 0;
 
     ArrayList<Lesson> lessonList = new ArrayList<Lesson>();
     ArrayList<Integer> lessonIdList = new ArrayList<>();
@@ -211,20 +209,9 @@ public class CourseElementsActivity extends AppCompatActivity {
 
 
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            /*mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });*/
 
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mProgressView.animate().setDuration(shortAnimTime).alpha(
@@ -235,10 +222,7 @@ public class CourseElementsActivity extends AppCompatActivity {
                 }
             });
         } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            //mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -329,6 +313,11 @@ public class CourseElementsActivity extends AppCompatActivity {
 
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(CourseElementsActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/lessonsForCourse/" + fetchedCourseId);
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -421,10 +410,8 @@ public class CourseElementsActivity extends AppCompatActivity {
                                         newTest.setName(testName);
                                         String testDescription = singleTest.get("description").toString();
                                         newTest.setDescription(testDescription);
-                                        //newTest.setScore(0);
                                         newTest.setIsNew(1);
                                         newTest.setIsLocal(1);
-                                        //newTest.setIsCompleted(0);
                                         newTest.setLessonId(lessonIdInteger);
                                         JSONArray questionsArray = singleTest.getJSONArray("questions");
                                         int questionsCount = questionsArray.length();
@@ -768,37 +755,19 @@ public class CourseElementsActivity extends AppCompatActivity {
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                            /*JSONObject jsonObjectX = new JSONObject(jsonString);
-                            String errCode = jsonObjectX.get("error_code").toString();
-                            System.out.println("Error code: " + errCode);
-                            if(errCode.equals("1")) {
-                                return false;
-                            }*/
                                 }
-
                             }
-                            //return true;
                         }
-                        //return true;
                     } catch (JSONException e) {
                         e.printStackTrace();
-                    /*JSONObject jsonObject = new JSONObject(jsonString);
-                    String errCode = jsonObject.get("error_code").toString();
-                    System.out.println("Error code: " + errCode);
-                    if(errCode.equals("1")) {
-                        return false;
-                    }*/
+
                     }
                     return true;
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
-                } /*catch (JSONException e) {
-                e.printStackTrace();
-            }*/ /*catch (JSONException e) {
-                e.printStackTrace();
-            }*/
+                }
                 return false;
             }
             else {
@@ -823,10 +792,14 @@ public class CourseElementsActivity extends AppCompatActivity {
                 }
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     LinearLayout noElements = (LinearLayout) findViewById(R.id.no_elements_view);
                     noElements.setVisibility(View.VISIBLE);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 System.out.println(lessonList);
             } else {

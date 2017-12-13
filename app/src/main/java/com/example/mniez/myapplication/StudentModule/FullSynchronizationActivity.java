@@ -3,6 +3,7 @@ package com.example.mniez.myapplication.StudentModule;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -10,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +24,7 @@ import com.example.mniez.myapplication.ObjectHelper.ExamQuestion;
 import com.example.mniez.myapplication.ObjectHelper.Language;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.ObjectHelper.QuestionAnswerType;
 import com.example.mniez.myapplication.ObjectHelper.Test;
 import com.example.mniez.myapplication.ObjectHelper.TestQuestion;
@@ -120,6 +123,13 @@ public class FullSynchronizationActivity extends AppCompatActivity {
             // TODO: attempt authentication against a network service.
 
             try {
+                NetworkConnection nConnection = new NetworkConnection(FullSynchronizationActivity.this);
+                if (nConnection.isNetworkConnection() == false ) {
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putInt(PREFERENCES_OFFLINE, 0);
+                    editor.commit();
+                    return false;
+                }
                 URL loginEndpoint = new URL("http://pzmmd.cba.pl/api/login?username=" + mEmail + "&password=" + mPassword);
                 HttpURLConnection loginConnection = (HttpURLConnection) loginEndpoint.openConnection();
                 loginConnection.setRequestMethod("GET");
@@ -1148,7 +1158,17 @@ public class FullSynchronizationActivity extends AppCompatActivity {
                 Intent intent = new Intent(FullSynchronizationActivity.this, MainActivity.class);
                 startActivity(intent);
             } else {
-
+                AlertDialog.Builder builder = new AlertDialog.Builder(FullSynchronizationActivity.this);
+                builder.setMessage("Aby móc wykonać synchronizację musi być obecne połączenie z internetem.")
+                        .setTitle("Brak połączenia z internetem");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = new Intent(FullSynchronizationActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         }
 

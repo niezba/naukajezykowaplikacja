@@ -22,11 +22,13 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.ObjectHelper.User;
 import com.example.mniez.myapplication.ObjectHelper.UsersCourse;
 import com.example.mniez.myapplication.ObjectHelper.UsersExam;
 import com.example.mniez.myapplication.ObjectHelper.UsersLesson;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.UserListAdapter;
 
 import org.json.JSONArray;
@@ -56,6 +58,7 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
     private static final String STUDENT_ROLE_NAME = "Uczeń";
 
     Integer isOffline;
+    Integer noConnection = 0;
     ArrayList<User> allUsers = new ArrayList<>();
     MobileDatabaseReader dbReader;
     GradesFetchTask mFetchTask = null;
@@ -223,6 +226,11 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
         protected Boolean doInBackground(Void... params) {
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(UsersActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -341,9 +349,13 @@ public class UsersActivity extends TeacherBaseDrawerActivity {
                 System.out.println("UsersCount: " + allUsers.size());
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 showProgress(false);
                 mFetchTask = null;

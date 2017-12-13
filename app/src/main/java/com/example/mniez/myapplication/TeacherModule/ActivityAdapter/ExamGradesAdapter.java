@@ -70,7 +70,14 @@ public class ExamGradesAdapter extends RecyclerView.Adapter{
     public void onBindViewHolder(final RecyclerView.ViewHolder viewHolder, final int i) {
         final UsersExam usersExam = mGrades.get(i);
         ((MyViewHolder) viewHolder).studentName.setText(usersExam.getUserName() + " " + usersExam.getUserSurname());
-        ((MyViewHolder) viewHolder).grade.setText("OCENA: " + usersExam.getGrade().toString());
+        String textToSet = new String();
+        if (usersExam.getGrade() == 0) {
+            textToSet = "Brak podejścia";
+        }
+        else {
+            textToSet = usersExam.getGrade().toString();
+        }
+        ((MyViewHolder) viewHolder).grade.setText("OCENA: " + textToSet);
         if(mIsOffline == 0) {
             if (usersExam.getAvatar() != null) {
                 String imageUrl = "http://pzmmd.cba.pl/img/avatars/users/" + usersExam.getAvatar();

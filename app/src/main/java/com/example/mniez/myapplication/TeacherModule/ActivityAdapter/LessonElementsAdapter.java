@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.TeacherModule.ExamActivity;
 import com.example.mniez.myapplication.TeacherModule.ExamGradesActivity;
@@ -83,11 +84,24 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                 //textView3.setTextColor(R.color.colorAccent);
                 textView2.setText("Więcej");
             }
+            final NetworkConnection nConnection = new NetworkConnection(mKontekst);
             textView2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View view) {
                     switch (rowType) {
                         case 0:
+                            if (nConnection.isNetworkConnection() == false && isOffline == 0 ) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                                builder.setMessage("Nie masz połączenia z internetem - nie możesz teraz przejrzeć testu nie będąc w trybie offline.")
+                                        .setTitle("Brak połączenia z internetem");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                                break;
+                            }
                             Intent intent = new Intent(view.getContext(), TestActivity.class);
                             intent.putExtra("test_id", singleLessonEl.getLessonElementId());
                             intent.putExtra("course_id", courseId);
@@ -119,6 +133,18 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                             }
                             break;
                         case 2:
+                            if (nConnection.isNetworkConnection() == false && isOffline == 0 ) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                                builder.setMessage("Nie masz połączenia z internetem - nie możesz teraz przeglądać sprawdzianu nie będąc w trybie offline.")
+                                        .setTitle("Brak połączenia z internetem");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                                break;
+                            }
                             AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
                             String[] options = {"Oceny", "Poprawne odpowiedzi"};
                             builder2.setItems(options, new DialogInterface.OnClickListener() {
@@ -175,6 +201,10 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            NetworkConnection nConnection = new NetworkConnection(mKontekst);
+            if (nConnection.isNetworkConnection() == false ) {
+                return false;
+            }
             Lecture onlineLecture = dbReader.selectSingleLecture(lectureId);
             String onlineLectureLocalString = onlineLecture.getLectureLocal();
             String tempFileName = "lecture_" + lectureId + "_temp" + ".pdf";
@@ -231,7 +261,15 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                     // Instruct the user to install a PDF reader here, or something
                 }
             } else {
-
+                AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                builder.setMessage("Nie masz połączenia z internetem - nie możesz zobaczyć tego materiału nie będąc w trybie offline.")
+                        .setTitle("Brak połączenia z internetem");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         }
     }

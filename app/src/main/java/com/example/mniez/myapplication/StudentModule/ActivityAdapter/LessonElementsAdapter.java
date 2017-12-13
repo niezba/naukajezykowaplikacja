@@ -19,8 +19,11 @@ import android.widget.Toast;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.ObjectHelper.Lecture;
 import com.example.mniez.myapplication.ObjectHelper.LessonElement;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ExamActivity;
+import com.example.mniez.myapplication.StudentModule.Fragments.AllCoursesFragment;
+import com.example.mniez.myapplication.StudentModule.Fragments.SearchCoursesFragment;
 import com.example.mniez.myapplication.StudentModule.FullSynchronizationActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.StudentModule.TestActivity;
@@ -85,11 +88,24 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                 //textView3.setTextColor(R.color.colorAccent);
                 textView2.setText("Rozwiąż");
             }
+            final NetworkConnection nConnection = new NetworkConnection(mKontekst);
             textView2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(final View view) {
                     switch (rowType) {
                         case 0:
+                            if (nConnection.isNetworkConnection() == false && isOffline == 0 ) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                                builder.setMessage("Nie masz połączenia z internetem - nie możesz teraz rozwiązać testu nie będąc w trybie offline.")
+                                        .setTitle("Brak połączenia z internetem");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                                break;
+                            }
                             AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
                             builder.setMessage("Czy chcesz rozpocząć rozwiązywanie testu?")
                                     .setTitle("Rozpoczęcie testu");
@@ -137,6 +153,18 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                             break;
                         case 2:
                             if (singleLessonEl.getLessonElementIsNew() == 0) {
+                                if (nConnection.isNetworkConnection() == false && isOffline == 0 ) {
+                                    AlertDialog.Builder builder3 = new AlertDialog.Builder(mKontekst);
+                                    builder3.setMessage("Nie masz połączenia z internetem - nie możesz teraz rozwiązać sprawdzianu nie będąc w trybie offline.")
+                                            .setTitle("Brak połączenia z internetem");
+                                    builder3.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                        }
+                                    });
+                                    AlertDialog dialog3 = builder3.create();
+                                    dialog3.show();
+                                    break;
+                                }
                                 AlertDialog.Builder builder2 = new AlertDialog.Builder(mKontekst);
                                 builder2.setMessage("Czy chcesz rozpocząć rozwiązywanie sprawdzianu? Pamiętaj że sprawdzian jest oceniany i że można go rozwiązać tylko raz.")
                                         .setTitle("Rozpoczęcie sprawdzianu");
@@ -197,6 +225,10 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            NetworkConnection nConnection = new NetworkConnection(mKontekst);
+            if (nConnection.isNetworkConnection() == false ) {
+                return false;
+            }
             Lecture onlineLecture = dbReader.selectSingleLecture(lectureId);
             String onlineLectureLocalString = onlineLecture.getLectureLocal();
             String tempFileName = "lecture_" + lectureId + "_temp" + ".pdf";
@@ -253,7 +285,15 @@ public class LessonElementsAdapter extends ArrayAdapter<LessonElement> {
                     // Instruct the user to install a PDF reader here, or something
                 }
             } else {
-
+                AlertDialog.Builder builder = new AlertDialog.Builder(mKontekst);
+                builder.setMessage("Nie masz połączenia z internetem - nie możesz zobaczyć tego materiału nie będąc w trybie offline.")
+                        .setTitle("Brak połączenia z internetem");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         }
     }

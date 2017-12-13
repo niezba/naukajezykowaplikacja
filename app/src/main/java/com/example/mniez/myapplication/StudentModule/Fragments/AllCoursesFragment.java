@@ -15,8 +15,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.SearchCoursesListAdapter;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
@@ -49,6 +51,7 @@ public class AllCoursesFragment extends Fragment {
     String currentId;
     String currentRole;
     Integer isOffline;
+    Integer noConnection = 0;
     String currentUsername;
     String currentPassword;
 
@@ -98,6 +101,11 @@ public class AllCoursesFragment extends Fragment {
 
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(AllCoursesFragment.this.getActivity());
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/search");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -185,8 +193,6 @@ public class AllCoursesFragment extends Fragment {
             }
             return true;
 
-            // TODO: register the new account here.
-
         }
 
         @Override
@@ -195,10 +201,14 @@ public class AllCoursesFragment extends Fragment {
             if (success) {
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.no_elements_view);
                     noElements.setVisibility(View.VISIBLE);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) getActivity().findViewById(R.id.textView27);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 else {
                     recyclerView.setVisibility(View.VISIBLE);

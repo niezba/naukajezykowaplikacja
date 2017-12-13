@@ -20,13 +20,13 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/imageView6"
+            android:id="@+id/imageView7"
             android:layout_width="225dp"
             android:layout_height="243dp"
             app:srcCompat="@drawable/sad_dummy" />
 
         <TextView
-            android:id="@+id/textView26"
+            android:id="@+id/textView27"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="5dp"

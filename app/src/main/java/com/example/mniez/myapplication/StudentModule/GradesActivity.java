@@ -24,6 +24,7 @@ import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.ObjectHelper.Exam;
 import com.example.mniez.myapplication.ObjectHelper.Lesson;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.GradesListAdapter;
 
@@ -54,6 +55,7 @@ public class GradesActivity extends BaseDrawerActivity {
     private static final String STUDENT_ROLE_NAME = "Uczeń";
 
     Integer isOffline;
+    Integer noConnection = 0;
     ArrayList<Object> allScoredEls = new ArrayList<>();
     MobileDatabaseReader dbReader;
     GradesFetchTask mFetchTask = null;
@@ -221,6 +223,11 @@ public class GradesActivity extends BaseDrawerActivity {
         protected Boolean doInBackground(Void... params) {
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(GradesActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/userGrades");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -303,9 +310,13 @@ public class GradesActivity extends BaseDrawerActivity {
             if (success) {
                 mAdapter.notifyDataSetChanged();
                 mAdapter.getItemCount();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 showProgress(false);
                 mFetchTask = null;

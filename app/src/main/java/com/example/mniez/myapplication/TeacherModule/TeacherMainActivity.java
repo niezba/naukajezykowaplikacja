@@ -24,7 +24,9 @@ import android.widget.TextView;
 import com.example.mniez.myapplication.DatabaseAccess.MobileDatabaseReader;
 import com.example.mniez.myapplication.LoginActivity;
 import com.example.mniez.myapplication.ObjectHelper.Course;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.R;
+import com.example.mniez.myapplication.StudentModule.MainActivity;
 import com.example.mniez.myapplication.TeacherModule.ActivityAdapter.CourseListAdapter;
 
 import org.json.JSONArray;
@@ -58,6 +60,7 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
     String currentUsername;
     String currentPassword;
     Integer isOffline;
+    Integer noConnection = 0;
 
     private View mProgressView;
     String currentId;
@@ -224,6 +227,11 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
 
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(TeacherMainActivity.this);
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/courses");
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -297,9 +305,13 @@ public class TeacherMainActivity extends TeacherBaseDrawerActivity {
                 showProgress(false);
                 courseList.addAll(dbReader.selectAllCourses());
                 mAdapter.notifyDataSetChanged();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     getLayoutInflater().inflate(R.layout.no_elements_found, frameLayout);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 mAdapter.getItemCount();
                 System.out.println(courseList);

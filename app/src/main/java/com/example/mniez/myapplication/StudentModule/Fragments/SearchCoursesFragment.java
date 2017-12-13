@@ -17,12 +17,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.example.mniez.myapplication.LoginActivity;
+import com.example.mniez.myapplication.ObjectHelper.NetworkConnection;
 import com.example.mniez.myapplication.StudentModule.ActivityAdapter.SearchCoursesListAdapter;
 import com.example.mniez.myapplication.ObjectHelper.Course;
 import com.example.mniez.myapplication.R;
 import com.example.mniez.myapplication.StudentModule.CourseBrowseActivity;
+import com.example.mniez.myapplication.StudentModule.CourseElementsActivity;
 import com.example.mniez.myapplication.StudentModule.MainActivity;
 
 import org.json.JSONException;
@@ -57,6 +60,7 @@ public class SearchCoursesFragment extends Fragment {
     String language;
     String level;
     Integer isOffline;
+    Integer noConnection = 0;
     String currentUsername;
     String currentPassword;
 
@@ -121,6 +125,11 @@ public class SearchCoursesFragment extends Fragment {
             // TODO: attempt authentication against a network service.
             if(isOffline == 0) {
                 try {
+                    NetworkConnection nConnection = new NetworkConnection(SearchCoursesFragment.this.getActivity());
+                    if (nConnection.isNetworkConnection() == false ) {
+                        noConnection = 1;
+                        return true;
+                    }
                     URL webpageEndpoint = new URL("http://pzmmd.cba.pl/api/search?phrase=" + searchPhrase + "&language=" + searchLang + "&level=" + searchLevel);
                     HttpURLConnection myConnection = (HttpURLConnection) webpageEndpoint.openConnection();
                     myConnection.setRequestMethod("GET");
@@ -215,10 +224,14 @@ public class SearchCoursesFragment extends Fragment {
 
             if (success) {
                 mAdapter.notifyDataSetChanged();
-                if(mAdapter.getItemCount() == 0) {
+                if(mAdapter.getItemCount() == 0 || noConnection == 1) {
                     recyclerView.setVisibility(View.GONE);
                     LinearLayout noElements = (LinearLayout) getActivity().findViewById(R.id.search_no_elements_view);
                     noElements.setVisibility(View.VISIBLE);
+                    if (noConnection == 1) {
+                        TextView infoView = (TextView) getActivity().findViewById(R.id.textView26);
+                        infoView.setText("Brak połączenia z internetem");
+                    }
                 }
                 else {
                     recyclerView.setVisibility(View.VISIBLE);
